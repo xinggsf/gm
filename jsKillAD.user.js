@@ -32,36 +32,35 @@
 // @grant       none
 // @version     2015.9.1
 // ==/UserScript==
--function (doc) {
-  var bc = Array.prototype.forEach;
+-function(doc) {
+	var tags = ['iframe', 'img', 'object', 'embed', 'video'];
 
-  function getStyle(o, s) {
-    if (o.style[s]) return o.style[s];
-    if (doc.defaultView && doc.defaultView.getComputedStyle) {//DOM
-      var x = doc.defaultView.getComputedStyle(o, '');
-      //s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
-      return x && x.getPropertyValue(s);
-    }
-  }
-  function testStyle(o) {
-    var s = getStyle(o, 'position');
-    return s === 'fixed' || s === 'absolute';
-  }
-  function isFloatLay(o) {
-    var x = o.offsetParent;
-    return !x || x.tagName === 'BODY' || x.tagName === 'HTML';
-  }
-  -function(el) {
-    ['iframe','img','object','embed','video'].forEach(function (s){
-      bc.call(el.getElementsByTagName(s), function (x){
-        while (x) {
-          if (isFloatLay(x)) {
-            testStyle(x) && x.parentNode.removeChild(x);
-            break;
-          }
-          x = x.offsetParent;
-        }
-      });
-    });
-  }(doc);
+	function getStyle(o, s) {
+		if (o.style[s]) return o.style[s];
+		if (doc.defaultView && doc.defaultView.getComputedStyle) { //DOM
+			var x = doc.defaultView.getComputedStyle(o, '');
+			//s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
+			return x && x.getPropertyValue(s);
+		}
+	}
+	function testStyle(o) {
+		var s = getStyle(o, 'position');
+		return s === 'fixed' || s === 'absolute';
+	}
+	function isFloatLay(o) {
+		var x = o.offsetParent;
+		return !x || x.tagName === 'BODY' || x.tagName === 'HTML';
+	}
+
+	tags.forEach(function (s) {
+		tags.forEach.call(doc.getElementsByTagName(s), function (x) {
+			while (x) {
+				if (isFloatLay(x)) {
+					testStyle(x) && x.parentNode.removeChild(x);
+					break;
+				}
+				x = x.offsetParent;
+			}
+		});
+	});
 }(document);

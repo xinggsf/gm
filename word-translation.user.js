@@ -144,12 +144,12 @@ function youdao(rst, text) {
 		html = `<span style="color:#9E9E9E !important;">英[${ukphone}]</span>`;
 	}
 	if (!!usphone && usphone.length > 0) {
-		html = `${html}<span style="color:#9E9E9E !important;">美[${usphone}]</span>`;
+		html += `<span style="color:#9E9E9E !important;">美[${usphone}]</span>`;
 	}
 	if (html.length > 0) {
 		html += '<br />';
 	} else if (!!phone && phone.length > 0) {
-		html = `${html}<span style="color:#9E9E9E !important;">[${phone}]</span>`;
+		html += `<span style="color:#9E9E9E !important;">[${phone}]</span>`;
 	}
 	html += trs.map(el => el.tr[0].l.i[0]).join('<br />');
 	tip.showText(html);

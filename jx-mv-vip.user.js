@@ -79,7 +79,7 @@ class TaskPool { //简易任务池
 		}, 500);
 		this._tasks = tasks;
 	}
-	//wait for do something. Key = css | number; value = function($el) { return true: wait again }
+	//wait for do something. Key = css | number; cb = function($el) { return true: wait again }
 	add(cb, key) {
 		if (!key) key = this._tasks.size + 1;
 		this._tasks.set(key, cb);
@@ -89,15 +89,15 @@ const tasks = new TaskPool(true);
 
 const GMgetValue = (name, value) => typeof GM_getValue === "function" ?
 	GM_getValue(name, value) : GM.getValue(name, value);
-
-function GMaddStyle(s) {
-	typeof GM_addStyle === "function" ? GM_addStyle(s) : GM.addStyle(s);
-}
-function GMsetValue(name, value) {
+const GMsetValue = (name, value) => {
 	typeof GM_setValue === "function" ? GM_setValue(name, value) : GM.setValue(name, value);
-}
+};
 
-function showSetting() {
+const GMaddStyle = s => {
+	typeof GM_addStyle === "function" ? GM_addStyle(s) : GM.addStyle(s);
+};
+
+const showSetting = () => {
 	if (!hasDOM('#jiexi-setting')) {
 		GMaddStyle(`#jiexi-setting legend,table,table th,td{text-align:center;}`);
 		const container = $(
@@ -192,9 +192,9 @@ function showSetting() {
 		pp.remove();
 		$(`#_gm__vipJX li:contains("${del_name}")`).remove();
 	});
-}
+};
 
-let router = {
+const router = {
 	["www.iqiyi.com"]() {
 		playerCSS = "#flashbox";
 		posCSS = ".funcRight";
@@ -298,7 +298,8 @@ let router = {
 		playerCSS = '#ykPlayer';
 		posCSS = "#bpmodule-playpage-paction .play-fn";
 		GMaddStyle(
-		`.fn-youku-jiexi li {
+		`#module_basic_player, #player { height:100% !important }
+		.fn-youku-jiexi li {
 			text-align:center;width:60px;line-height:20px;
 			float:left;border:1px solid gray;border-radius:8px;
 			padding:0 4px;margin:4px 2px; cursor: pointer;
@@ -317,11 +318,7 @@ let router = {
 		</li>`);
 		this.wait = el => {
 			el.filter(posCSS).append(youku_jiexi)
-			.find(".fn-youku-jiexi-text, li[data-url]").click(function() {
-				$("#module_basic_player").css("height", "100%");
-				playerCSS = $("#player").css("height", "100%");
-				innerParse(this);
-			});
+			.find(".fn-youku-jiexi-text, li[data-url]").click(innerParse);
 		};
 	},
 	["www.mgtv.com"]() {
@@ -474,25 +471,26 @@ let router = {
 	}
 };
 
-function init() {
+const init = () => {
 	GM_registerMenuCommand("自定义 VIP 视频解析接口", showSetting);
 	userIntfs = GMgetValue("user_interface", []);
 	const list = interfaces.concat(userIntfs);
-	let k, oli = '', inli = '';
+	let k, outLi = '', inLi = '';
 	for (k of list) {
-		if (k.type & 1) inli += `<li data-url="${k.url + url}">${k.name}</li>`;
-		if (k.type & 2) oli += `<li><a target="_blank" href="${k.url + url}">${k.name}</a></li>`;
+		const addr = k.url + url;
+		if (k.type & 1) inLi += `<li data-url="${addr}">${k.name}</li>`;
+		if (k.type & 2) outLi += `<li><a target="_blank" href="${addr}">${k.name}</a></li>`;
 	}
 	jiexiDIV = `<div style="display:flex;">
 		<div style="width:180px;padding:10px 0;" id="_gm__vipJX">
 			<div style="text-align:center;line-height:20px;">站内解析</div>
-			<ul style="margin:0 10px;">${inli}<div style="clear:both;"></div></ul>
+			<ul style="margin:0 10px;">${inLi}<div style="clear:both;"></div></ul>
 			<div style="text-align:center;line-height:20px;">站外解析</div>
-			<ul style="margin:0 10px;">${oli}<div style="clear:both;"></div></ul>
+			<ul style="margin:0 10px;">${outLi}<div style="clear:both;"></div></ul>
 		</div>
 	</div>`;
 	router[host] && router[host]();
 	tasks.add(router.wait, `${playerCSS},${posCSS}`);
-}
+};
 
 init();

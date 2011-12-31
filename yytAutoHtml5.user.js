@@ -38,8 +38,7 @@ function cookie(name, value, options) {
 		}
 		//options: expires,path,domain,secure
 		delete options.expires;
-		for (k in options)
-			s += '; ' + k + '=' + options.k;
+		for (k in options) s += '; ' + k + '=' + options.k;
 		document.cookie = s;
 	} else {
 		let cookieValue = null;
@@ -47,7 +46,7 @@ function cookie(name, value, options) {
 			let cookies = document.cookie.split(';');
 			for (k of cookies) {
 				s = k.trim();
-				if (s.substring(0, name.length + 1) == (name + '=')) {
+				if (s.startsWith(name + '=')) {
 					cookieValue = decodeURIComponent(s.substring(name.length + 1));
 					break;
 				}
@@ -76,18 +75,16 @@ if (!cookie('yyt_pref')) {
 	});
 }
 
-s = 'http://v.yinyuetai.com/video/h5/';
-if (location.href.startsWith(s)) {
-	let e,
-	r = /^http:\/\/(?:hc|hd|he|sh)\.yinyuetai\.com\/uploads\/videos\/common/,
+if (location.pathname.startsWith('/video/h5/')) {
 	timer = setInterval(function () {
 		$ = unsafeWindow.$;
 		if (!$) return;
 		$('object').remove();
-		e = $('video');
+		let e = $('video');
 		if (!e.length) return;
-		console.log(e);
+		console.log(e[0]);
 		s = e.attr('src');
+		let r = /^https?:\/\/(?:hc|hd|he|sh)\.yinyuetai\.com\/uploads\/videos\/common/;
 		if (!r.test(s)) return;
 		clearInterval(timer);
 		if (window.chrome) {
@@ -106,6 +103,5 @@ if (location.href.startsWith(s)) {
 		}
 	}, 300);
 } else {
-	console.log('goto html5 play page!');
-	unsafeWindow.location = s + location.href.slice(29);
+	location.assign('/video/h5/' + location.pathname.slice(7));
 }

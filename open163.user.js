@@ -26,7 +26,8 @@ xfetch = (url, type = 'json') => new Promise((success, fail) => {
 		ontimeout: fail
 	});
 }),
-log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#74C;font-size:1.2em');
+log = console.log.bind(console, '%c脚本[%s]\n%s %s',
+	'color:#74C;font-size:1.2em', GM_info.script.name);
 
 class App {
 	constructor() {
@@ -154,7 +155,7 @@ class App {
 			}
 		}
 		this.qualityNum++;
-		// 处理字幕
+		// 并发请求字幕，并处理
 		for (let k of v.subList) {
 			this.doSubtitle(k.subUrl, {
 				title: k.subName,

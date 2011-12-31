@@ -9,7 +9,7 @@
 // @updateURL      https://raw.githubusercontent.com/xinggsf/gm/master/dj-helper.user.js
 // require        http://static92cc.db-cache.com/js/jquery/jquery.min.js
 // @version        2.0.1
-// @grant          none
+// @grant          GM_addStyle
 // ==/UserScript==
 
 /*
@@ -52,7 +52,7 @@ const utils = function () {
 		'飘洋过海来听曲。'
 	],
 	publicUtils = {
-		praiseAllFriend: () => {
+		praiseAllFriend() {
 			if ($.cookie('praiseAll')) {
 				$.tipMessage('今天已点赞！', 1, 3000);
 				return;
@@ -61,7 +61,7 @@ const utils = function () {
             post(doPraise,{timer: 500});
 			$.tipMessage('正在点赞！请不要离开或刷新本页面......', 0, 3000);
 		},
-		sendAllInfo: () => {
+		sendAllInfo() {
 			try {
 				if ($.cookie('smsAll'))
 					throw new Error('每天只能群发一次！');
@@ -86,7 +86,7 @@ const utils = function () {
 				'还有私信未发送完，请稍候再发';
 			$.tipMessage(s, 0, 3000);
 		},
-		wallAllFriend: () => {
+		wallAllFriend() {
 			try {
 				if ($.cookie('wallAll'))
 					throw new Error('每天只能群发一次留言！');
@@ -112,7 +112,7 @@ const utils = function () {
 			post(doWall, {content: s, timer: 15000});
 			$.tipMessage('正在留言！因网站计时，故延时留言！请不要离开或刷新本页面...', 0, 3000);
 		},
-		replyAllWall: () => {
+		replyAllWall() {
 			var r, c, uid, s = '/wall?a=wall';
 			if (location.pathname.indexOf(s) === -1) {
 				confirm('必须导航到留言板，确定吗？') && (location.href = s);
@@ -434,17 +434,17 @@ const utils = function () {
 	}
 	if (location.host !== 'i.dj92cc.net') return;
 
-	s = ['.overBtns {background: url("' + _config['domainStatic']
-		,'site/images/label.png") no-repeat scroll transparent;\n'
-		,'display:block;'
-		,'position: fixed;'
-		,'z-Index: 9999;'
-		,'right: 10px;'
-		,'height: 33px;'
-		,'width: 33px;}'
-	].join('');
-	$("<style>").prop("type", "text/css")
-		.html(s).appendTo("head");
+	GM_addStyle(
+		`.overBtns {
+			background: url("${_config.domainStatic}site/images/label.png") no-repeat scroll transparent;
+			display:block;
+			position: fixed;
+			z-Index: 9999;
+			right: 10px;
+			height: 33px;
+			width: 33px;
+		}`
+	);
 	//等待登录
 	setTimeout(function(){
 		if ($.cookie('loginKey').length > 11) {

@@ -3,17 +3,14 @@
 // @namespace      google.com.xinggsf
 // @description    Remove all link redirection on Google Search Results,and Google image Search!
 // @homepageURL    https://greasyfork.org/scripts/19713
-// updateURL       https://greasyfork.org/scripts/19713.js
+// @updateURL      https://greasyfork.org/scripts/19713.js
 // @include        https://www.google.*
 // @include        https://prism-kangaroo.glitch.me/search?*
 // @grant          none
-// @version        2017.11.15
+// @version        2019.11.11
 // ==/UserScript==
 
-Object.defineProperty(window, 'rwt', {
-  writable: false
+main.addEventListener('mousedown', ev => {//图片搜索
+	if (ev.target.closest('a[jsaction^="mousedown:irc."] > img')) ev.stopPropagation();
 });
-main && main.addEventListener('mousedown', ev => {//图片搜索
-	if (ev.target.matches('img') && ev.target.parentNode.matches('a[jsaction^="mousedown:irc."]'))
-		ev.stopPropagation();
-}, !1);
+Object.defineProperty(window, 'rwt', { writable: false });

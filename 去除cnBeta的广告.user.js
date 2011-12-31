@@ -9,7 +9,7 @@
 // @run-at       document-start
 // ==/UserScript==
 
-'use strict'; //HTMLElement
+'use strict';
 const d = unsafeWindow.document,
 js = d.createElement('script');
 js.textContent = 'const JB = 0;';
@@ -21,8 +21,8 @@ p.insertBefore = function(t) {
 	if (
 		this.tagName === 'BODY' &&
 		t.matches('div[id][style*="position:fixed;top:0;"]') &&
-		t.querySelector('a[href$=".com/articles/3.htm"]'))
-	{
+		t.querySelector('a[href$=".com/articles/3.htm"]')
+	) {
 		p.insertBefore = ib;
 	} else {
 		ib.apply(this, arguments);//Array.prototype.slice.call

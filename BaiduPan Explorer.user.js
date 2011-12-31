@@ -197,7 +197,14 @@ let $, w = unsafeWindow;
 			var requestMethod;
 			if (currentProduct === 'pan') {
 				requestMethod = function(e, cb) {
-					dServ.getDlinkPan(dServ.getFsidListData(e), (allZip || e.isdir === 1) ? 'batch' : 'nolimit', cb, void 0, void 0, 'POST');
+					dServ.getDlinkPan(
+						dServ.getFsidListData(e),
+						(allZip || e.isdir === 1) ? 'batch' : 'nolimit',
+						cb,
+						void 0,
+						void 0,
+						'POST'
+					);
 				};
 			} else if (currentProduct === 'share') {
 				var yunData = require('disk-share:widget/data/yunData.js').get();
@@ -242,8 +249,7 @@ let $, w = unsafeWindow;
 				if (needToRetry.length > 0) {
 					try {
 						dServ.dialog.hide();
-					} catch (ex) {
-					}
+					} catch (ex) { }
 					ctx.ui.tip({ mode: 'caution', msg: needToRetry.length + '个文件请求链接失败' });
 				}
 				result.forEach(function(e) {
@@ -294,7 +300,12 @@ let $, w = unsafeWindow;
 			require.async(prefix + 'guanjiaConnector.js', function(gjC) {
 				gjC.init = function() {
 					setTimeout(function() {
-						ctx.ui.tip({ mode: 'caution', msg: '检测到正在调用云管家，若脚本失效，请检查更新或提交issue', hasClose: true, autoClose: false });
+						ctx.ui.tip({
+							mode: 'caution',
+							msg: '检测到正在调用云管家，若脚本失效，请检查更新或提交issue',
+							hasClose: true,
+							autoClose: false
+						});
 					}, 5e3);
 				};
 				resolve();
@@ -327,7 +338,12 @@ let $, w = unsafeWindow;
 			try {
 				require('ex-yunpan:downloadBtnInit');
 			} catch (e) {
-				ctx.ui.tip({ mode: 'caution', msg: 'BaiduPan Explorer: 插件加载成功，按钮初始化失败', autoClose: false, hasClose: true });
+				ctx.ui.tip({
+					mode: 'caution',
+					msg: 'BaiduPan Explorer: 插件加载成功，按钮初始化失败',
+					autoClose: false,
+					hasClose: true
+				});
 			}
 		}).catch(function(msg) {
 			if (!$('#share_nofound_des').length) showError(msg + '加载失败');
@@ -336,7 +352,9 @@ let $, w = unsafeWindow;
 
 	try {
 		require('ex-yunpan:pluginInit.js');
-	} catch (ex) { showError(ex); }
+	} catch (ex) {
+		showError(ex);
+	}
 
 
 	function execDownload(link){

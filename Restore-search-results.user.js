@@ -4,7 +4,7 @@
 // @updateURL      https://raw.githubusercontent.com/xinggsf/gm/master/Restore-search-results.user.js
 // @namespace      Restore-search-results
 // @description    去除百度、搜狗重定向
-// @version        2019.4.23
+// @version        2019.11.11
 // @include        https://www.baidu.com/s?*
 // @include        https://www.so.com/s?*
 // @include        https://www.sogou.com/web?*
@@ -14,6 +14,7 @@
 // ==/UserScript==
 
 const host = location.host,
+each = [].forEach,
 links = new WeakMap(),
 css = {
 	'www.baidu.com': 'h3.t>a',
@@ -47,13 +48,9 @@ doXhr = (a, isBaidu) => {
 	});
 },
 resetURL = a => {
-	//链接元素的域名判断有延迟，或者页面脚本会重新更改链接
+	if (host != a.host) return;
 	if (links.has(a)) {
-		if (host == a.host) a.href = links.get(a);
-		return;
-	}
-	if (host != a.host) {
-		links.set(a, a.host);
+		a.href = links.get(a);
 		return;
 	}
 	switch (host) {
@@ -73,10 +70,10 @@ resetURL = a => {
 	}
 },
 checkDom = () => {
-	[...document.querySelectorAll(css[host])].forEach(resetURL);
+	each.call(document.querySelectorAll(css[host]), resetURL);
 },
 mo = new MutationObserver(checkDom);
 setTimeout(() => {
 	checkDom();
-	mo.observe(document.body || document.documentElement, { childList: true, subtree: true });
+	mo.observe(document.body, { childList: true, subtree: true });
 }, 599);
