@@ -10,11 +10,11 @@
 // @include        http*
 // @exclude        http://play.baidu.com/*
 // @exclude        http://www.hunantv.com/*
-// @exclude        http://www.flv.tv/*
+// exclude        http://www.flv.tv/*
 // @version        2015.12.5
 // @encoding       utf-8
-// @grant          GM_openInTab
 // @grant          unsafeWindow
+// grant          GM_openInTab
 // ==/UserScript==
 
 //开启GPU硬件加速，如果显卡不支持无效，请换direct!参考了thunderhit的代码:
@@ -23,8 +23,8 @@
 var isEmbed, style = doc.createElement('style');
 style.textContent = '@-webkit-keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}@keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}embed,object{animation:gAnimatAct 1ms;-webkit-animation:gAnimatAct 1ms;}';
 doc.head.appendChild(style);
-
-var youkuMark = '<embed id="mplayer" wmode="gpu" src="http://www.gaoxiaovod.com/ck/player.swf?a=http://v.youku.com/v_show/id_{1}.html" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">',
+//http://100.100.100.100/player.swf
+var youkuMark = '<embed type="application/x-shockwave-flash" wmode="gpu" src="https://raw.githubusercontent.com/xinggsf/gm/master/player.swf" width="100%" height="100%" id="mplayer" allowfullscreen="true" allowscriptaccess="always" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS={1}&isAutoPlay=true">',
 iqiyiMark = '<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="{src}" flashvars="{fvars}">',
 PLAYER_URL = [
 	{
@@ -36,7 +36,7 @@ PLAYER_URL = [
 		swfMark: youkuMark,
 		varsMatch: /VideoIDS=(\w+)/,
 		isProc: function(p, fv, src) {
-			//console.log('isProc func');
+			console.log('isProc func');
 			if (doc.domain.endsWith('.acfun.tv')) {
 				fv = fv.match(/vid=(\w+)/);
 				fv && setPlayer(p, youkuMark.format(fv));
