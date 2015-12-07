@@ -8,10 +8,11 @@
 // @require        https://greasyfork.org/scripts/11230.js
 // @license        GPL version 3
 // @include        http*
-// @exclude        http://play.baidu.com/*
+// @exclude        http://*.baidu.com/*
 // @exclude        http://www.hunantv.com/*
+// @exclude        http://v.yinyuetai.com/video/h5/*
 // exclude        http://www.flv.tv/*
-// @version        2015.12.5
+// @version        2015.12.8
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
@@ -23,8 +24,8 @@
 var isEmbed, style = doc.createElement('style');
 style.textContent = '@-webkit-keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}@keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}embed,object{animation:gAnimatAct 1ms;-webkit-animation:gAnimatAct 1ms;}';
 doc.head.appendChild(style);
-//http://100.100.100.100/player.swf
-var youkuMark = '<embed id="mplayer" wmode="gpu" src="http://www.gaoxiaovod.com/ck/player.swf?a=http://v.youku.com/v_show/id_{1}.html" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">',
+//var youkuMark = '<embed id="mplayer" wmode="gpu" src="http://100.100.100.100/player.swf?VideoIDS={1}&isAutoPlay=true" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">',
+var youkuMark = '<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS={1}&isAutoPlay=true" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no">',
 iqiyiMark = '<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="{src}" flashvars="{fvars}">',
 PLAYER_URL = [
 	{
@@ -178,7 +179,7 @@ function setObjectVal(p, name, v) {
 	var e = p.querySelector('embed');
 	e && e.setAttribute(name, v);
 	name = name.toLowerCase();
-	for (var o, i=0; o = p.children[i]; i++) {
+	for (var o of p.childNodes) {
 		if (o.name && o.name.toLowerCase() === name) {
 			o.value = v;
 			return;
@@ -224,6 +225,18 @@ function onAnimationStart(ev) {
 		}
 	}
 	openFlashGPU(e);
+}
+/*
+doc.querySelectorAll('div') instanceof NodeList
+bd.childNodes instanceof NodeList
+true
+bd.children instanceof NodeList == false
+bd.children.constructor: HTMLCollection
+*/
+if (window.chrome) {
+	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+	//fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
 bd.addEventListener('animationstart', onAnimationStart, !1);
 bd.addEventListener('webkitAnimationStart', onAnimationStart, !1);
