@@ -2,20 +2,19 @@
 // @name           yytAutoHtml5
 // @namespace      yytAutoHtml5.yinyuetai.com
 // @author	       xinggsf~gmail。com
-// @description    音悦台强制跳转Html5播放，去广告不再黑屏
+// @description    音悦台自动跳转Html5播放，去广告不再黑屏
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/14593
 // updateURL       https://greasyfork.org/scripts/14593.js
 // @license        GPL version 3
 // @include        http://v.yinyuetai.com/video/*
 // include        /^http://v\.yinyuetai\.com/video/\d+/
 // include        /^http://v\.yinyuetai\.com/video/h5/\d+/
-// @version        2015.12.6
+// @version        2015.12.8
 // @encoding       utf-8
 // @run-at         document-start
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
-
 /*
 //自jQuery.cookie.js改写 http://blog.wpjam.com/m/jquery-cookies/
 var cookie = function (name, value, options) {
@@ -63,12 +62,12 @@ cookie('yyt_pref', '2', {
 expires : 333,
 domain : '.yinyuetai.com',
 path : '/'
-});
+}); a#songName
 } */
 
 var s = 'http://v.yinyuetai.com/video/h5/';
 if (location.href.startsWith(s)) {
-	var r = /^http:\/\/hc\.yinyuetai\.com\/uploads\/videos\/.+\.flv\?/,
+	var r = /^http:\/\/h[a-z]\.yinyuetai\.com\/uploads\/videos\/.+\.flv\?/,
 	timer = setInterval(function () {
 		var $ = unsafeWindow.$;
 		if (!$) return;
@@ -82,11 +81,11 @@ if (location.href.startsWith(s)) {
 		if (window.chrome) {
 			e.removeClass()
 				.addClass('video-stream')
-				.attr('style', 'display: block; left: 0px; top: 0px; width: 1024px; height: 576px;')
+				//.css('visibility', 'visible')
+				.attr('style', 'display:block; left:0; top:0; width:100%; height: 100%;')
 				.show()
+				//.parent().remove(':gt(0)')
 				.nextAll().remove();
-				//.css('visibility', 'visible');
-				//.parent().remove(':gt(0)');
 			//$('video~*').remove();
 		} else {//firefox
 			e = e.parent();
@@ -96,5 +95,5 @@ if (location.href.startsWith(s)) {
 	}, 500);
 } else {
 	console.log('goto html5 play page!');
-	unsafeWindow.location.assign(s + location.href.slice(29));
+	unsafeWindow.location = s + location.href.slice(29);
 }

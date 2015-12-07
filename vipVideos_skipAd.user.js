@@ -236,7 +236,7 @@ bd.children.constructor: HTMLCollection
 if (window.chrome) {
 	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-	//fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+//fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
 bd.addEventListener('animationstart', onAnimationStart, !1);
 bd.addEventListener('webkitAnimationStart', onAnimationStart, !1);
