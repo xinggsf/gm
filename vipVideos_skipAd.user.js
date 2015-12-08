@@ -10,22 +10,40 @@
 // @include        http*
 // @exclude        http://*.baidu.com/*
 // @exclude        http://www.hunantv.com/*
-// @exclude        http://v.yinyuetai.com/video/h5/*
+// @exclude        http://*.yinyuetai.com/*
 // exclude        http://www.flv.tv/*
-// @version        2015.12.8
+// @version        2015.12.9
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
+/*
+作者的话：经过实际测试，高版本chrome，如46+已经解决CSS3动画BUG了。
+此BUG在脚本表现为在某些页面使其原有菜单、DIV浮动框显示不出来！
+所以这样的BUG反馈请不要再提，升级浏览器才是正道！
+吐糟二大浏览器：chrome的class功能很早就出来了，但实现很简单的箭头函数却
+至今未有！firefox则相反，箭头函数和其它ES6功能早出来了，类功能却迟迟盼不来！
 
-//开启GPU硬件加速，如果显卡不支持无效，请换direct!参考了thunderhit的代码:
-// https://greasyfork.org/zh-CN/scripts/6479，但用定时器太低效了
+2015-12-8更新油库播放器，可选择P1080分辨率；
+彻底解决油库盗链问题；
+解决NNAPI Flash不能播放的问题
+2015-12-6增加对acfun.tv的油库、iqiyi外链支持
+
+开启GPU硬件加速，如显卡不支持，换direct!参考了thunderhit的代码:
+https://greasyfork.org/zh-CN/scripts/6479，但用定时器太低效了
+
+doc.querySelectorAll('div') instanceof NodeList
+bd.childNodes instanceof NodeList
+true
+bd.children instanceof NodeList == false
+bd.children.constructor: HTMLCollection
+*/
 -function(doc, bd) {
 var isEmbed, style = doc.createElement('style');
 style.textContent = '@-webkit-keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}@keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}embed,object{animation:gAnimatAct 1ms;-webkit-animation:gAnimatAct 1ms;}';
 doc.head.appendChild(style);
 //var youkuMark = '<embed id="mplayer" wmode="gpu" src="http://100.100.100.100/player.swf?VideoIDS={1}&isAutoPlay=true" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">',
-var youkuMark = '<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS={1}&isAutoPlay=true" frameborder="no" border="0" marginwidth="0" marginheight="0" scrolling="no">',
+var youkuMark = '<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS={1}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">',
 iqiyiMark = '<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="{src}" flashvars="{fvars}">',
 PLAYER_URL = [
 	{
@@ -69,8 +87,8 @@ PLAYER_URL = [
 		isProc: function(p, fv, src) {
 			if (!doc.domain.endsWith('tudou.com')) {
 				openFlashGPU(p);
-				return !1;
 			}
+			return !1;
 			setTimeout(scrollTo(0, 99), 9);
 			//有播放时间限制即替换播放器
 			if (! /paidTime=\d{2,}&/.test(fv)) {
@@ -226,13 +244,7 @@ function onAnimationStart(ev) {
 	}
 	openFlashGPU(e);
 }
-/*
-doc.querySelectorAll('div') instanceof NodeList
-bd.childNodes instanceof NodeList
-true
-bd.children instanceof NodeList == false
-bd.children.constructor: HTMLCollection
-*/
+
 if (window.chrome) {
 	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
