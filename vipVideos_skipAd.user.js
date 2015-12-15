@@ -6,13 +6,14 @@
 // @homepageURL    https://greasyfork.org/scripts/8561
 // updateURL       https://greasyfork.org/scripts/8561.js
 // @include        http*
+// @exclude        http://v.qq.com/*
 // @exclude        http://*.baidu.com/*
 //芒果TV加速不了！反而加大CPU占用，芒果真垃圾
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
 // exclude        http://www.flv.tv/*
-// @version        2015.12.13
+// @version        2015.12.15
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
@@ -24,7 +25,8 @@
 吐糟二大浏览器：chrome的class功能很早就出来了，但实现很简单的箭头函数却
 至今未有！firefox则相反，箭头函数和其它ES6功能早出来了，类功能却迟迟盼不来！
 
-2015-12-13感谢饭友"吃饭好香"提供播放器空间
+2015-12-14 iqiyi播放器升级，外链视频最高分辨率只支持到高清。建议到iqiyi.com观看
+2015-12-13感谢饭友"吃饭好香"提供播放器空间;解决油库不能全屏的问题
 2015-12-11用严格模式重构;使用ES6字符串模板、大幅使用本地变量let,const
 2015-12-8更新油库播放器，可选择P1080分辨率；
 彻底解决油库盗链问题；
@@ -55,17 +57,16 @@ let PLAYER_URL = [
 		varsMatch: /VideoIDS=(\w+)/,
 		format: youkuFormat,
 		isProc: function(p, fv, src) {
-			console.log('isProc func');
+			//console.log('isProc func');
 			switch(true){
-				case doc.domain.endsWith('.acfun.tv'):
+				case doc.domain.endsWith('acfun.tv'):
 					fv = fv.match(/vid=(\w+)/);
 					fv && setPlayer(p, youkuFormat(fv[1]));
 					return !1;
 				case !doc.domain.endsWith('youku.com'):
-					var t = PLAYER_URL[0],
-					m = src.match(t.urls[1]) || src.match(t.varsMatch);
-					m && setPlayer(p, youkuFormat(m[1]));
-					return !m;
+					fv = src.match(this.urls[1]) || src.match(this.varsMatch) || fv.match(this.varsMatch);
+					fv && ykOutsitePlayer(fv[1], p);
+					return !1;
 				default:
 					doc.addEventListener('DOMNodeInserted', function (ev) {
 						let e = ev.target;
@@ -108,15 +109,16 @@ let PLAYER_URL = [
 			/^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
 			/^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
 		],
-		run: function(p, src, t) {
-			if (doc.domain.endsWith('.acfun.tv')) {
-				var s = getFlashvars(p);
-				s = s.match(/&sourceId=(\w+).*?&tvId=(\w+)/);
-				s && setPlayer(p, `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="http://www.iqiyi.com/common/flashplayer/20151127/MainPlayer_5_2_29_3_c3_3_8_1.swf" flashvars="tvId=${s[2]}&autoplay=true&isMember=false&cyclePlay=false&qiyiProduced=0&components=feffb7e6e0&flashP2PCoreUrl=http://www.iqiyi.com/common/flashplayer/20151027/3020.swf&origin=flash&outsite=true&definitionID=${s[1]}&cid=qc_100001_300089">`);
-				return;
+		run: function(p, src) {
+			var v = getFlashvars(p);
+			if (doc.domain.endsWith('iqiyi.com')){
+				v = v.replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w+?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
+				setPlayer(p, iqiyiFormat(src,v));
+			} else {
+				var tvid = v.match(/\btvId=(\w+)/i)[1],
+				definitionID = v.match(/\b(?:definitionID|sourceId|vid)=(\w+)/)[1];
+				setPlayer(p, `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" src="http://dispatcher.video.qiyi.com/disp/shareplayer.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&bd=1&showDock=0">`);
 			}
-			var v = getFlashvars(p).replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w+?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
-			setPlayer(p, iqiyiFormat(src,v));
 		}
 	}, {
 		urls: [
@@ -124,15 +126,14 @@ let PLAYER_URL = [
 		//安装PPS插件才能播放
 		// /^http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_\w+\.swf/
 		],
-		run: function(p, src, t) {
-			var m = {'src': src},
-			s = getFlashvars(p);
+		run: function(p, src) {
+			var s = getFlashvars(p);
 			if (s.indexOf('&cid=') === -1) {
 				alert('不支持！安装PPS插件才能播放！');
 				return;
 			}
-			m.fvars = s.replace(/&?(?:cid|coreUrl|tipdataurl|preloader|adurl|P00001|expandState)=[^&]+/g,'') +'&cid=qc_100001_300089';
-			setPlayer(p, iqiyiMark.format(m));
+			s = s.replace(/&?(?:cid|coreUrl|tipdataurl|preloader|adurl|P00001|expandState)=[^&]+/g,'') +'&cid=qc_100001_300089';
+			setPlayer(p, iqiyiFormat(src, s));
 		}
 	}, {
 		urls: [
@@ -141,7 +142,7 @@ let PLAYER_URL = [
 		],
 		//http://update.adbyby.com/swf/sohu_livezb.swf
 		//http://opengg.guodafanli.com/adkiller/sohu_live.swf
-		run: function(p, src, t) {
+		run: function(p, src) {
 			//if (!doc.domain.endsWith('tv.sohu.com')) return;
 			var s = p.getAttribute('flashvars')
 				.replace(/&(?:plid|api_key|on\w*?Ad\w*)=[^&]*/g, '')
@@ -155,13 +156,18 @@ let PLAYER_URL = [
 	}
 ];
 
-function youkuFormat(vid) {//下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
+function youkuFormat(vid) {
+//下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
 	return `<embed id="mplayer" wmode="gpu" src="http://u0711582.k2.13939.org/yk.swf?VideoIDS=${vid}&isAutoPlay=true" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">`;
-	//return `<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS=${vid}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">`;	100.100.100.100/player.swf
+	//return `<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS=${vid}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">`;
+}
+//100.100.100.100/player.swf
+function ykOutsitePlayer(vid, p) {
+	setPlayer(p, `<embed id="mplayer" wmode="gpu" src="http://u0711582.k2.13939.org/yk.swf?VideoIDS=${vid}" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}">`);
 }
 
 function iqiyiFormat(src, fvar) {
-	return `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${src}" flashvars="${fvar}">`;	
+	return `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${src}" flashvars="${fvar}">`;
 }
 
 function openFlashGPU(p) {
@@ -240,7 +246,7 @@ function onAnimationStart(ev) {
 			return reg.test(addr);
 		})) {//if
 			if (t.run) {//custom function
-				t.run(e, addr, t);
+				t.run(e, addr);
 				return;
 			}
 			let v = getFlashvars(e);
