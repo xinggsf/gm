@@ -158,12 +158,12 @@ let PLAYER_URL = [
 
 function youkuFormat(vid) {
 //下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
-	return `<embed id="mplayer" wmode="gpu" src="http://u0711582.k2.13939.org/yk.swf?VideoIDS=${vid}&isAutoPlay=true" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">`;
+	return `<embed id="mplayer" wmode="gpu" src="http://www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf?VideoIDS=${vid}&isAutoPlay=true" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">`;
 	//return `<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS=${vid}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">`;
 }
 //100.100.100.100/player.swf
 function ykOutsitePlayer(vid, p) {
-	setPlayer(p, `<embed id="mplayer" wmode="gpu" src="http://u0711582.k2.13939.org/yk.swf?VideoIDS=${vid}" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}">`);
+	setPlayer(p, `<embed id="mplayer" wmode="gpu" src="http://www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf?VideoIDS=${vid}" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}">`);
 }
 
 function iqiyiFormat(src, fvar) {
