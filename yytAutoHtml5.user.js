@@ -5,74 +5,86 @@
 // @description    音悦台自动跳转Html5播放，去广告不再黑屏
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/14593
 // updateURL       https://greasyfork.org/scripts/14593.js
-// @license        GPL version 3
 // @include        http://v.yinyuetai.com/video/*
-// include        /^http://v\.yinyuetai\.com/video/\d+/
-// include        /^http://v\.yinyuetai\.com/video/h5/\d+/
-// @version        2015.12.8
+// @include        http://v.yinyuetai.com/playlist/*
+// @version        2015.12.27
 // @encoding       utf-8
 // @run-at         document-start
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
-/*
-//自jQuery.cookie.js改写 http://blog.wpjam.com/m/jquery-cookies/
-var cookie = function (name, value, options) {
-if (typeof value != 'undefined') {
-options = options || {};
-if (value === null) {
-value = '';
-options.expires = -1;
+"use strict";
+//由jQuery.cookie.js改写 http://blog.wpjam.com/m/jquery-cookies/
+function cookie(name, value, options) {
+	let k, s;
+	if (typeof value != 'undefined') {
+		options = options || {};
+		if (value == null) {
+			value = '';
+			options.expires = -1;
+		}
+		s = name + '=' + encodeURIComponent(value);
+		if (options.expires && (typeof options.expires == 'number' ||
+			options.expires.toUTCString))
+		{
+			let date;
+			if (typeof options.expires == 'number') {
+				date = new Date();
+				date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
+			} else {
+				date = options.expires;
+			}
+			s += '; expires=' + date.toUTCString();
+		}
+		//options: expires,path,domain,secure
+		delete options.expires;
+		for (k in options)
+			s += '; ' + k + '=' + options.k;
+		document.cookie = s;
+	} else {
+		let cookieValue = null;
+		if (document.cookie && document.cookie != '') {
+			let cookies = document.cookie.split(';');
+			for (k of cookies) {
+				s = k.trim();
+				if (s.substring(0, name.length + 1) == (name + '=')) {
+					cookieValue = decodeURIComponent(s.substring(name.length + 1));
+					break;
+				}
+			}
+		}
+		return cookieValue;
+	}
 }
-var k, s = name + '=' + encodeURIComponent(value);
-if (options.expires && (typeof options.expires == 'number' ||
-options.expires.toUTCString)) {
-var date;
-if (typeof options.expires == 'number') {
-date = new Date();
-date.setTime(date.getTime() + (options.expires * 24 * 60 * 60 * 1000));
-} else {
-date = options.expires;
+const cVp = {'sh': '1080','he': '超清','hd': '高清','hc': '流畅'};
+let $, s, songUrls = {'hc': ''},//当前歌曲下载地址列表
+dip = cookie('myDIP');
+if (!dip) {
+	dip = 'hc';
+	cookie('myDIP', dip, {
+		expires : 33,
+		domain : '.yinyuetai.com',
+		path : '/'
+	});
 }
-s += '; expires=' + date.toUTCString();
-}
-//options: expires,path,domain,secure
-delete options.expires;
-for (k in options)
-s += '; ' + k + '=' + options.k;
-document.cookie = s;
-} else {
-var cookieValue = null;
-if (document.cookie && document.cookie != '') {
-var k, s, cookies = document.cookie.split(';');
-for (k of cookies) {
-s = k.trim();
-if (s.substring(0, name.length + 1) == (name + '=')) {
-cookieValue = decodeURIComponent(s.substring(name.length + 1));
-break;
-}
-}
-}
-return cookieValue;
-}
-};
 
 if (!cookie('yyt_pref')) {
-cookie('yyt_pref', '2', {
-expires : 333,
-domain : '.yinyuetai.com',
-path : '/'
-}); a#songName
-} */
+	cookie('yyt_pref', '2', {
+		expires : 333,
+		domain : '.yinyuetai.com',
+		path : '/'
+	});
+}
 
-var s = 'http://v.yinyuetai.com/video/h5/';
+s = 'http://v.yinyuetai.com/video/h5/';
 if (location.href.startsWith(s)) {
-	var r = /^http:\/\/h[a-z]\.yinyuetai\.com\/uploads\/videos\/.+\.flv\?/,
+	let e,
+	r = /^http:\/\/(?:hc|hd|he|sh)\.yinyuetai\.com\/uploads\/videos\/common/,
 	timer = setInterval(function () {
-		var $ = unsafeWindow.$;
+		$ = unsafeWindow.$;
 		if (!$) return;
 		$('object').remove();
-		var e = $('video');
+		e = $('video');
 		if (!e.length) return;
 		console.log(e);
 		s = e.attr('src');
@@ -80,19 +92,19 @@ if (location.href.startsWith(s)) {
 		clearInterval(timer);
 		if (window.chrome) {
 			e.removeClass()
-				.addClass('video-stream')
-				//.css('visibility', 'visible')
-				.attr('style', 'display:block; left:0; top:0; width:100%; height: 100%;')
-				.show()
-				//.parent().remove(':gt(0)')
-				.nextAll().remove();
+			.addClass('video-stream')
+			//.css('visibility', 'visible')
+			.attr('style', 'display:block; left:0; top:0; width:100%; height: 100%;')
+			.show()
+			//.parent().remove(':gt(0)')
+			.nextAll().remove(); //删广告
 			//$('video~*').remove();
-		} else {//firefox
+		} else { //firefox
 			e = e.parent();
-			e.html('<video class="video-stream" src="' + s + '" controls="controls" autoplay style="width:100%; height:100%"></video>');
-			e.nextAll().remove();
+			e.html(`<video class="video-stream" src="${s}" controls="controls" autoplay style="width:100%; height:100%"></video>`); //隐含动作：删广告
+			e.nextAll().remove(); //删原有的播放控制栏
 		}
-	}, 500);
+	}, 300);
 } else {
 	console.log('goto html5 play page!');
 	unsafeWindow.location = s + location.href.slice(29);

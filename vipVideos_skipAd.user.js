@@ -7,34 +7,37 @@
 // updateURL       https://greasyfork.org/scripts/8561.js
 // @include        http*
 // @exclude        http://v.qq.com/*
+// @exclude        http://www.dj92cc.com/*
 // @exclude        http://*.baidu.com/*
 //芒果TV加速不了！反而加大CPU占用，芒果真垃圾
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
 // exclude        http://www.flv.tv/*
-// @version        2015.12.15
+// @version        2016.12.26
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
 /*
-作者的话：经过实际测试，高版本chrome，如46+已经解决CSS3动画BUG了。
-此BUG在脚本表现为在某些页面使其原有菜单、DIV浮动框显示不出来！
+作者的话：经过实际测试，chrome 43+已经解决CSS3动画BUG了。
+此BUG表现：某些页面刷新页面元素后，原有菜单、DIV对话框显示不出来或被flash遮住！
 所以这样的BUG反馈请不要再提，升级浏览器才是正道！
 吐糟二大浏览器：chrome的class功能很早就出来了，但实现很简单的箭头函数却
-至今未有！firefox则相反，箭头函数和其它ES6功能早出来了，类功能却迟迟盼不来！
+至今未有！firefox则相反，箭头函数和其它ES6功能早出来了，类功能却要在V45实现！
 
+2015-12-25 优化事件处理，及DOM刷新算法；解决了熊猫TV不能显示弹幕的问题
+2015-12-18 感谢卡饭好友"吃饭好香"提供空间，更换油库播放器；解决油库外链视频变形问题
 2015-12-14 iqiyi播放器升级，外链视频最高分辨率只支持到高清。建议到iqiyi.com观看
-2015-12-13感谢饭友"吃饭好香"提供播放器空间;解决油库不能全屏的问题
-2015-12-11用严格模式重构;使用ES6字符串模板、大幅使用本地变量let,const
-2015-12-8更新油库播放器，可选择P1080分辨率；
-彻底解决油库盗链问题；
-解决NNAPI Flash不能播放的问题
-2015-12-6增加对acfun.tv的油库、iqiyi外链支持
+2015-12-13 感谢卡饭好友"吃饭好香"提供播放器空间;解决油库不能全屏的问题
+2015-12-11 用严格模式重构;使用ES6字符串模板、大幅使用本地变量let,const
+2015-12-8  更新油库播放器，可选择P1080分辨率；
+           彻底解决油库盗链问题；
+           解决NNAPI Flash不能播放的问题
+2015-12-6  增加对acfun.tv的油库、iqiyi外链支持
 
-开启GPU硬件加速，如显卡不支持，换direct!参考了thunderhit的代码:
-https://greasyfork.org/zh-CN/scripts/6479，但用定时器太低效了
+开启GPU硬件加速，如显卡不支持，wmode参数换为 direct
+参考了thunderhit的代码: https://greasyfork.org/scripts/6479，但用定时器太低效了
 
 doc.querySelectorAll('div') instanceof NodeList
 bd.childNodes instanceof NodeList
@@ -90,7 +93,7 @@ let PLAYER_URL = [
 			if (!doc.domain.endsWith('tudou.com')) {
 				openFlashGPU(p);
 			}
-			return !1;
+			return !1;//不处理土逗
 			setTimeout(scrollTo(0, 99), 9);
 			//有播放时间限制即替换播放器
 			if (! /paidTime=\d{2,}&/.test(fv)) {
@@ -112,7 +115,7 @@ let PLAYER_URL = [
 		run: function(p, src) {
 			var v = getFlashvars(p);
 			if (doc.domain.endsWith('iqiyi.com')){
-				v = v.replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w+?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
+				v = v.replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w*?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
 				setPlayer(p, iqiyiFormat(src,v));
 			} else {
 				var tvid = v.match(/\btvId=(\w+)/i)[1],
@@ -158,12 +161,12 @@ let PLAYER_URL = [
 
 function youkuFormat(vid) {
 //下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
-	return `<embed id="mplayer" wmode="gpu" src="http://www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf?VideoIDS=${vid}&isAutoPlay=true" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="100%" height="100%">`;
-	//return `<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS=${vid}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">`;
+	return `<embed id="mplayer" wmode="gpu" width="100%" height="100%" src="http://yunpan.q8wl.com/o_1a6qi4boq4k51nqlpdp1brob4va.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`;
+	//return `<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS=${vid}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">`; 100.100.100.100/player.swf
 }
-//100.100.100.100/player.swf
+//www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf
 function ykOutsitePlayer(vid, p) {
-	setPlayer(p, `<embed id="mplayer" wmode="gpu" src="http://www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf?VideoIDS=${vid}" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}">`);
+	setPlayer(p, `<embed id="mplayer" wmode="gpu" allowfullscreen="true" src="http://yunpan.q8wl.com/o_1a6qi4boq4k51nqlpdp1brob4va.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`);
 }
 
 function iqiyiFormat(src, fvar) {
@@ -174,7 +177,8 @@ function openFlashGPU(p) {
 	isEmbed ? p.setAttribute('wmode', 'gpu') :
 		setObjectVal(p, 'wmode', 'gpu');
 	delEvent();
-	if (window.chrome) refreshElem(bd);
+	refreshElem(p);
+	// if (window.chrome) refreshElem(bd);
 	// refreshElem(p.offsetParent);
 }
 function isPlayer(p) {
@@ -206,7 +210,6 @@ function setPlayer(play, oHtml) {
 	console.log('new player: ', oHtml);
 	delEvent();
 	play.outerHTML = oHtml;
-	if (window.chrome) refreshElem(bd);
 }
 function setObjectVal(p, name, v) {
 	let e = p.querySelector('embed');
@@ -234,6 +237,8 @@ function onAnimationStart(ev) {
 	//ev.returnValue = !1;
 	//ev.cancelBubble = true;
 	//if (ev.animationName !== 'gAnimatAct') return;
+	ev.preventDefault();//cancel handle later
+	ev.stopPropagation();//stop bubble
 	let e = ev.target;//ev && ev.target || Event.srcElement
 	console.log('CSS3 animation start:', ev, e);
 	isEmbed = 'EMBED' === e.tagName;
