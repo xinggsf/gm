@@ -14,19 +14,18 @@
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
 // exclude        http://www.flv.tv/*
-// @version        2016.12.26
+// @version        2016.1.1
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
 /*
-作者的话：经过实际测试，chrome 43+已经解决CSS3动画BUG了。
-此BUG表现：某些页面刷新页面元素后，原有菜单、DIV对话框显示不出来或被flash遮住！
-所以这样的BUG反馈请不要再提，升级浏览器才是正道！
-吐糟二大浏览器：chrome的class功能很早就出来了，但实现很简单的箭头函数却
-至今未有！firefox则相反，箭头函数和其它ES6功能早出来了，类功能却要在V45实现！
+作者的话：经过实际测试，chrome的CSS3动画BUG只发生在NPAPI Flash。
+此BUG表现在某些页面刷新页面元素后，原有菜单、DIV对话框显示不出来或被flash遮住！
+鉴于chrome已不再支持NPAPI Flash，我也无法可想。
 
-2015-12-25 优化事件处理，及DOM刷新算法；解决了熊猫TV不能显示弹幕的问题
+2015-12-30 增加对重定向扩展的支持（50行改为true即启用）
+2015-12-25 优化事件处理，及DOM刷新处理；解决了熊猫TV不能显示弹幕的问题
 2015-12-18 感谢卡饭好友"吃饭好香"提供空间，更换油库播放器；解决油库外链视频变形问题
 2015-12-14 iqiyi播放器升级，外链视频最高分辨率只支持到高清。建议到iqiyi.com观看
 2015-12-13 感谢卡饭好友"吃饭好香"提供播放器空间;解决油库不能全屏的问题
@@ -47,7 +46,9 @@ bd.children.constructor: HTMLCollection
 */
 -function(doc, bd) {
 "use strict";
-let isEmbed, style = doc.createElement('style');
+let isEmbed, 
+isRedirect = !1,//是否开启重定向脚本
+style = doc.createElement('style');
 style.textContent = '@-webkit-keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}@keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}embed,object{animation:gAnimatAct 1ms;-webkit-animation:gAnimatAct 1ms;}';
 doc.head.appendChild(style);
 let PLAYER_URL = [
@@ -67,7 +68,8 @@ let PLAYER_URL = [
 					fv && setPlayer(p, youkuFormat(fv[1]));
 					return !1;
 				case !doc.domain.endsWith('youku.com'):
-					fv = src.match(this.urls[1]) || src.match(this.varsMatch) || fv.match(this.varsMatch);
+					fv = src.match(this.urls[1]) || src.match(this.varsMatch) ||
+						 fv.match(this.varsMatch);
 					fv && ykOutsitePlayer(fv[1], p);
 					return !1;
 				default:
@@ -86,27 +88,6 @@ let PLAYER_URL = [
 			}
 		}
 	},{
-		urls: [/^http:\/\/js\.tudouui\.com\/.*?Player.*?\.swf/],
-		format: youkuFormat,
-		varsMatch: /vcode=([^&]+)/,
-		isProc: function(p, fv, src) {
-			if (!doc.domain.endsWith('tudou.com')) {
-				openFlashGPU(p);
-			}
-			return !1;//不处理土逗
-			setTimeout(scrollTo(0, 99), 9);
-			//有播放时间限制即替换播放器
-			if (! /paidTime=\d{2,}&/.test(fv)) {
-				setObjectVal(p, 'wmode', 'gpu');
-				return !1;
-			}
-			var div = doc.querySelector("#summary>div:last-of-type");
-			div.innerHTML = '<a id="a-rpPlayer" style="font-size:20px;cursor:pointer;" onclick="document.querySelector(\'#mplayer\').outerHTML=this._ssPlayer,this.parentNode.removeChild(this);">换原播放器</a>';
-			div.style.display = 'block';
-			unsafeWindow.document.getElementById('a-rpPlayer')._ssPlayer = p.outerHTML.replace('direct','gpu');
-			return !0;
-		}
-	},{
 		urls: [
 			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer_\w+\.swf/,
 			/^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
@@ -117,11 +98,7 @@ let PLAYER_URL = [
 			if (doc.domain.endsWith('iqiyi.com')){
 				v = v.replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w*?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
 				setPlayer(p, iqiyiFormat(src,v));
-			} else {
-				var tvid = v.match(/\btvId=(\w+)/i)[1],
-				definitionID = v.match(/\b(?:definitionID|sourceId|vid)=(\w+)/)[1];
-				setPlayer(p, `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" src="http://dispatcher.video.qiyi.com/disp/shareplayer.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&bd=1&showDock=0">`);
-			}
+			} else qyOutsiteFormat(p, v);
 		}
 	}, {
 		urls: [
@@ -138,25 +115,7 @@ let PLAYER_URL = [
 			s = s.replace(/&?(?:cid|coreUrl|tipdataurl|preloader|adurl|P00001|expandState)=[^&]+/g,'') +'&cid=qc_100001_300089';
 			setPlayer(p, iqiyiFormat(src, s));
 		}
-	}, {
-		urls: [
-			/^http:\/\/(?:\d+\.){3}\d+\/(?:test|web)player\/Main\w*\.swf$/,
-			/^http:\/\/tv\.sohu\.com\/upload\/swf\/.+?\/Main\.swf$/,
-		],
-		//http://update.adbyby.com/swf/sohu_livezb.swf
-		//http://opengg.guodafanli.com/adkiller/sohu_live.swf
-		run: function(p, src) {
-			//if (!doc.domain.endsWith('tv.sohu.com')) return;
-			var s = p.getAttribute('flashvars')
-				.replace(/&(?:plid|api_key|on\w*?Ad\w*)=[^&]*/g, '')
-				//.replace(/(&on\w*?Ad\w*=)[^&]*/g,'$1')
-				+ '&plid=7038006&api_key=647bfb88a84fc3c469d289f961993be6';
-			s = p.outerHTML.replace(/(flashvars=")[^"]+/, '$1'+ s)
-				//.replace(src, 'http://100.100.100.100/sohu_live.swf')
-				.replace(/(wmode=")\w+/, '$1gpu');
-			setPlayer(p, s);
-		}
-	}
+	},
 ];
 
 function youkuFormat(vid) {
@@ -166,7 +125,15 @@ function youkuFormat(vid) {
 }
 //www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf
 function ykOutsitePlayer(vid, p) {
-	setPlayer(p, `<embed id="mplayer" wmode="gpu" allowfullscreen="true" src="http://yunpan.q8wl.com/o_1a6qi4boq4k51nqlpdp1brob4va.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`);
+	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://yunpan.q8wl.com/o_1a6qi4boq4k51nqlpdp1brob4va.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`);
+}
+
+function qyOutsiteFormat(p, v) {
+	let tvid = v.match(/\btvId=(\w+)/i)[1],
+	definitionID = v.match(/\b(?:definitionID|sourceId|vid)=(\w+)/)[1],
+	s = isRedirect ? `<embed type="application/x-shockwave-flash" play="true" allowfullscreen="true" wmode="gpu" width="100%" height="100%" id="${p.id}" allowscriptaccess="always" src="http://www.iqiyi.com/common/flashplayer/2099/MainPlayer_5.swf" flashvars="components=fefb1060e&definitionID=${definitionID}&tvId=${tvid}&autoplay=true&flashP2PCoreUrl=http://www.iqiyi.com/common/flashplayer/20151229/3023.swf">` :
+	`<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://dispatcher.video.qiyi.com/disp/shareplayer.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&bd=1&showDock=0">`;
+	setPlayer(p, s);
 }
 
 function iqiyiFormat(src, fvar) {
@@ -201,9 +168,9 @@ function refreshElem(o) {
 	}, 9);
 }
 function delEvent() {
-	bd.removeEventListener('animationstart', onAnimationStart);
-	bd.removeEventListener('webkitAnimationStart', onAnimationStart);
-	bd.removeEventListener('oAnimationStart', onAnimationStart);
+	bd.removeEventListener('animationstart', onAnimationStart, !1);
+	bd.removeEventListener('webkitAnimationStart', onAnimationStart, !1);
+	bd.removeEventListener('oAnimationStart', onAnimationStart, !1);
 	doc.head.removeChild(style);
 }
 function setPlayer(play, oHtml) {
