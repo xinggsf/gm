@@ -6,6 +6,7 @@
 // @homepageURL    https://greasyfork.org/scripts/8561
 // updateURL       https://greasyfork.org/scripts/8561.js
 // @include        http*
+// @exclude        https://www.youtube.com/*
 // @exclude        http://v.qq.com/*
 // @exclude        http://www.dj92cc.com/*
 // @exclude        http://*.baidu.com/*
@@ -14,7 +15,7 @@
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
 // exclude        http://www.flv.tv/*
-// @version        2016.1.1
+// @version        2016.2.18
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
@@ -24,6 +25,7 @@
 此BUG表现在某些页面刷新页面元素后，原有菜单、DIV对话框显示不出来或被flash遮住！
 鉴于chrome已不再支持NPAPI Flash，我也无法可想。
 
+2016-2-18  更新油库播放器
 2015-12-30 增加对重定向扩展的支持（50行改为true即启用）
 2015-12-25 优化事件处理，及DOM刷新处理；解决了熊猫TV不能显示弹幕的问题
 2015-12-18 感谢卡饭好友"吃饭好香"提供空间，更换油库播放器；解决油库外链视频变形问题
@@ -47,7 +49,7 @@ bd.children.constructor: HTMLCollection
 -function(doc, bd) {
 "use strict";
 let isEmbed, 
-isRedirect = !1,//是否开启重定向脚本
+isRedirect = !0,//是否开启重定向扩展Redirect
 style = doc.createElement('style');
 style.textContent = '@-webkit-keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}@keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}embed,object{animation:gAnimatAct 1ms;-webkit-animation:gAnimatAct 1ms;}';
 doc.head.appendChild(style);
@@ -120,12 +122,12 @@ let PLAYER_URL = [
 
 function youkuFormat(vid) {
 //下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
-	return `<embed id="mplayer" wmode="gpu" width="100%" height="100%" src="http://yunpan.q8wl.com/o_1a6qi4boq4k51nqlpdp1brob4va.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`;
+	return `<embed id="mplayer" wmode="gpu" width="100%" height="100%" src="http://opengg.guodafanli.com/adkiller/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`;
 	//return `<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS=${vid}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">`; 100.100.100.100/player.swf
 }
 //www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf
 function ykOutsitePlayer(vid, p) {
-	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://yunpan.q8wl.com/o_1a6qi4boq4k51nqlpdp1brob4va.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`);
+	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://opengg.guodafanli.com/adkiller/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`);
 }
 
 function qyOutsiteFormat(p, v) {
