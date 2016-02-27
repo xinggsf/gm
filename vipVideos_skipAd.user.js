@@ -14,19 +14,15 @@
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// exclude        http://www.flv.tv/*
-// @version        2016.2.18
+// @version        2016.2.28
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
 /*
-作者的话：经过实际测试，chrome的CSS3动画BUG只发生在NPAPI Flash。
-此BUG表现在某些页面刷新页面元素后，原有菜单、DIV对话框显示不出来或被flash遮住！
-鉴于chrome已不再支持NPAPI Flash，我也无法可想。
-
+2016-2-28  弃用CSS3动画事件，以解决chrome类浏览器下NPAPI Flash异常问题
 2016-2-18  更新油库播放器
-2015-12-30 增加对重定向扩展的支持（50行改为true即启用）
+2015-12-30 增加对重定向扩展的支持（48行改为true即启用）
 2015-12-25 优化事件处理，及DOM刷新处理；解决了熊猫TV不能显示弹幕的问题
 2015-12-18 感谢卡饭好友"吃饭好香"提供空间，更换油库播放器；解决油库外链视频变形问题
 2015-12-14 iqiyi播放器升级，外链视频最高分辨率只支持到高清。建议到iqiyi.com观看
@@ -49,11 +45,8 @@ bd.children.constructor: HTMLCollection
 -function(doc, bd) {
 "use strict";
 let isEmbed, 
-isRedirect = !0,//是否开启重定向扩展Redirect
-style = doc.createElement('style');
-style.textContent = '@-webkit-keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}@keyframes gAnimatAct{from{opacity:0.99;}to{opacity:1;}}embed,object{animation:gAnimatAct 1ms;-webkit-animation:gAnimatAct 1ms;}';
-doc.head.appendChild(style);
-let PLAYER_URL = [
+isRedirect = !1,//是否开启重定向扩展Redirect
+PLAYER_URL = [
 	{
 		urls: [
 			/^http:\/\/static\.youku\.com\/.*?q?(?:play|load)er\w*\.swf/,
@@ -123,9 +116,7 @@ let PLAYER_URL = [
 function youkuFormat(vid) {
 //下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
 	return `<embed id="mplayer" wmode="gpu" width="100%" height="100%" src="http://opengg.guodafanli.com/adkiller/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`;
-	//return `<iframe id="mplayer" width="100%" height="100%" src="http://img2.ct2t.net/flv/youku/151126/player.swf?VideoIDS=${vid}&isAutoPlay=true" frameborder="no" border="0" scrolling="no">`; 100.100.100.100/player.swf
 }
-//www.300.la/filestores/2015/12/17/95103f682362f42ba8e91e41b76c6f5e.swf
 function ykOutsitePlayer(vid, p) {
 	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://opengg.guodafanli.com/adkiller/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`);
 }
@@ -145,7 +136,6 @@ function iqiyiFormat(src, fvar) {
 function openFlashGPU(p) {
 	isEmbed ? p.setAttribute('wmode', 'gpu') :
 		setObjectVal(p, 'wmode', 'gpu');
-	delEvent();
 	refreshElem(p);
 	// if (window.chrome) refreshElem(bd);
 	// refreshElem(p.offsetParent);
@@ -169,15 +159,8 @@ function refreshElem(o) {
 		o.style.display = s;
 	}, 9);
 }
-function delEvent() {
-	bd.removeEventListener('animationstart', onAnimationStart, !1);
-	bd.removeEventListener('webkitAnimationStart', onAnimationStart, !1);
-	bd.removeEventListener('oAnimationStart', onAnimationStart, !1);
-	doc.head.removeChild(style);
-}
 function setPlayer(play, oHtml) {
 	console.log('new player: ', oHtml);
-	delEvent();
 	play.outerHTML = oHtml;
 }
 function setObjectVal(p, name, v) {
@@ -202,18 +185,7 @@ function getFlashvars(p) {
 	return p.children[s].value;
 }
 
-function onAnimationStart(ev) {
-	//ev.returnValue = !1;
-	//ev.cancelBubble = true;
-	//if (ev.animationName !== 'gAnimatAct') return;
-	ev.preventDefault();//cancel handle later
-	ev.stopPropagation();//stop bubble
-	let e = ev.target;//ev && ev.target || Event.srcElement
-	console.log('CSS3 animation start:', ev, e);
-	isEmbed = 'EMBED' === e.tagName;
-	//防止OBJECT － EMBED结构重复处理
-	if (isEmbed && 'OBJECT' === e.parentNode.tagName) return;
-	if (!isPlayer(e)) return;
+function doPlayer(e) {
 	let t, addr = e.src || e.data || e.children.movie.value;
 	for (t of PLAYER_URL) {
 		if (t.urls.some(function(reg) {
@@ -239,7 +211,24 @@ if (window.chrome) {
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 //fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
-bd.addEventListener('animationstart', onAnimationStart, !1);
-bd.addEventListener('webkitAnimationStart', onAnimationStart, !1);
-bd.addEventListener('oAnimationStart', onAnimationStart, !1);
+let MutationObserver = window.MutationObserver
+	|| window.WebKitMutationObserver
+	|| window.MozMutationObserver;
+let mo = new MutationObserver(function() {
+	mo.disconnect();
+	mo.takeRecords();
+	mo = null;
+	let k, c = doc.querySelectorAll('object,embed');
+	for (k of c) {
+		isEmbed = 'EMBED' === k.tagName;
+		//防止OBJECT － EMBED结构重复处理
+		if (isEmbed && 'OBJECT' === k.parentNode.tagName) continue;
+		if (isPlayer(k)) {
+			//console.log('isPlayer');
+			doPlayer(k);
+			return;
+		}
+	}
+});
+mo.observe(bd, {childList: true});
 }(document, document.body);
