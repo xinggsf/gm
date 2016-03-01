@@ -5,11 +5,9 @@
 // @description    油库、土逗 VIP免费看；配合ABP去视频广告；开启GPU加速
 // @homepageURL    https://greasyfork.org/scripts/8561
 // updateURL       https://greasyfork.org/scripts/8561.js
-// @include        http*
-// @exclude        https://www.youtube.com/*
+// @include        http://*
 // @exclude        http://v.qq.com/*
 // @exclude        http://www.dj92cc.com/*
-// @exclude        http://*.baidu.com/*
 //芒果TV加速不了！反而加大CPU占用，芒果真垃圾
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
@@ -45,7 +43,7 @@ bd.children.constructor: HTMLCollection
 -function(doc, bd) {
 "use strict";
 let isEmbed, 
-isRedirect = !1,//是否开启重定向扩展Redirect
+isRedirect = !0,//是否开启重定向扩展Redirect
 PLAYER_URL = [
 	{
 		urls: [
@@ -68,12 +66,6 @@ PLAYER_URL = [
 					fv && ykOutsitePlayer(fv[1], p);
 					return !1;
 				default:
-					doc.addEventListener('DOMNodeInserted', function (ev) {
-						let e = ev.target;
-						if (/SCRIPT|IKUADAPTER/.test(e.tagName) ||
-							e.id === 'ikuadapter'
-						) ev.relatedNode.removeChild(e);
-					}, !1);
 					setTimeout(scrollTo(0, 99), 9);
 					//加入一个按钮
 					unsafeWindow._ssPlayer = p.outerHTML.replace('direct','gpu');
@@ -84,7 +76,7 @@ PLAYER_URL = [
 		}
 	},{
 		urls: [
-			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/MainPlayer_\w+\.swf/,
+			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/\w+\.swf/,
 			/^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
 			/^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
 		],
@@ -188,10 +180,8 @@ function getFlashvars(p) {
 function doPlayer(e) {
 	let t, addr = e.src || e.data || e.children.movie.value;
 	for (t of PLAYER_URL) {
-		if (t.urls.some(function(reg) {
-			return reg.test(addr);
-		})) {//if
-			if (t.run) {//custom function
+		if (t.urls.some(reg => reg.test(addr))) {
+			if (t.run) {
 				t.run(e, addr);
 				return;
 			}
@@ -218,17 +208,16 @@ let mo = new MutationObserver(function() {
 	mo.disconnect();
 	mo.takeRecords();
 	mo = null;
-	let k, c = doc.querySelectorAll('object,embed');
-	for (k of c) {
+	for (let k of doc.querySelectorAll('object,embed')) {
 		isEmbed = 'EMBED' === k.tagName;
 		//防止OBJECT － EMBED结构重复处理
 		if (isEmbed && 'OBJECT' === k.parentNode.tagName) continue;
 		if (isPlayer(k)) {
-			//console.log('isPlayer');
+			console.log('isPlayer');
 			doPlayer(k);
 			return;
 		}
 	}
 });
-mo.observe(bd, {childList: true});
+mo.observe(bd, {childList: true, subtree: true});
 }(document, document.body);
