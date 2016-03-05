@@ -12,8 +12,9 @@
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.2.28
+// @version        2016.3.5
 // @encoding       utf-8
+// @run-at         document-body
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
@@ -42,7 +43,7 @@ bd.children.constructor: HTMLCollection
 */
 -function(doc, bd) {
 "use strict";
-let isEmbed, 
+let isEmbed,
 isRedirect = !0,//是否开启重定向扩展Redirect
 PLAYER_URL = [
 	{
@@ -195,16 +196,8 @@ function doPlayer(e) {
 	}
 	openFlashGPU(e);
 }
-
-if (window.chrome) {
-	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-//fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-}
-let MutationObserver = window.MutationObserver
-	|| window.WebKitMutationObserver
-	|| window.MozMutationObserver;
-let mo = new MutationObserver(function() {
+function callBack() {
+	if (!mo) return;
 	mo.disconnect();
 	mo.takeRecords();
 	mo = null;
@@ -218,6 +211,20 @@ let mo = new MutationObserver(function() {
 			return;
 		}
 	}
-});
-mo.observe(bd, {childList: true, subtree: true});
+}
+
+if (window.chrome) {
+	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+//fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+}
+let MutationObserver = window.MutationObserver
+	 || window.WebKitMutationObserver
+	 || window.MozMutationObserver;
+let mo = new MutationObserver(callBack);
+mo.observe(bd, {childList: true});
+let div = doc.createElement('div');
+bd.appendChild(div);
+bd.removeChild(div);
+//setTimeout(callBack, 500);
 }(document, document.body);
