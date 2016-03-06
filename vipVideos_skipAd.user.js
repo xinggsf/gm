@@ -6,15 +6,13 @@
 // @homepageURL    https://greasyfork.org/scripts/8561
 // updateURL       https://greasyfork.org/scripts/8561.js
 // @include        http://*
-// @exclude        http://v.qq.com/*
 // @exclude        http://www.dj92cc.com/*
 //芒果TV加速不了！反而加大CPU占用，芒果真垃圾
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.3.5
+// @version        2016.3.6
 // @encoding       utf-8
-// @run-at         document-body
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
@@ -218,9 +216,9 @@ if (window.chrome) {
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 //fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
-let MutationObserver = window.MutationObserver
-	 || window.WebKitMutationObserver
-	 || window.MozMutationObserver;
+// let MutationObserver = window.MutationObserver
+	// || window.WebKitMutationObserver
+	// || window.MozMutationObserver;
 let mo = new MutationObserver(callBack);
 mo.observe(bd, {childList: true});
 let div = doc.createElement('div');
