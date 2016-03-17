@@ -11,7 +11,7 @@
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.3.6
+// @version        2016.3.17
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
@@ -42,7 +42,7 @@ bd.children.constructor: HTMLCollection
 -function(doc, bd) {
 "use strict";
 let isEmbed,
-isRedirect = !0,//是否开启重定向扩展Redirect
+isRedirect = !1,//是否开启重定向扩展Redirect
 PLAYER_URL = [
 	{
 		urls: [
@@ -179,7 +179,9 @@ function getFlashvars(p) {
 function doPlayer(e) {
 	let t, addr = e.src || e.data || e.children.movie.value;
 	for (t of PLAYER_URL) {
-		if (t.urls.some(reg => reg.test(addr))) {
+		if (t.urls.some(function(reg) {
+			return reg.test(addr);
+		})) {
 			if (t.run) {
 				t.run(e, addr);
 				return;
@@ -216,11 +218,9 @@ if (window.chrome) {
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 //fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
-// let MutationObserver = window.MutationObserver
-	// || window.WebKitMutationObserver
-	// || window.MozMutationObserver;
 let mo = new MutationObserver(callBack);
 mo.observe(bd, {childList: true});
+//确保监视器得到执行
 let div = doc.createElement('div');
 bd.appendChild(div);
 bd.removeChild(div);
