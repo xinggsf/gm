@@ -11,12 +11,15 @@
 // @exclude        http://www.hunantv.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.3.17
+// @version        2016.3.20
 // @encoding       utf-8
 // @grant          unsafeWindow
 // grant          GM_openInTab
 // ==/UserScript==
+
 /*
+2016-3-20   解决斗鱼和腾讯视频不能加速的问题
+2016-3-1   解决iqiyi部分视频不能播放的问题，其地址格式为http://www.iqiyi.com/v_xxxxxxxxx.html
 2016-2-28  弃用CSS3动画事件，以解决chrome类浏览器下NPAPI Flash异常问题
 2016-2-18  更新油库播放器
 2015-12-30 增加对重定向扩展的支持（48行改为true即启用）
@@ -42,7 +45,7 @@ bd.children.constructor: HTMLCollection
 -function(doc, bd) {
 "use strict";
 let isEmbed,
-isRedirect = !1,//是否开启重定向扩展Redirect
+isRedirect = !0,//是否开启重定向扩展Redirect
 PLAYER_URL = [
 	{
 		urls: [
@@ -127,12 +130,12 @@ function iqiyiFormat(src, fvar) {
 function openFlashGPU(p) {
 	isEmbed ? p.setAttribute('wmode', 'gpu') :
 		setObjectVal(p, 'wmode', 'gpu');
-	refreshElem(p);
-	// if (window.chrome) refreshElem(bd);
+	refreshElem(bd);
 	// refreshElem(p.offsetParent);
 }
 function isPlayer(p) {
-	if (!p.width || p.width < 33 || p.height < 12) return !1;
+	//console.log(p.width, p.height);
+	if (!p.width || parseInt(p.width) < 33 || parseInt(p.height) < 12) return !1;
 	if (isEmbed) return p.getAttribute('allowFullScreen') === 'true';
 	return /\ballowfullscreen\b/i.test(p.innerHTML);//整字匹配
 	//chrome下[].some.call在此处有问题：不能返回正确值
@@ -153,6 +156,7 @@ function refreshElem(o) {
 function setPlayer(play, oHtml) {
 	console.log('new player: ', oHtml);
 	play.outerHTML = oHtml;
+	if (window.chrome) refreshElem(bd);
 }
 function setObjectVal(p, name, v) {
 	let e = p.querySelector('embed');
@@ -197,16 +201,15 @@ function doPlayer(e) {
 	openFlashGPU(e);
 }
 function callBack() {
-	if (!mo) return;
-	mo.disconnect();
-	mo.takeRecords();
-	mo = null;
 	for (let k of doc.querySelectorAll('object,embed')) {
 		isEmbed = 'EMBED' === k.tagName;
 		//防止OBJECT － EMBED结构重复处理
 		if (isEmbed && 'OBJECT' === k.parentNode.tagName) continue;
 		if (isPlayer(k)) {
-			console.log('isPlayer');
+			console.log(k, 'is Player');
+			mo.disconnect();
+			mo.takeRecords();
+			mo = null;
 			doPlayer(k);
 			return;
 		}
@@ -224,5 +227,4 @@ mo.observe(bd, {childList: true});
 let div = doc.createElement('div');
 bd.appendChild(div);
 bd.removeChild(div);
-//setTimeout(callBack, 500);
 }(document, document.body);
