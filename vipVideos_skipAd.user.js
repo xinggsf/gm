@@ -7,10 +7,12 @@
 // updateURL       https://greasyfork.org/scripts/8561.js
 // @include        http*
 // @exclude        https://www.youtube.com/*
+// @exclude        http://www.acfun.tv/*
+// @exclude        http://acfun.tudou.com/v/*
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.4.5
+// @version        2016.4.9
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
@@ -20,7 +22,7 @@
 2016-3-1   解决地址格式为www.iqiyi.com/v_xxxxxxx.html视频不能播放的问题
 2016-2-28  弃用CSS3动画事件，以解决chrome类浏览器下NPAPI Flash异常问题
 2016-2-18  更新油库播放器
-2015-12-30 增加对重定向扩展的支持（46行改为true即启用）
+2015-12-30 增加对重定向扩展的支持（48行改为true即启用）
 2015-12-25 优化事件处理，及DOM刷新处理；解决了熊猫TV不能显示弹幕的问题
 2015-12-18 感谢卡饭好友"吃饭好香"提供空间，更换油库播放器；解决油库外链视频变形问题
 2015-12-14 iqiyi播放器升级，外链视频最高分辨率只支持到高清。建议到iqiyi.com观看
@@ -42,14 +44,20 @@ bd.children.constructor: HTMLCollection
 */
 -function(doc, bd) {
 "use strict";
-let isEmbed,
+let isEmbed, swfAddr,
 isRedirect = !1,//是否开启Redirect重定向扩展/UC脚本，暂时只对iqiyi播放器有效
+swfBlockList = [
+	'http://staticlive.douyutv.com/upload/signs/201',
+],
+swfWhiteList = [
+	'http://s5.pdim.gs/static/',
+],
 PLAYER_URL = [
 	{
 		urls: [
 			/^http:\/\/static\.youku\.com\/.*?q?(?:play|load)er\w*\.swf/,
 			/^http:\/\/player\.youku\.com\/player\.php\/.*?sid\/(.*?)\/.*?v\.swf$/,
-			/^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXYouku\.swf/,
+			// /^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXYouku\.swf/,
 		],
 		varsMatch: /VideoIDS=(\w+)/,
 		format: youkuFormat,
@@ -76,7 +84,7 @@ PLAYER_URL = [
 	},{
 		urls: [
 			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/\w+\.swf/,
-			/^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
+			// /^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
 			/^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
 		],
 		run: function(p, src) {
@@ -125,6 +133,17 @@ function openFlashGPU(p) {
 	refreshElem(p); // refreshElem(p.offsetParent);
 }
 function isPlayer(p) {
+	//console.log(p.clientWidth);
+	swfAddr = p.src || p.data || p.children.movie.value;
+	if (swfWhiteList.some(function(x) {
+		return swfAddr.startsWith(x);
+	})) return !0;
+	if (swfBlockList.some(function(x) {
+		return swfAddr.startsWith(x);
+	})) {
+		p.parentNode.removeChild(p);
+		return !1;
+	}
 	if (!p.width || parseInt(p.width) < 33 || parseInt(p.height) < 12) return !1;
 	if (isEmbed) return p.getAttribute('allowFullScreen') === 'true';
 	return /\ballowfullscreen\b/i.test(p.innerHTML);//整字匹配
@@ -169,18 +188,17 @@ function getFlashvars(p) {
 	return p.children[s].value;
 }
 function doPlayer(e) {
-	let t, v,
-	addr = e.src || e.data || e.children.movie.value;
+	let t, v;
 	for (t of PLAYER_URL) {
 		if (t.urls.some(function(reg) {
-			return reg.test(addr);
+			return reg.test(swfAddr);
 		})) {
 			if (t.run) {
-				t.run(e, addr);
+				t.run(e, swfAddr);
 				return;
 			}
 			v = getFlashvars(e);
-			if (!t.isProc || t.isProc(e, v, addr)) {
+			if (!t.isProc || t.isProc(e, v, swfAddr)) {
 				v = v.match(t.varsMatch);
 				v && setPlayer(e, t.format(v[1]));
 			}
