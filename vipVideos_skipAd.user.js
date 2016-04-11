@@ -8,46 +8,22 @@
 // @include        http*
 // @exclude        https://www.youtube.com/*
 // @exclude        http://www.acfun.tv/*
-// @exclude        http://acfun.tudou.com/v/*
+// @exclude        http://acfun.tudou.com/*
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.4.9
+// @version        2016.4.11
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
 
-/*    GM_openInTab
-2016-3-20  解决斗鱼和腾讯视频不能加速的问题
-2016-3-1   解决地址格式为www.iqiyi.com/v_xxxxxxx.html视频不能播放的问题
-2016-2-28  弃用CSS3动画事件，以解决chrome类浏览器下NPAPI Flash异常问题
-2016-2-18  更新油库播放器
-2015-12-30 增加对重定向扩展的支持（48行改为true即启用）
-2015-12-25 优化事件处理，及DOM刷新处理；解决了熊猫TV不能显示弹幕的问题
-2015-12-18 感谢卡饭好友"吃饭好香"提供空间，更换油库播放器；解决油库外链视频变形问题
-2015-12-14 iqiyi播放器升级，外链视频最高分辨率只支持到高清。建议到iqiyi.com观看
-2015-12-13 感谢卡饭好友"吃饭好香"提供播放器空间;解决油库不能全屏的问题
-2015-12-11 用严格模式重构;使用ES6字符串模板、大幅使用本地变量let,const
-2015-12-8  更新油库播放器，可选择P1080分辨率；
-           彻底解决油库盗链问题；
-           解决NNAPI Flash不能播放的问题
-2015-12-6  增加对acfun.tv的油库、iqiyi外链支持
-
-开启GPU硬件加速，如显卡不支持，wmode参数换为 direct
-参考了thunderhit的代码: https://greasyfork.org/scripts/6479，但用定时器太低效了
-
-doc.querySelectorAll('div') instanceof NodeList
-bd.childNodes instanceof NodeList
-true
-bd.children instanceof NodeList == false
-bd.children.constructor: HTMLCollection
-*/
 -function(doc, bd) {
 "use strict";
 let isEmbed, swfAddr,
 isRedirect = !1,//是否开启Redirect重定向扩展/UC脚本，暂时只对iqiyi播放器有效
 swfBlockList = [
 	'http://staticlive.douyutv.com/upload/signs/201',
+	'http://www.kcis.cn/wp-content/themes/kcis/adv.',
 ],
 swfWhiteList = [
 	'http://s5.pdim.gs/static/',
@@ -56,7 +32,7 @@ PLAYER_URL = [
 	{
 		urls: [
 			/^http:\/\/static\.youku\.com\/.*?q?(?:play|load)er\w*\.swf/,
-			/^http:\/\/player\.youku\.com\/player\.php\/.*?sid\/(.*?)\/.*?v\.swf$/,
+			/^http:\/\/player\.youku\.com\/player\.php\/sid\/(\w+).*?v\.swf$/,
 			// /^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXYouku\.swf/,
 		],
 		varsMatch: /VideoIDS=(\w+)/,
@@ -74,7 +50,6 @@ PLAYER_URL = [
 				return !1;
 			default:
 				setTimeout(scrollTo(0, 99), 9);
-				//加入一个按钮
 				unsafeWindow._ssPlayer = p.outerHTML.replace('direct','gpu');
 				doc.querySelector("div#ab_pip").outerHTML =
 				'<a style="font-size:20px;" onclick="document.querySelector(\'#mplayer\').outerHTML=_ssPlayer, delete _ssPlayer, this.parentNode.removeChild(this);">换原播放器</a>';
@@ -83,30 +58,16 @@ PLAYER_URL = [
 		}
 	},{
 		urls: [
-			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/\w+\.swf/,
+			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer/,
 			// /^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
 			/^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
 		],
 		run: function(p, src) {
 			var v = getFlashvars(p);
-			if (doc.domain.endsWith('iqiyi.com')){
+			if (/iqiyi\.com|pps\.tv/.test(location.hostname)){
 				v = v.replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w*?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
 				setPlayer(p, iqiyiFormat(src,v));
 			} else qyOutsiteFormat(p, v);
-		}
-	}, {
-		urls: [
-		/^http:\/\/www\.iqiyi\.com\/common\/flashplayer\/\d+\/PPS\w+\.swf/,
-		//安装PPS插件才能播放 /^http:\/\/www\.iqiyi\.com\/player\/cupid\/common\/pps_\w+\.swf/
-		],
-		run: function(p, src) {
-			var s = getFlashvars(p);
-			if (s.indexOf('&cid=') === -1) {
-				alert('不支持！安装PPS插件才能播放！');
-				return;
-			}
-			s = s.replace(/&?(?:cid|coreUrl|tipdataurl|preloader|adurl|P00001|expandState)=[^&]+/g,'') +'&cid=qc_100001_300089';
-			setPlayer(p, iqiyiFormat(src, s));
 		}
 	},
 ];
@@ -121,7 +82,7 @@ function ykOutsitePlayer(vid, p) {
 function qyOutsiteFormat(p, v) {
 	let tvid = v.match(/\btvId=(\w+)/i)[1],
 	definitionID = v.match(/\b(?:definitionID|sourceId|vid)=(\w+)/)[1],
-	s = isRedirect ? `<embed type="application/x-shockwave-flash" play="true" allowfullscreen="true" wmode="gpu" width="100%" height="100%" id="${p.id}" allowscriptaccess="always" src="http://www.iqiyi.com/common/flashplayer/2099/MainPlayer_5.swf" flashvars="components=fefb1060e&definitionID=${definitionID}&tvId=${tvid}&autoplay=true&flashP2PCoreUrl=http://www.iqiyi.com/common/flashplayer/20151229/3023.swf">` :
+	s = isRedirect ? `<embed type="application/x-shockwave-flash" play="true" allowfullscreen="true" wmode="gpu" width="100%" height="100%" id="${p.id}" allowscriptaccess="always" src="http://www.iqiyi.com/common/flashplayer/2099/MainPlayer_5.swf" flashvars="components=fefb1060e&definitionID=${definitionID}&tvId=${tvid}&autoplay=true&flashP2PCoreUrl=http://www.iqiyi.com/common/flashplayer/20160330/3034.swf">` :
 	`<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://dispatcher.video.qiyi.com/disp/shareplayer.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&bd=1&showDock=0">`;
 	setPlayer(p, s);
 }
@@ -130,10 +91,9 @@ function iqiyiFormat(src, fvar) {
 }
 function openFlashGPU(p) {
 	isEmbed ? p.setAttribute('wmode', 'gpu') : setObjectVal(p, 'wmode', 'gpu');
-	refreshElem(p); // refreshElem(p.offsetParent);
+	refreshElem(p);
 }
 function isPlayer(p) {
-	//console.log(p.clientWidth);
 	swfAddr = p.src || p.data || p.children.movie.value;
 	if (swfWhiteList.some(function(x) {
 		return swfAddr.startsWith(x);
@@ -146,14 +106,7 @@ function isPlayer(p) {
 	}
 	if (!p.width || parseInt(p.width) < 33 || parseInt(p.height) < 12) return !1;
 	if (isEmbed) return p.getAttribute('allowFullScreen') === 'true';
-	return /\ballowfullscreen\b/i.test(p.innerHTML);//整字匹配
-	//chrome下[].some.call在此处有问题：不能返回正确值
-/* 	let c = p.querySelectorAll('param[value=true]');
-	for (let t, i = c.length; t = c[--i];) {
-		if (t.name.toLowerCase() === 'allowfullscreen')
-			return !0;
-	}
-	return !1; */
+	return /\ballowfullscreen\b/i.test(p.innerHTML);
 }
 function refreshElem(o) {
 	let s = o.style.display;
@@ -210,7 +163,6 @@ function doPlayer(e) {
 function callBack() {
 	for (let k of doc.querySelectorAll('object,embed')) {
 		isEmbed = 'EMBED' === k.tagName;
-		//防止OBJECT － EMBED结构重复处理
 		if (isEmbed && 'OBJECT' === k.parentNode.tagName) continue;
 		if (isPlayer(k)) {
 			console.log(k, ' is player!');
@@ -226,11 +178,9 @@ function callBack() {
 if (window.chrome) {
 	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-//fail: bd.children.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
 let mo = new MutationObserver(callBack);
 mo.observe(bd, {childList: true});
-//确保监视器得到执行
 let div = doc.createElement('div');
 bd.appendChild(div);
 bd.removeChild(div);
