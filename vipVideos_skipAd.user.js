@@ -7,12 +7,10 @@
 // updateURL       https://greasyfork.org/scripts/8561.js
 // @include        http*
 // @exclude        https://www.youtube.com/*
-// @exclude        http://www.acfun.tv/*
-// @exclude        http://acfun.tudou.com/*
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.4.11
+// @version        2016.4.18
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
@@ -20,20 +18,23 @@
 -function(doc, bd) {
 "use strict";
 let isEmbed, swfAddr,
-isRedirect = !1,//是否开启Redirect重定向扩展/UC脚本，暂时只对iqiyi播放器有效
 swfBlockList = [
 	'http://staticlive.douyutv.com/upload/signs/201',
 	'http://www.kcis.cn/wp-content/themes/kcis/adv.',
+	'http://www.kktv5.com/swf/copy.swf',
+	'http://static.xcyo.com/swf/effect',
 ],
 swfWhiteList = [
-	'http://s5.pdim.gs/static/',
+	'.pdim.gs/static/',//熊猫直播
+	'http://v.6.cn/apple/player/',
+	'.plures.net/pts/swfbin/player/live.swf',//龙珠直播
 ],
 PLAYER_URL = [
 	{
 		urls: [
 			/^http:\/\/static\.youku\.com\/.*?q?(?:play|load)er\w*\.swf/,
 			/^http:\/\/player\.youku\.com\/player\.php\/sid\/(\w+).*?v\.swf$/,
-			// /^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXYouku\.swf/,
+			/^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXYouku\.swf/,
 		],
 		varsMatch: /VideoIDS=(\w+)/,
 		format: youkuFormat,
@@ -56,35 +57,46 @@ PLAYER_URL = [
 				return !0;
 			}
 		}
+	},{//iqiyi out
+		urls: [
+			/^https?:\/\/www\.iqiyi\.com\/(?:common\/flash)?player\/\d+\/(?:Share|Enjoy)?Player.*?\.swf/i,
+			//^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
+			//^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
+		],
+		run: function(p, src) {
+			qyOutsiteFormat(p);
+		}
 	},{
 		urls: [
 			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer/,
-			// /^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
-			/^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
 		],
 		run: function(p, src) {
-			var v = getFlashvars(p);
-			if (/iqiyi\.com|pps\.tv/.test(location.hostname)){
-				v = v.replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w*?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
-				setPlayer(p, iqiyiFormat(src,v));
-			} else qyOutsiteFormat(p, v);
+			var v = getFlashvars(p).replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w*?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
+			setPlayer(p, iqiyiFormat(src,v));
 		}
 	},
 ];
 
 function youkuFormat(vid) {
 //下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
-	return `<embed id="mplayer" wmode="gpu" width="100%" height="100%" src="http://opengg.guodafanli.com/adkiller/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`;
+	return `<embed id="mplayer" wmode="gpu" width="100%" height="100%" src="http://opengg.guodafanli.com/adkiller/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
 }
 function ykOutsitePlayer(vid, p) {
-	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://opengg.guodafanli.com/adkiller/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&winType=BDskin&partnerId=youkuind_&embedid=MTEzLjE0My4xNTkuOTYCMTUwNjk2NTE3AmkueW91a3UuY29tAi91L1VOakl6T1RjMk1UVXk%3D">`);
+	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://opengg.guodafanli.com/adkiller/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}">`);
 }
-function qyOutsiteFormat(p, v) {
-	let tvid = v.match(/\btvId=(\w+)/i)[1],
+function qyOutsiteFormat(p) {
+	let v = getFlashvars(p),
+	//css = p.style.cssText,
+	tvid = v.match(/\btvId=(\w+)/i)[1],
 	definitionID = v.match(/\b(?:definitionID|sourceId|vid)=(\w+)/)[1],
-	s = isRedirect ? `<embed type="application/x-shockwave-flash" play="true" allowfullscreen="true" wmode="gpu" width="100%" height="100%" id="${p.id}" allowscriptaccess="always" src="http://www.iqiyi.com/common/flashplayer/2099/MainPlayer_5.swf" flashvars="components=fefb1060e&definitionID=${definitionID}&tvId=${tvid}&autoplay=true&flashP2PCoreUrl=http://www.iqiyi.com/common/flashplayer/20160330/3034.swf">` :
-	`<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://dispatcher.video.qiyi.com/disp/shareplayer.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&bd=1&showDock=0">`;
+	//http://dispatcher.video.qiyi.com/disp/shareplayer.swf http://minggo.coding.io/swf/
+	s = `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://opengg.guodafanli.com/adkiller/iqiyi_out.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&showDock=0">`;
 	setPlayer(p, s);
+	/* let id = p.id;
+	p.outerHTML = p.outerHTML
+	.replace(src, 'http://minggo.coding.io/swf/iqiyi_out.swf')
+	.replace(src, 'http://opengg.guodafanli.com/adkiller/iqiyi_out.swf');
+	openFlashGPU(doc.getElementById(id)); */
 }
 function iqiyiFormat(src, fvar) {
 	return `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${src}" flashvars="${fvar}">`;
@@ -96,7 +108,7 @@ function openFlashGPU(p) {
 function isPlayer(p) {
 	swfAddr = p.src || p.data || p.children.movie.value;
 	if (swfWhiteList.some(function(x) {
-		return swfAddr.startsWith(x);
+		return swfAddr.includes(x);
 	})) return !0;
 	if (swfBlockList.some(function(x) {
 		return swfAddr.startsWith(x);
@@ -112,7 +124,7 @@ function refreshElem(o) {
 	let s = o.style.display;
 	o.style.display = 'none';
 	setTimeout(function () {
-		o.style.display = s;
+		s ? o.style.display = s : o.style.removeProperty('display');
 	}, 9);
 }
 function setPlayer(play, oHtml) {
@@ -123,6 +135,7 @@ function setObjectVal(p, name, v) {
 	let e = p.querySelector('embed');
 	e && e.setAttribute(name, v);
 	name = name.toLowerCase();
+	if (p.hasAttribute(name)) p.setAttribute(name, v);
 	for (let o of p.childNodes) {
 		if (o.name && o.name.toLowerCase() === name) {
 			o.value = v;
