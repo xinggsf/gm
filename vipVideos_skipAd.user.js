@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           vipVideos_skipAd
 // @namespace      vipVideos_skipAd-xinggsf
-// @author	       xinggsf
+// @author         xinggsf
 // @description    配合ABP去视频广告；开启GPU加速
 // @homepageURL    https://greasyfork.org/scripts/8561
 // updateURL       https://greasyfork.org/scripts/8561.js
@@ -10,7 +10,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.4.18
+// @version        2016.5.13
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
@@ -22,7 +22,8 @@ swfBlockList = [
 	'http://staticlive.douyutv.com/upload/signs/201',
 	'http://www.kcis.cn/wp-content/themes/kcis/adv.',
 	'http://www.kktv5.com/swf/copy.swf',
-	'http://static.xcyo.com/swf/effect',
+	'http://static.xcyo.com/swf/effect',//龙珠
+	'http://static.youku.com/ddshow/2fa1f9f6/flash/',//v.laifeng.com
 ],
 swfWhiteList = [
 	'.pdim.gs/static/',//熊猫直播
@@ -32,29 +33,30 @@ swfWhiteList = [
 PLAYER_URL = [
 	{
 		urls: [
-			/^http:\/\/static\.youku\.com\/.*?q?(?:play|load)er\w*\.swf/,
-			/^http:\/\/player\.youku\.com\/player\.php\/sid\/(\w+).*?v\.swf$/,
+			/^http:\/\/static\.youku\.com\/v.*?(?:play|load)er/,
+			/^http:\/\/player\.youku\.com\/player\.php\/sid\/(\w+)/,
 			/^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXYouku\.swf/,
 		],
 		varsMatch: /VideoIDS=(\w+)/,
 		format: youkuFormat,
 		isProc: function(p, fv, src) {
-			switch(true){
-			case doc.domain.endsWith('acfun.tv'):
-				fv = fv.match(/vid=(\w+)/);
-				fv && setPlayer(p, youkuFormat(fv[1]));
-				return !1;
-			case !doc.domain.endsWith('youku.com'):
-				fv = src.match(this.urls[1]) || src.match(this.varsMatch) ||
-					 fv.match(this.varsMatch);
-				fv && ykOutsitePlayer(fv[1], p);
-				return !1;
-			default:
+			switch(location.hostname) {
+			case 'v.youku.com':
 				setTimeout(scrollTo(0, 99), 9);
 				unsafeWindow._ssPlayer = p.outerHTML.replace('direct','gpu');
-				doc.querySelector("div#ab_pip").outerHTML =
+				unsafeWindow.document.querySelector("div#ab_pip").outerHTML =
 				'<a style="font-size:20px;" onclick="document.querySelector(\'#mplayer\').outerHTML=_ssPlayer, delete _ssPlayer, this.parentNode.removeChild(this);">换原播放器</a>';
-				return !0;
+				return !0
+			case 'www.acfun.tv':
+			case 'acfun.tudou.com':
+				fv = fv.match(/vid=(\w+)/);
+				fv && setPlayer(p, youkuFormat(fv[1]));
+				return !1;;
+			default:
+				fv = src.match(this.urls[1]) || src.match(this.varsMatch) ||
+					fv.match(this.varsMatch);
+				fv && ykOutsitePlayer(fv[1], p);
+				return !1;
 			}
 		}
 	},{//iqiyi out
@@ -63,14 +65,12 @@ PLAYER_URL = [
 			//^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
 			//^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
 		],
-		run: function(p, src) {
-			qyOutsiteFormat(p);
-		}
+		run: (p, src) => {qyOutsiteFormat(p);}
 	},{
 		urls: [
 			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer/,
 		],
-		run: function(p, src) {
+		run: (p, src) => {
 			var v = getFlashvars(p).replace(/&(?:cid|tipdataurl|\w+?Time|cpn\w|\w*?loader|adurl|yhls|exclusive|webEventID|videoIsFromQidan)=[^&]*/g,'') + '&cid=qc_100001_300089';
 			setPlayer(p, iqiyiFormat(src,v));
 		}
@@ -92,11 +92,6 @@ function qyOutsiteFormat(p) {
 	//http://dispatcher.video.qiyi.com/disp/shareplayer.swf http://minggo.coding.io/swf/
 	s = `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://opengg.guodafanli.com/adkiller/iqiyi_out.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&showDock=0">`;
 	setPlayer(p, s);
-	/* let id = p.id;
-	p.outerHTML = p.outerHTML
-	.replace(src, 'http://minggo.coding.io/swf/iqiyi_out.swf')
-	.replace(src, 'http://opengg.guodafanli.com/adkiller/iqiyi_out.swf');
-	openFlashGPU(doc.getElementById(id)); */
 }
 function iqiyiFormat(src, fvar) {
 	return `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${src}" flashvars="${fvar}">`;
@@ -107,15 +102,8 @@ function openFlashGPU(p) {
 }
 function isPlayer(p) {
 	swfAddr = p.src || p.data || p.children.movie.value;
-	if (swfWhiteList.some(function(x) {
-		return swfAddr.includes(x);
-	})) return !0;
-	if (swfBlockList.some(function(x) {
-		return swfAddr.startsWith(x);
-	})) {
-		p.parentNode.removeChild(p);
-		return !1;
-	}
+	if (swfWhiteList.some(x => swfAddr.includes(x))) return !0;
+	if (swfBlockList.some(x => swfAddr.startsWith(x))) return !1;//p.parentNode.removeChild(p);
 	if (!p.width || parseInt(p.width) < 33 || parseInt(p.height) < 12) return !1;
 	if (isEmbed) return p.getAttribute('allowFullScreen') === 'true';
 	return /\ballowfullscreen\b/i.test(p.innerHTML);
@@ -123,7 +111,7 @@ function isPlayer(p) {
 function refreshElem(o) {
 	let s = o.style.display;
 	o.style.display = 'none';
-	setTimeout(function () {
+	setTimeout(() => {
 		s ? o.style.display = s : o.style.removeProperty('display');
 	}, 9);
 }
@@ -156,9 +144,7 @@ function getFlashvars(p) {
 function doPlayer(e) {
 	let t, v;
 	for (t of PLAYER_URL) {
-		if (t.urls.some(function(reg) {
-			return reg.test(swfAddr);
-		})) {
+		if (t.urls.some(reg => reg.test(swfAddr))) {
 			if (t.run) {
 				t.run(e, swfAddr);
 				return;
@@ -173,12 +159,17 @@ function doPlayer(e) {
 	}
 	openFlashGPU(e);
 }
-function callBack() {
+
+if (window.chrome) {
+	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
+}
+let mo = new MutationObserver(() => {
 	for (let k of doc.querySelectorAll('object,embed')) {
 		isEmbed = 'EMBED' === k.tagName;
 		if (isEmbed && 'OBJECT' === k.parentNode.tagName) continue;
 		if (isPlayer(k)) {
-			console.log(k, ' is player!');
+			console.log(k, swfAddr, ' is player!');
 			mo.disconnect();
 			mo.takeRecords();
 			mo = null;
@@ -186,13 +177,7 @@ function callBack() {
 			return;
 		}
 	}
-}
-
-if (window.chrome) {
-	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-}
-let mo = new MutationObserver(callBack);
+});
 mo.observe(bd, {childList: true});
 let div = doc.createElement('div');
 bd.appendChild(div);
