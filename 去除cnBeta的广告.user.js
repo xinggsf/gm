@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         去除cnBeta的广告
 // @namespace    cnBeta.xinggsf
-// @version      1.0
+// @version      2016.5.16
 // @description  去除cnBeta.com的广告
 // @author       xinggsf
 // @match        http://www.cnbeta.com/*
@@ -9,23 +9,22 @@
 // @run-at       document-start
 // ==/UserScript==
 
-'use strict';//HTMLElement textContent
-let ib = unsafeWindow.Node.prototype.insertBefore;
-unsafeWindow.Node.prototype.insertBefore = function(t, p) {
-	if (t.tagName === 'DIV' && this.tagName === 'BODY' &&
-		t.querySelector('a[href$=adblock.htm]')) {
-		unsafeWindow.Node.prototype.insertBefore = ib;
+'use strict';//HTMLElement 
+let d = unsafeWindow.document,
+js = d.createElement('script');
+js.textContent = 'const JB = 0;';
+d.head.appendChild(js);
+/* //下一种方法仍然有效
+let p = unsafeWindow.Node.prototype,
+ib = p.insertBefore;
+p.insertBefore = function(t) {
+	if (t.matches('div[id][style*="position:fixed;top:0;"]')
+		&& this.tagName === 'BODY' &&
+		t.querySelector('a[href$=".com/articles/3.htm"]'))
+	{
+		p.insertBefore = ib;
 		return;
 	}
-	ib.apply(this, Array.prototype.slice.call(arguments));
-};
-/* let mo = new MutationObserver(rs => {
-	for (let i of unsafeWindow.document.querySelectorAll('body>div'))
-		if (i.innerHTML.includes('浏览器广告屏蔽插件的拦截名单')) {
-			i.parentNode.removeChild(i);
-			mo = null;
-			return;
-		}
-});
-mo.observe(document, {childList: true, subtree: true}); */
+	ib.apply(this, Array.from(arguments));//Array.prototype.slice.call
+}; */
 console.log('Del AD');
