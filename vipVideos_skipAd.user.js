@@ -10,7 +10,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.5.13
+// @version        2016.5.18
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
@@ -18,12 +18,13 @@
 -function(doc, bd) {
 "use strict";
 let isEmbed, swfAddr,
+playerIds = [],//已处理flash.id
 swfBlockList = [
 	'http://staticlive.douyutv.com/upload/signs/201',
 	'http://www.kcis.cn/wp-content/themes/kcis/adv.',
 	'http://www.kktv5.com/swf/copy.swf',
 	'http://static.xcyo.com/swf/effect',//龙珠
-	'http://static.youku.com/ddshow/2fa1f9f6/flash/',//v.laifeng.com
+	//'http://static.youku.com/ddshow/c021a88e/flash',//v.laifeng.com
 ],
 swfWhiteList = [
 	'.pdim.gs/static/',//熊猫直播
@@ -45,13 +46,13 @@ PLAYER_URL = [
 				setTimeout(scrollTo(0, 99), 9);
 				unsafeWindow._ssPlayer = p.outerHTML.replace('direct','gpu');
 				unsafeWindow.document.querySelector("div#ab_pip").outerHTML =
-				'<a style="font-size:20px;" onclick="document.querySelector(\'#mplayer\').outerHTML=_ssPlayer, delete _ssPlayer, this.parentNode.removeChild(this);">换原播放器</a>';
-				return !0
+				'<a style="font-size:20px;" onclick="document.querySelector(\'#movie_player\').outerHTML=_ssPlayer, delete _ssPlayer, this.parentNode.removeChild(this);">换原播放器</a>';
+				return !0;
 			case 'www.acfun.tv':
 			case 'acfun.tudou.com':
 				fv = fv.match(/vid=(\w+)/);
 				fv && setPlayer(p, youkuFormat(fv[1]));
-				return !1;;
+				return !1;
 			default:
 				fv = src.match(this.urls[1]) || src.match(this.varsMatch) ||
 					fv.match(this.varsMatch);
@@ -65,7 +66,7 @@ PLAYER_URL = [
 			//^http:\/\/dispatcher\.video\.qiyi\.com\/disp\/shareplayer\.swf/,
 			//^http:\/\/cdn\.aixifan\.com\/player\/cooperation\/AcFunXQiyi\.swf/,
 		],
-		run: (p, src) => {qyOutsiteFormat(p);}
+		run: (p, src) => qyOutsiteFormat(p)
 	},{
 		urls: [
 			/^http:\/\/www\.iqiyi\.com\/common\/flashplayer/,
@@ -79,7 +80,7 @@ PLAYER_URL = [
 
 function youkuFormat(vid) {
 //下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
-	return `<embed id="mplayer" wmode="gpu" width="100%" height="100%" src="http://opengg.guodafanli.com/adkiller/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
+	return `<embed id="movie_player" wmode="gpu" width="100%" height="100%" src="http://opengg.guodafanli.com/adkiller/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
 }
 function ykOutsitePlayer(vid, p) {
 	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://opengg.guodafanli.com/adkiller/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}">`);
@@ -103,10 +104,12 @@ function openFlashGPU(p) {
 function isPlayer(p) {
 	swfAddr = p.src || p.data || p.children.movie.value;
 	if (swfWhiteList.some(x => swfAddr.includes(x))) return !0;
-	if (swfBlockList.some(x => swfAddr.startsWith(x))) return !1;//p.parentNode.removeChild(p);
-	if (!p.width || parseInt(p.width) < 33 || parseInt(p.height) < 12) return !1;
-	if (isEmbed) return p.getAttribute('allowFullScreen') === 'true';
-	return /\ballowfullscreen\b/i.test(p.innerHTML);
+	if (!p.width || swfBlockList.some(x => swfAddr.startsWith(x))) return !1;//p.parentNode.removeChild(p);
+	if (p.width.endsWith('%')) return !0;
+	if (parseInt(p.width) < 233 || parseInt(p.height) < 53) return !1;
+	return isEmbed ? p.matches('[allowFullScreen=true]') :
+		/"allowfullscreen"/i.test(p.innerHTML);
+	//[].some.call(p.children, t => t.name.toLowerCase() === 'allowfullscreen')
 }
 function refreshElem(o) {
 	let s = o.style.display;
@@ -122,8 +125,8 @@ function setPlayer(play, oHtml) {
 function setObjectVal(p, name, v) {
 	let e = p.querySelector('embed');
 	e && e.setAttribute(name, v);
+	p.hasAttribute(name) && p.setAttribute(name, v);
 	name = name.toLowerCase();
-	if (p.hasAttribute(name)) p.setAttribute(name, v);
 	for (let o of p.childNodes) {
 		if (o.name && o.name.toLowerCase() === name) {
 			o.value = v;
@@ -164,21 +167,19 @@ if (window.chrome) {
 	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
-let mo = new MutationObserver(() => {
+new MutationObserver(function() {
 	for (let k of doc.querySelectorAll('object,embed')) {
-		isEmbed = 'EMBED' === k.tagName;
-		if (isEmbed && 'OBJECT' === k.parentNode.tagName) continue;
+		if (!k.id || playerIds.indexOf(k.id) !== -1) continue;
+		isEmbed = k.matches('embed');
+		if (isEmbed && k.parentNode.matches('object')) continue;
 		if (isPlayer(k)) {
 			console.log(k, swfAddr, ' is player!');
-			mo.disconnect();
-			mo.takeRecords();
-			mo = null;
+			//this.disconnect();
+			playerIds.push(k.id);
 			doPlayer(k);
-			return;
 		}
 	}
-});
-mo.observe(bd, {childList: true});
+}).observe(bd, {childList: true});
 let div = doc.createElement('div');
 bd.appendChild(div);
 bd.removeChild(div);
