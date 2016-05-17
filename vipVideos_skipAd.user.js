@@ -19,17 +19,11 @@
 "use strict";
 let isEmbed, swfAddr,
 playerIds = [],//已处理flash.id
-swfBlockList = [
-	'http://staticlive.douyutv.com/upload/signs/201',
-	'http://www.kcis.cn/wp-content/themes/kcis/adv.',
-	'http://www.kktv5.com/swf/copy.swf',
-	'http://static.xcyo.com/swf/effect',//龙珠
-	//'http://static.youku.com/ddshow/c021a88e/flash',//v.laifeng.com
-],
 swfWhiteList = [
 	'.pdim.gs/static/',//熊猫直播
 	'http://v.6.cn/apple/player/',
 	'.plures.net/pts/swfbin/player/live.swf',//龙珠直播
+	'http://www.gaoxiaovod.com/ck/player.swf',
 ],
 PLAYER_URL = [
 	{
@@ -104,7 +98,7 @@ function openFlashGPU(p) {
 function isPlayer(p) {
 	swfAddr = p.src || p.data || p.children.movie.value;
 	if (swfWhiteList.some(x => swfAddr.includes(x))) return !0;
-	if (!p.width || swfBlockList.some(x => swfAddr.startsWith(x))) return !1;//p.parentNode.removeChild(p);
+	if (!p.width) return !1;//p.parentNode.removeChild(p);
 	if (p.width.endsWith('%')) return !0;
 	if (parseInt(p.width) < 233 || parseInt(p.height) < 53) return !1;
 	return isEmbed ? p.matches('[allowFullScreen=true]') :
@@ -168,15 +162,16 @@ if (window.chrome) {
 	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 }
 new MutationObserver(function() {
-	for (let k of doc.querySelectorAll('object,embed')) {
-		if (!k.id || playerIds.indexOf(k.id) !== -1) continue;
+	let k, id;
+	for (k of doc.querySelectorAll('object,embed')) {
+		id = k.id;
+		if (!id || playerIds.indexOf(id) !== -1) continue;
 		isEmbed = k.matches('embed');
 		if (isEmbed && k.parentNode.matches('object')) continue;
 		if (isPlayer(k)) {
 			console.log(k, swfAddr, ' is player!');
-			//this.disconnect();
-			playerIds.push(k.id);
 			doPlayer(k);
+			playerIds.push(id);
 		}
 	}
 }).observe(bd, {childList: true});
