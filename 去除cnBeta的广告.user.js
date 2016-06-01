@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         去除cnBeta的广告
 // @namespace    cnBeta.xinggsf
-// @version      2016.5.16
+// @version      2016.6.1
 // @description  去除cnBeta.com的广告
 // @author       xinggsf
 // @match        http://www.cnbeta.com/*

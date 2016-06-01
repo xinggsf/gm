@@ -10,7 +10,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.5.18
+// @version        2016.6.1
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
@@ -18,7 +18,7 @@
 -function(doc, bd) {
 "use strict";
 let isEmbed, swfAddr,
-playerIds = [],//已处理flash.id
+playerAddrs = [],//已处理flash
 swfWhiteList = [
 	'.pdim.gs/static/',//熊猫直播
 	'http://v.6.cn/apple/player/',
@@ -35,6 +35,7 @@ PLAYER_URL = [
 		varsMatch: /VideoIDS=(\w+)/,
 		format: youkuFormat,
 		isProc: function(p, fv, src) {
+			playerAddrs.push('http://minggo.coding.io/swf/player.swf');
 			switch(location.hostname) {
 			case 'v.youku.com':
 				setTimeout(scrollTo(0, 99), 9);
@@ -74,18 +75,19 @@ PLAYER_URL = [
 
 function youkuFormat(vid) {
 //下载https://raw.githubusercontent.com/xinggsf/gm/master/yk.swf到本地，可替换
-	return `<embed id="movie_player" wmode="gpu" width="100%" height="100%" src="http://opengg.guodafanli.com/adkiller/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
+	return `<embed id="movie_player" wmode="gpu" width="100%" height="100%" src="http://minggo.coding.io/swf/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
 }
 function ykOutsitePlayer(vid, p) {
-	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://opengg.guodafanli.com/adkiller/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}">`);
+	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://minggo.coding.io/swf/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}">`);
 }
 function qyOutsiteFormat(p) {
 	let v = getFlashvars(p),
 	//css = p.style.cssText,
 	tvid = v.match(/\btvId=(\w+)/i)[1],
 	definitionID = v.match(/\b(?:definitionID|sourceId|vid)=(\w+)/)[1],
-	//http://dispatcher.video.qiyi.com/disp/shareplayer.swf http://minggo.coding.io/swf/
-	s = `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://opengg.guodafanli.com/adkiller/iqiyi_out.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&showDock=0">`;
+	//http://dispatcher.video.qiyi.com/disp/shareplayer.swf http://opengg.guodafanli.com/adkiller/
+	s = `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://minggo.coding.io/swf/iqiyi_out.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&showDock=0">`;
+	playerAddrs.push('http://minggo.coding.io/swf/iqiyi_out.swf');
 	setPlayer(p, s);
 }
 function iqiyiFormat(src, fvar) {
@@ -93,10 +95,10 @@ function iqiyiFormat(src, fvar) {
 }
 function openFlashGPU(p) {
 	isEmbed ? p.setAttribute('wmode', 'gpu') : setObjectVal(p, 'wmode', 'gpu');
+	//p.parentNode.replaceChild(p.cloneNode(true), p);
 	refreshElem(p);
 }
 function isPlayer(p) {
-	swfAddr = p.src || p.data || p.children.movie.value;
 	if (swfWhiteList.some(x => swfAddr.includes(x))) return !0;
 	if (!p.width) return !1;//p.parentNode.removeChild(p);
 	if (p.width.endsWith('%')) return !0;
@@ -157,21 +159,20 @@ function doPlayer(e) {
 	openFlashGPU(e);
 }
 
-if (window.chrome) {
+if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-}
 new MutationObserver(function() {
-	let k, id;
-	for (k of doc.querySelectorAll('object,embed')) {
-		id = k.id;
-		if (!id || playerIds.indexOf(id) !== -1) continue;
+	for (let k of doc.querySelectorAll('object,embed')) {
 		isEmbed = k.matches('embed');
-		if (isEmbed && k.parentNode.matches('object')) continue;
+		if (isEmbed && k.parentNode.matches('object'))
+			continue;
+		swfAddr = isEmbed ? k.src : k.data || k.children.movie.value;
+		if (!/\.swf(?:$|\?)/.test(swfAddr) || playerAddrs.indexOf(swfAddr) !== -1)
+			continue;
+		playerAddrs.push(swfAddr);
 		if (isPlayer(k)) {
 			console.log(k, swfAddr, ' is player!');
 			doPlayer(k);
-			playerIds.push(id);
 		}
 	}
 }).observe(bd, {childList: true});

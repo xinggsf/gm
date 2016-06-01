@@ -6,7 +6,7 @@
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/18613
 // updateURL       https://greasyfork.org/scripts/18613.js
 // @include        http://www.douyu.com/*
-// @version        2016.5.18
+// @version        2016.6.1
 // @encoding       utf-8
 // @compatible     chrome45+
 // @compatible     firefox38+
@@ -21,30 +21,32 @@ function setCDN(us) {
 	GM_setValue('CDNset', us);
 	unsafeWindow.location.reload();
 }
+const svrList = ['tct', 'ws2', 'ws', 'dl'];
 function getCDN() {
-	switch(GM_getValue('CDNset', 'r')) {
-	case 'n'://网通
-		return 'dl';
-	case 'r':
-		return ['tct', 'ws2', 'ws', 'dl'][~~(Math.random() * 4)];
-	case 'e'://电信
-		return ['tct', 'ws2', 'ws'][~~(Math.random() * 3)];
-	}
+	let n = GM_getValue('CDNset', 4);
+	if (n === 0) return svrList[3];//网通
+	return svrList[~~(Math.random() * n)];
 }
-let setFlash = !1, $ = unsafeWindow.$;
+GM_registerMenuCommand('电信（随机）', () => setCDN(3));
+GM_registerMenuCommand('网通', () => setCDN(0));
+GM_registerMenuCommand('随机', () => setCDN(4));
+
+let setFlash = !1,
+$ = unsafeWindow.$,
+options = {childList: true, subtree: true};
 //$('.vcode9-sign').live('show', () => $(this).remove());//委托/后绑定事件
 $('div[class|=room-ad],div[class$=-ad],.tab-content.promote').remove();
 new MutationObserver(function(rs) {
-	if (!rs.some(x => x.addedNodes.length)) return;
+	//弹幕滚屏文字不处理
+	//if (rs.some(x => x.target.closest('div.chat'))) return;
+	//if (!rs.some(x => x.addedNodes.length)) return;
 	this.disconnect();
 	$('.assort-ad,.chat-top-ad,.vcode9-sign,#watchpop,.giftbox,.focus').remove();
 	$('.focus-lead,.live-lead,.show-watch,div.no-login,.pop-zoom-container').remove();
 	$('.focus_lead,.live_lead,.show_watch,div.no_login,.pop_zoom_container').remove();
 	console.log('remove ads!');
 	//this.takeRecords();
-	this.observe(document.body, {
-		childList: true, subtree: true
-	});
+	this.observe(document.body, options);
 
 	if (setFlash) return;
 	let rm = $('object[data*="/simplayer/WebRoom"]');
@@ -54,13 +56,9 @@ new MutationObserver(function(rs) {
 	s = c.flashvars.value;
 	c.wmode.value = 'gpu';
 	c.flashvars.value = s.replace(/&cdn=\w*/, '&cdn='+getCDN());
+	console.log('Flash Accelerate: gpu, cdn');
+	rm.toggle().toggle();//.offsetParent() 领鱼丸：'div.get-yw.fl'
 	setFlash = !0;
-	console.log('do flash');
-	rm.toggle().toggle();
+	delete options.subtree;
 	//$('span.tab-btn-text').click();
-}).observe(document.body, {
-	childList: true, subtree: true
-});
-GM_registerMenuCommand('电信（随机）', () => setCDN('e'));
-GM_registerMenuCommand('网通', () => setCDN('n'));
-GM_registerMenuCommand('随机', () => setCDN('r'));
+}).observe(document.body, options);
