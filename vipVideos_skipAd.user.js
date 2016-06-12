@@ -10,7 +10,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.6.11
+// @version        2016.6.12
 // @encoding       utf-8
 // @grant          unsafeWindow
 // @grant          GM_setValue
@@ -172,7 +172,7 @@ bd.appendChild(div);
 bd.removeChild(div);
 if (GM_getValue('unread', !0)) {
 	GM_setValue('unread', !1);
-	if (confirm('作者已经迭代了几十个版本，为更好的支持后续开发，你愿意捐助吗？\n（支付宝帐号xinggsf@21cn.com已复制到剪贴板，捐助后保留转帐信息可能有惊喜）'))
+	if (confirm('作者已经迭代了vipVideos_skipAd几十个版本，为更好的支持后续开发，你愿意捐助吗？\n（支付宝帐号xinggsf@21cn.com已复制到剪贴板，捐助后保留转帐信息可能有惊喜！）\n已捐助的朋友可到卡饭或脚本站发帖领取惊喜'))
 		GM_setClipboard('xinggsf@21cn.com');
 }
 }(document, document.body);
