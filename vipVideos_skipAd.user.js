@@ -10,7 +10,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.6.12
+// @version        2016.6.13
 // @encoding       utf-8
 // @grant          unsafeWindow
 // @grant          GM_setValue
@@ -62,10 +62,7 @@ PLAYER_URL = [
 	},{//iqiyi
 		urls: [/^http:\/\/www\.iqiyi\.com\/common\/flashplayer/],
 		run: iqiyiFormat
-	},/* {//qq video
-		urls: [/^http:\/\/imgcache\.qq\.com\/tencentvideo_v1\/player\/TencentPlayer\.swf/],
-		run: doQQPlayer
-	}, */
+	},
 ];
 
 function youkuFormat(vid) {
@@ -86,26 +83,17 @@ function iqiyiFormat(p, v) {
 	s = `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${swfAddr}" flashvars="${s}">`;
 	setPlayer(p, s);
 }
-/* function doQQPlayer(p, v) {
-	let vid = v.match(/\bvid=(\w+)/)[1],
-	cid = v.match(/\bcid=(\w+)/)[1],
-	s = `<embed id="player" wmode="gpu" width="100%" height="100%" allowscriptaccess="always" allowfullscreen="true" type="application/x-shockwave-flash" src="http://cache.tv.qq.com/QQPlayer.swf" flashvars="vid=${vid}&autoplay=1&list=2&adplay=0&cid=${cid}&showcfg=1&title=版权来源：腾讯视频&rightpanel=0&share=0&popup=0&showend=0">`;
-	setPlayer(p, s);
-	playerAddrs.push('http://cache.tv.qq.com/QQPlayer.swf');
-} */
 function openFlashGPU(p) {
 	isEmbed ? p.setAttribute('wmode', 'gpu') : setObjectVal(p, 'wmode', 'gpu');
-	//p.parentNode.replaceChild(p.cloneNode(true), p);
 	refreshElem(p);
 }
 function isPlayer(p) {
 	if (swfWhiteList.some(x => swfAddr.includes(x))) return !0;
-	if (!p.width) return !1;//p.parentNode.removeChild(p);
+	if (!p.width) return !1;
 	if (p.width.endsWith('%')) return !0;
 	if (parseInt(p.width) < 233 || parseInt(p.height) < 53) return !1;
 	return isEmbed ? p.matches('[allowFullScreen]') :
 		/"allowfullscreen"/i.test(p.innerHTML);
-	//[].some.call(p.children, t => t.name.toLowerCase() === 'allowfullscreen')
 }
 function refreshElem(o) {
 	let s = o.style.display;
@@ -172,7 +160,7 @@ bd.appendChild(div);
 bd.removeChild(div);
 if (GM_getValue('unread', !0)) {
 	GM_setValue('unread', !1);
-	if (confirm('作者已经迭代了vipVideos_skipAd几十个版本，为更好的支持后续开发，你愿意捐助吗？\n（支付宝帐号xinggsf@21cn.com已复制到剪贴板，捐助后保留转帐信息可能有惊喜！）\n已捐助的朋友可到卡饭或脚本站发帖领取惊喜'))
+	if (confirm('vipVideos_skipAd脚本已经历了几十个版本，为更好的支持后续开发，你愿意捐助吗？\n（支付宝帐号xinggsf@21cn.com已复制到剪贴板，已捐助的朋友可到卡饭或脚本站发帖领取礼物！）'))
 		GM_setClipboard('xinggsf@21cn.com');
 }
 }(document, document.body);
