@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name           delBDMusic_Ad-JS
-// @namespace      delBDMusic_Ad-JS
-// @author	       xinggsf~gmail。com
+// @name           killBDMusicBox_Ad
+// @namespace      killBDMusicBox_Ad.xinggsf
+// @author	       xinggsf
 // @description    删除百度音乐盒广告脚本,禁止插播音频广告
 // @license        GPL version 3
 // @include        http://play.baidu.com/*

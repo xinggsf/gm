@@ -10,19 +10,17 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.6.13
+// @version        2016.7.9
 // @encoding       utf-8
 // @grant          unsafeWindow
-// @grant          GM_setValue
-// @grant          GM_getValue
-// @grant          GM_setClipboard
 // ==/UserScript==
 
 -function(doc, bd) {
 "use strict";
 let isEmbed, swfAddr,
 regYk = /VideoIDS=(\w+)/,
-playerAddrs = ['http://minggo.coding.io/swf/'],//已处理flash
+//已处理flash http://minggo.coding.io/swf/
+playerAddrs = ['http://opengg.guodafanli.com/adkiller/'],
 swfWhiteList = [
 	'.pdim.gs/static/',//熊猫直播
 	'http://v.6.cn/apple/player/',
@@ -33,7 +31,7 @@ PLAYER_URL = [
 	{
 		urls: [/^http:\/\/static\.youku\.com\/v.*?(?:play|load)er/],
 		run: function(p, v) {
-			setTimeout(scrollTo(0, 99), 9);
+			unsafeWindow.scrollTo(0, 99);
 			unsafeWindow._ssPlayer = p.outerHTML.replace('direct','gpu');
 			unsafeWindow.document.querySelector("div#ab_pip").outerHTML =
 			'<a style="font-size:20px;" onclick="document.querySelector(\'#movie_player\').outerHTML=_ssPlayer, delete _ssPlayer, this.parentNode.removeChild(this);">换原播放器</a>';
@@ -66,16 +64,16 @@ PLAYER_URL = [
 ];
 
 function youkuFormat(vid) {
-	return `<embed id="movie_player" wmode="gpu" width="100%" height="100%" src="http://minggo.coding.io/swf/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
+	return `<embed id="movie_player" wmode="gpu" width="100%" height="100%" src="${playerAddrs[0]}player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
 }
 function ykOutsitePlayer(vid, p) {
-	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://minggo.coding.io/swf/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}">`);
+	setPlayer(p, `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="${playerAddrs[0]}player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}">`);
 }
 function qyOutsiteFormat(p, v) {
 	let tvid = v.match(/\btvId=(\w+)/i)[1],
 	definitionID = v.match(/\b(?:definitionID|sourceId|vid)=(\w+)/)[1],
-	//http://dispatcher.video.qiyi.com/disp/shareplayer.swf http://opengg.guodafanli.com/adkiller/
-	s = `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="http://minggo.coding.io/swf/iqiyi_out.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&showDock=0">`;
+	//http://dispatcher.video.qiyi.com/disp/shareplayer.swf
+	s = `<embed width="100%" height="100%" allowscriptaccess="always" wmode="gpu" allowfullscreen="true" type="application/x-shockwave-flash" id="${p.id}" src="${playerAddrs[0]}iqiyi_out.swf" flashvars="vid=${definitionID}&tvid=${tvid}&autoPlay=1&showSearch=0&showSearchBox=0&autoHideControl=1&cid=qc_100001_300089&showDock=0">`;
 	setPlayer(p, s);
 }
 function iqiyiFormat(p, v) {
@@ -158,9 +156,4 @@ new MutationObserver(function() {
 let div = doc.createElement('div');
 bd.appendChild(div);
 bd.removeChild(div);
-if (GM_getValue('unread', !0)) {
-	GM_setValue('unread', !1);
-	if (confirm('vipVideos_skipAd脚本已经历了几十个版本，为更好的支持后续开发，你愿意捐助吗？\n（支付宝帐号xinggsf@21cn.com已复制到剪贴板，已捐助的朋友可到卡饭或脚本站发帖领取礼物！）'))
-		GM_setClipboard('xinggsf@21cn.com');
-}
 }(document, document.body);

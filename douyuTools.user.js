@@ -2,11 +2,11 @@
 // @name           douyuTools
 // @namespace      douyuTools.xinggsf
 // @author         xinggsf
-// @description    ∂∑”„TV»•π„∏Ê£¨ø™∆ÙCDNº”ÀŸ°¢GPUº”ÀŸ
+// @description    ÊñóÈ±ºTVÂéªÂπøÂëäÔºåÂºÄÂêØCDNÂä†ÈÄü„ÄÅGPUÂä†ÈÄü
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/18613
 // updateURL       https://greasyfork.org/scripts/18613.js
 // @include        http://www.douyu.com/*
-// @version        2016.6.1
+// @version        2016.7.13
 // @encoding       utf-8
 // @compatible     chrome45+
 // @compatible     firefox38+
@@ -15,35 +15,45 @@
 // @grant          GM_setValue
 // @grant          GM_getValue
 // ==/UserScript==
-
 "use strict";
-function setCDN(us) {
-	GM_setValue('CDNset', us);
-	unsafeWindow.location.reload();
-}
+
 const svrList = ['tct', 'ws2', 'ws', 'dl'];
 function getCDN() {
-	let n = GM_getValue('CDNset', 4);
-	if (n === 0) return svrList[3];//Õ¯Õ®
-	return svrList[~~(Math.random() * n)];
+	let n = GM_getValue('CDN', 9);
+	if (n < svrList.length) return svrList[n];//ÁΩëÈÄö
+	return svrList[~~(Math.random() * (svrList.length-1))];
 }
-GM_registerMenuCommand('µÁ–≈£®ÀÊª˙£©', () => setCDN(3));
-GM_registerMenuCommand('Õ¯Õ®', () => setCDN(0));
-GM_registerMenuCommand('ÀÊª˙', () => setCDN(4));
+function configValue(field, v = null) {
+	if (v === null) v = !GM_getValue(field, !1);
+	GM_setValue(field, v);
+	unsafeWindow.location.reload();
+}
+
+GM_registerMenuCommand('ÈöèÊú∫ Áîµ‰ø°Á∫øË∑Ø', () => configValue('CDN',9));
+GM_registerMenuCommand('‰∏ªÁ∫øË∑Ø', () => configValue('CDN',2));
+GM_registerMenuCommand('Á∫øË∑Ø5', () => configValue('CDN',0));
+GM_registerMenuCommand('Á∫øË∑Ø2', () => configValue('CDN',1));
+GM_registerMenuCommand('ÁΩëÈÄö', () => configValue('CDN',3));
+let title = 'ÂéªÊú™ÁôªÂΩïÈôêÂà∂';
+if (GM_getValue('notLogin', !1)) title = '‚àö ' + title;
+GM_registerMenuCommand(title, () => configValue('notLogin'));
+title = 'ÂéªÁ§ºÁâ©ÊïàÊûú';
+if (GM_getValue('noDift', !1)) title = '‚àö ' + title;
+GM_registerMenuCommand(title, () => configValue('noDift'));
 
 let setFlash = !1,
 $ = unsafeWindow.$,
 options = {childList: true, subtree: true};
-//$('.vcode9-sign').live('show', () => $(this).remove());//ŒØÕ–/∫Û∞Û∂® ¬º˛
+//$('.vcode9-sign').live('show', () => $(this).remove());//ÂßîÊâò/ÂêéÁªëÂÆö‰∫ã‰ª∂
 $('div[class|=room-ad],div[class$=-ad],.tab-content.promote').remove();
 new MutationObserver(function(rs) {
-	//µØƒªπˆ∆¡Œƒ◊÷≤ª¥¶¿Ì
+	//ÂºπÂπïÊªöÂ±èÊñáÂ≠ó‰∏çÂ§ÑÁêÜ
 	//if (rs.some(x => x.target.closest('div.chat'))) return;
 	//if (!rs.some(x => x.addedNodes.length)) return;
 	this.disconnect();
 	$('.assort-ad,.chat-top-ad,.vcode9-sign,#watchpop,.giftbox,.focus').remove();
 	$('.focus-lead,.live-lead,.show-watch,div.no-login,.pop-zoom-container').remove();
-	$('.focus_lead,.live_lead,.show_watch,div.no_login,.pop_zoom_container').remove();
+	$('focus_lead,.live_lead,.show_watch,div.no_login,.pop_zoom_container').remove();
 	console.log('remove ads!');
 	//this.takeRecords();
 	this.observe(document.body, options);
@@ -51,13 +61,22 @@ new MutationObserver(function(rs) {
 	if (setFlash) return;
 	let rm = $('object[data*="/simplayer/WebRoom"]');
 	if (!rm.length) return;
-	scrollTo(0, 125);
+	unsafeWindow.scrollTo(0, 120);
 	let c = rm[0].children,
 	s = c.flashvars.value;
 	c.wmode.value = 'gpu';
-	c.flashvars.value = s.replace(/&cdn=\w*/, '&cdn='+getCDN());
+	s = s.replace(/&cdn=\w*/, '&cdn='+getCDN());
+	if (GM_getValue('notLogin', !1)) {
+		s = s.replace('&uid=0', '&uid=11111')
+			.replace(/&flashConfig=[^&]*/, '');
+	}
+	if (GM_getValue('noDift', !1)) {
+		s = s.replace(/&effectSwf=[^&]*/, '')
+			.replace(/&effectConfig=[^&]*/, '');
+	}
+	c.flashvars.value = s;
+	rm.toggle().toggle();
 	console.log('Flash Accelerate: gpu, cdn');
-	rm.toggle().toggle();//.offsetParent() ¡Ï”„ÕË£∫'div.get-yw.fl'
 	setFlash = !0;
 	delete options.subtree;
 	//$('span.tab-btn-text').click();
