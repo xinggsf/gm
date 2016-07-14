@@ -10,7 +10,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.7.9
+// @version        2016.7.15
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
@@ -98,6 +98,8 @@ function refreshElem(o) {
 	o.style.display = 'none';
 	setTimeout(() => {
 		s ? o.style.display = s : o.style.removeProperty('display');
+		if ('' === o.getAttribute('style'))
+			o.removeAttribute('style');
 	}, 9);
 }
 function setPlayer(play, oHtml) {
