@@ -6,7 +6,7 @@
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/18613
 // updateURL       https://greasyfork.org/scripts/18613.js
 // @include        http://www.douyu.com/*
-// @version        2016.7.15
+// @version        2016.7.16
 // @encoding       utf-8
 // @compatible     chrome45+
 // @compatible     firefox38+
@@ -17,26 +17,27 @@
 // ==/UserScript==
 "use strict";
 
-const svrList = ['tct', 'ws2', 'ws', 'dl'],
-menuOpt = [
-			['主线路','CDN',2],
-			['线路5','CDN',0],
-			['线路2','CDN',1],
-			['网通','CDN',2],
-			['电信线路随机','CDN',9],
-			['去未登录限制','notLogin',!1],
-			['去礼物效果','noDift',!1],
-];
+const svrList = ['tct', 'ws2', 'ws', 'dl'];
 function getCDN() {
 	let n = GM_getValue('CDN', 9);
-	if (n < svrList.length) return svrList[n];//网通
-	return svrList[~~(Math.random() * (svrList.length-1))];
+	if (n < svrList.length) return svrList[n];
+	return svrList[~~(Math.random() * 3)];
 }
-function configValue(field, v = !1) {
+function configValue(field, v) {
 	if (typeof v === 'boolean') v = !GM_getValue(field, !1);
 	GM_setValue(field, v);
 	unsafeWindow.location.reload();
 }
+/*
+const menuOpt = [
+			['主线路','CDN',2],
+			['线路5','CDN',0],
+			['线路2','CDN',1],
+			['网通','CDN',3],
+			['电信线路随机','CDN',9],
+			['去未登录限制','notLogin',!1],
+			['去礼物效果','noDift',!1],
+];
 function buildMenu() {
 	let title, i, r,
 	cdn = GM_getValue('CDN', 9);
@@ -46,8 +47,30 @@ function buildMenu() {
 		else
 			r = GM_getValue(i[1], i[2]);
 		title = r ? ('√  ' + i[0]) : i[0];
-		GM_registerMenuCommand(title, () => configValue(i[1], i[2]));		
+		GM_registerMenuCommand(title, () => configValue(i[1], i[2]));
 	}
+} */
+let _cdn = GM_getValue('CDN', 9);
+function getTitle(title, field, val) {
+	let r = (field === 'CDN') ? _cdn === val :
+			GM_getValue(field, val);
+	return r ? ('√  ' + title) : title;
+}
+function buildMenu() {
+	let s = getTitle('线路5', 'CDN', 0);
+	GM_registerMenuCommand(s, () => configValue('CDN', 0));
+	s = getTitle('线路2', 'CDN', 1);
+	GM_registerMenuCommand(s, () => configValue('CDN', 1));
+	s = getTitle('主线路', 'CDN', 2);
+	GM_registerMenuCommand(s, () => configValue('CDN', 2));
+	s = getTitle('网通', 'CDN', 3);
+	GM_registerMenuCommand(s, () => configValue('CDN', 3));
+	s = getTitle('电信线路随机', 'CDN', 9);
+	GM_registerMenuCommand(s, () => configValue('CDN', 9));
+	s = getTitle('去未登录限制', 'notLogin', !1);
+	GM_registerMenuCommand(s, () => configValue('notLogin', !1));
+	s = getTitle('去礼物效果', 'noDift', !1);
+	GM_registerMenuCommand(s, () => configValue('noDift', !1));
 }
 
 buildMenu();
