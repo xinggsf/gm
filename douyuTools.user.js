@@ -5,8 +5,8 @@
 // @description    斗鱼TV去广告；开启CDN和GPU加速；去未登录限制；去礼物效果
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/18613
 // updateURL       https://greasyfork.org/scripts/18613.js
-// @include        http://www.douyu.com/*
-// @version        2016.7.16
+// @include        https://www.douyu.com/*
+// @version        2016.9.2
 // @encoding       utf-8
 // @compatible     chrome45+
 // @compatible     firefox38+
