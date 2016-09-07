@@ -3,14 +3,13 @@
 // @namespace      vipVideos_skipAd-xinggsf
 // @author         xinggsf
 // @description    配合ABP去视频广告；开启GPU加速
-// @homepageURL    https://greasyfork.org/scripts/8561
 // updateURL       https://greasyfork.org/scripts/8561.js
 // @include        http*
 // @exclude        https://www.youtube.com/*
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.7.19
+// @version        2016.9.7
 // @encoding       utf-8
 // @grant          unsafeWindow
 // ==/UserScript==
@@ -35,7 +34,7 @@ PLAYER_URL = [
 			if (doc.domain.endsWith('youku.com')) {
 				unsafeWindow.scrollTo(0, 99);
 				unsafeWindow._ssPlayer = p.outerHTML.replace('direct','gpu');
-				unsafeWindow.document.querySelector("div#ab_pip").outerHTML =
+				unsafeWindow.document.querySelector("div.base_info+div").outerHTML =
 				'<a style="font-size:20px;" onclick="document.querySelector(\'#movie_player\').outerHTML=_ssPlayer, delete _ssPlayer, this.parentNode.removeChild(this);">换原播放器</a>';
 			}
 			v = v.match(regYk);
