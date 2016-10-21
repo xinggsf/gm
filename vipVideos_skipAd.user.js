@@ -9,7 +9,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.10.20
+// @version        2016.10.21
 // @encoding       utf-8
 // @grant          unsafeWindow
 // @grant          GM_registerMenuCommand
@@ -248,9 +248,10 @@
 	}
 	function $C(name, attr) {
 		let el = document.createElement(name);
-		if (attr) for (let i in attr) {
-			if (attr.hasOwnProperty(i))
-				el.setAttribute(i, attr[i]);
+		if (attr) {
+			for (var i in attr) {//用var修正TM的for-in循环BUG
+				attr.hasOwnProperty(i) && el.setAttribute(i, attr[i]);
+			}
 		}
 		return el;
 	}

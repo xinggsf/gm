@@ -6,7 +6,7 @@
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/18613
 // updateURL       https://greasyfork.org/scripts/18613.js
 // @include        https://www.douyu.com/*
-// @version        2016.9.2
+// @version        2016.10.21
 // @encoding       utf-8
 // @compatible     chrome45+
 // @compatible     firefox38+
@@ -80,13 +80,17 @@ options = {childList: true, subtree: true};
 //$('.vcode9-sign').live('show', () => $(this).remove());//委托/后绑定事件
 $('div[class|=room-ad],div[class$=-ad],.tab-content.promote').remove();
 new MutationObserver(function(rs) {
-	//弹幕滚屏文字不处理
-	//if (rs.some(x => x.target.closest('div.chat'))) return;
-	//if (!rs.some(x => x.addedNodes.length)) return;
 	this.disconnect();
-	$('.assort-ad,.chat-top-ad,.vcode9-sign,#watchpop,.giftbox,.focus').remove();
+	$('.assort-ad,.chat-top-ad,.vcode9-sign,#watchpop,.giftbox,.focus,.js-live-room-recommend').remove();
 	$('.focus-lead,.live-lead,.show-watch,div.no-login,.pop-zoom-container').remove();
 	$('focus_lead,.live_lead,.show_watch,div.no_login,.pop_zoom_container').remove();
+/*
+	for (let col of rs) {
+		//弹幕滚屏不处理
+		if (!col.target.closest('div.chat-cont') && col.addedNodes.some(x => x.matches('image')))
+			for (let e of col.addedNodes)
+				e && e.parentNode.removeChild(e);
+	} */
 	console.log('remove ads!');
 	//this.takeRecords();
 	this.observe(document.body, options);
@@ -94,23 +98,22 @@ new MutationObserver(function(rs) {
 	if (setFlash) return;
 	let rm = $('object[data*="/simplayer/WebRoom"]');
 	if (!rm.length) return;
-	unsafeWindow.scrollTo(0, 120);
+	//unsafeWindow.scrollTo(0, 120);
 	let c = rm[0].children,
 	s = c.flashvars.value;
 	c.wmode.value = 'gpu';
-	s = s.replace(/&cdn=\w*/, '&cdn='+getCDN());
+	s = s.replace(/&(?:aliRedBag|shopinfo|flashConfig)=[^&]*/g, '')
+		 .replace(/&cdn=\w*/, '&cdn='+ getCDN());
 	if (GM_getValue('notLogin', !1)) {
-		s = s.replace('&uid=0', '&uid=11111')
-			.replace(/&flashConfig=[^&]*/, '');
+		s = s.replace('&uid=0', '&uid=11111');
 	}
 	if (GM_getValue('noDift', !1)) {
-		s = s.replace(/&effectSwf=[^&]*/, '')
-			.replace(/&effectConfig=[^&]*/, '');
+		s = s.replace(/&(?:effectSwf|effectGiftSwf|effectConfig)=[^&]*/g, '');
 	}
 	c.flashvars.value = s;
-	rm.toggle().toggle();
+	//rm.toggle().toggle();
 	console.log('Flash Accelerate: gpu, cdn');
 	setFlash = !0;
-	delete options.subtree;
+	//delete options.subtree;
 	//$('span.tab-btn-text').click();
 }).observe(document.body, options);
