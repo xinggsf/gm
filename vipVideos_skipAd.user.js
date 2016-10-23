@@ -9,7 +9,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.10.23
+// @version        2016.10.24
 // @encoding       utf-8
 // @resource       player_swf https://bitbucket.org/kafan15536900/haoutil/raw/master/player/testmod/player.swf
 // @grant          GM_getResourceURL
@@ -46,7 +46,7 @@
 			let m = v.match(regYk)[1];
 			getPlayerUrl('player.swf')
 			.then(url => {
-				p.outerHTML = `<embed id="movie_player" wmode="gpu" width="100%" height="100%" src="${url}" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${m}&isAutoPlay=true">`;
+				setYkPlayer(p, url, m);
 				setTimeout(() => URL.revokeObjectURL(url), 3e3);
 			})
 			.then(console.log)
@@ -67,18 +67,15 @@
 			if (window.chrome) {
 				getPlayerUrl('player.swf')
 				.then(url => {
-					p.outerHTML = `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="${url}" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${m}">`;
-					//if (!s.endsWith('.swf'))
-						setTimeout(() => URL.revokeObjectURL(s), 3e3);
+					setYkPlayer(p, url, m);
+					setTimeout(() => URL.revokeObjectURL(url), 3e3);
 				});
 			} else {
-				p.outerHTML = `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="http://static.youku.com/v1.0.0658/v/swf/player.swf" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${m}">`;
+				setYkPlayer(p, 'http://static.youku.com/v1.0.0658/v/swf/player.swf', m);
 			}
 		}
 	};
 	let AcfunYk = {
-		//playerName: 'player.swf',//播放器默认文件名
-		//playerUrl: getPlayerUrl(this.playerName),
 		matchPlayer: function(url) {
 			return url.startsWith('http://cdn.aixifan.com/player/cooperation/acfunxyouku.swf');
 		},
@@ -88,12 +85,12 @@
 			if (window.chrome) {
 				getPlayerUrl('player.swf')
 				.then(url => {
-					p.outerHTML = `<embed id="${p.id}" wmode="gpu" width="100%" height="100%" src="${url}" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${m}&isAutoPlay=true">`;
+					setYkPlayer(p, url, m);
 					//if (!s.endsWith('.swf'))
-						setTimeout(() => URL.revokeObjectURL(s), 3e3);
+						setTimeout(() => URL.revokeObjectURL(url), 3e3);
 				});
 			} else {
-				p.outerHTML = `<embed id="${p.id}" wmode="gpu" width="100%" height="100%" src="http://static.youku.com/v1.0.0658/v/swf/player.swf" allowfullscreen="true" allowscriptaccess="always" type="application/x-shockwave-flash" flashvars="isShowRelatedVideo=true&showAd=0&show_ce=0&showsearch=0&VideoIDS=${m}&isAutoPlay=true">`;
+				setYkPlayer(p, 'http://static.youku.com/v1.0.0658/v/swf/player.swf', m);
 			}
 		}
 	};
@@ -102,9 +99,9 @@
 			return url.startsWith('http://www.iqiyi.com/common/flashplayer/201');
 		},
 		setPlayer: function(p, v) {//cid: 100141,300089, &components=fefb1060e &vipuser=
+			if (doc.querySelector('li[data-flag=xuanji]') ) return;//有选集不能去广告
 			let s = v.replace(/&(?:cid|\w+?Time|cpn\w|exclusive\w*|adurl|webEventID|\w*loader)=[^&]*/g,'') +'&cid=qc_100001_300089';
-			s = `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${swfAddr}" flashvars="${s}">`;
-			p.outerHTML = s;
+			p.outerHTML = `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${swfAddr}" flashvars="${s}">`;
 			/*
 			let opts = {};
 			opts.params = {
@@ -122,6 +119,9 @@
 		}
 	};
 
+	function setYkPlayer(p, url, vid) {
+		p.outerHTML = `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="${url}" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
+	}
 	function getPlayerUrl(fileName) {
 		if (noAdPlayerPath)
 			return noAdPlayerPath + fileName;
@@ -277,9 +277,9 @@ return arr;}
 			s = 'flashVars';
 		return p.children[s].value;
 	}
+	let player_pr = [Youku,YkOutsite,AcfunYk];//处理队列
 	function doPlayer(e) {
 		if (!onlyUseGpu) {
-			let player_pr = [Youku,YkOutsite,AcfunYk,Iqiyi];//处理队列
 			for (let t of player_pr) {
 				if (t.matchPlayer(swfAddr)) {
 					t.setPlayer(e, getFlashvars(e));
