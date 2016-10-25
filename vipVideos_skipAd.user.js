@@ -9,7 +9,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2016.10.24
+// @version        2016.10.25
 // @encoding       utf-8
 // @resource       player_swf https://bitbucket.org/kafan15536900/haoutil/raw/master/player/testmod/player.swf
 // @grant          GM_getResourceURL
@@ -43,9 +43,10 @@
 					'<a style="font-size:20px;" onclick="$(\'#movie_player\')[0].outerHTML=_ssPlayer;delete _ssPlayer;$(this).remove();">换原播放器</a>';
 			}
 
-			let m = v.match(regYk)[1];
-			getPlayerUrl('player.swf')
-			.then(url => {
+			let m = v.match(regYk)[1],
+			s = getPlayerUrl('player.swf');
+			if (typeof(s) ==='string') setYkPlayer(p, s, m);
+			else s.then(url => {
 				setYkPlayer(p, url, m);
 				setTimeout(() => URL.revokeObjectURL(url), 3e3);
 			})
@@ -77,7 +78,7 @@
 	};
 	let AcfunYk = {
 		matchPlayer: function(url) {
-			return url.startsWith('http://cdn.aixifan.com/player/cooperation/acfunxyouku.swf');
+			return url.toLowerCase().startsWith('http://cdn.aixifan.com/player/cooperation/acfunxyouku.swf');
 		},
 		setPlayer: function(p, v) {
 			let m = v.match(/vid=(\w+)/)[1];
@@ -151,16 +152,17 @@
 			}
 			return URL.createObjectURL(new Blob(a.response));
 		} */
-		return srcToFile(url, fileName, 'application/x-shockwave-flash')
-		.then(file => URL.createObjectURL(file));
-	}
-
-	function srcToFile(src, fileName, mimeType){
-		return fetch(src)
-			.then(function(res){return res.arrayBuffer();})
-			.then(function(buf){return new File([buf], fileName, {type:mimeType});});
+		return fetch(url)
+		//any more type: res.arrayBuffer()  .text()  .json()
+			.then(res => res.blob())
+			.then(data => URL.createObjectURL(data));
 	}
 /*
+	function dataURL2File(src, fileName, mimeType){
+		return fetch(src).then(res => res.blob())
+			//.then(res => res.arrayBuffer())
+			//.then(function(buf){return new File([buf], fileName, {type:mimeType});});
+	}
 	function dataURL2Blob(dataurl) {
 		let arr = dataurl.split(','),
 		mime = arr[0].match(/:(.*?);/)[1],
@@ -237,7 +239,7 @@ return arr;}
 		}, 9);
 	}
 	function isPlayer(p) {
-		if (swfWhiteList.some(x => swfAddr.includes(x)))
+		if (swfWhiteList.some(x => swfAddr.toLowerCase().includes(x)))
 			return !0;
 		if (!p.width)
 			return !1;
@@ -318,7 +320,6 @@ return arr;}
 			if (isEmbed && k.parentNode.matches('object'))
 				continue;
 			swfAddr = isEmbed ? k.src : k.data || k.children.movie.value;
-			swfAddr = swfAddr.toLowerCase();
 			let p = k.parentNode;
 			if (parents.has(p) || !/\.swf(?:$|\?)/.test(swfAddr))
 				continue;
