@@ -87,8 +87,8 @@
 				getPlayerUrl('player.swf')
 				.then(url => {
 					setYkPlayer(p, url, m);
-					//if (!s.endsWith('.swf'))
-						setTimeout(() => URL.revokeObjectURL(url), 3e3);
+					//if (s.startsWith('blob:'))
+					setTimeout(() => URL.revokeObjectURL(url), 3e3);
 				});
 			} else {
 				setYkPlayer(p, 'http://static.youku.com/v1.0.0658/v/swf/player.swf', m);
@@ -105,9 +105,7 @@
 			p.outerHTML = `<embed play="true" allowfullscreen="true" wmode="gpu" type="application/x-shockwave-flash" width="100%" height="100%" id="flash" allowscriptaccess="always" src="${swfAddr}" flashvars="${s}">`;
 			/*
 			let opts = {};
-			opts.params = {
-				'wMode' : 'gpu'
-			};
+			opts.params = { 'wMode' : 'gpu' };
 			opts.vars = { cid: 'qc_100001_300089'};
 			let vars = s.split('&');
 			for (let k of vars) {
@@ -115,13 +113,13 @@
 				opts.vars[s[0]] = s[1];
 			}
 			s = unsafeWindow.Q.player.create(p.id, opts); */
-			//p.parentNode.replaceChild(s, p);
-			//refreshElem(p);
 		}
 	};
 
 	function setYkPlayer(p, url, vid) {
-		p.outerHTML = `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="${url}" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}" flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
+		let style = p.getAttribute('style');
+		style = style ? ` style="${style}"` : '';
+		p.outerHTML = `<embed id="${p.id}" wmode="gpu" allowfullscreen="true" src="${url}" allowscriptaccess="always" type="application/x-shockwave-flash" width="${p.width}" height="${p.height}"${style} flashvars="isShowRelatedVideo=false&showAd=0&show_ce=0&showsearch=0&VideoIDS=${vid}&isAutoPlay=true">`;
 	}
 	function getPlayerUrl(fileName) {
 		if (noAdPlayerPath)
