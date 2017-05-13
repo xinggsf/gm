@@ -5,8 +5,9 @@
 // @description    斗鱼TV去广告；开启CDN和GPU加速；去未登录限制；去礼物效果
 // @homepageURL    https://greasyfork.org/zh-CN/scripts/18613
 // updateURL       https://greasyfork.org/scripts/18613.js
+// @include        http://www.douyu.com/*
 // @include        https://www.douyu.com/*
-// @version        2016.10.21
+// @version        2017.03.03
 // @encoding       utf-8
 // @compatible     chrome45+
 // @compatible     firefox38+
@@ -102,13 +103,13 @@ new MutationObserver(function(rs) {
 	let c = rm[0].children,
 	s = c.flashvars.value;
 	c.wmode.value = 'gpu';
-	s = s.replace(/&(?:aliRedBag|shopinfo|flashConfig)=[^&]*/g, '')
+	s = s.replace(/&(?:\w*RedBag|shopinfo|flashConfig)=[^&]*/g, '')
 		 .replace(/&cdn=\w*/, '&cdn='+ getCDN());
 	if (GM_getValue('notLogin', !1)) {
 		s = s.replace('&uid=0', '&uid=11111');
 	}
 	if (GM_getValue('noDift', !1)) {
-		s = s.replace(/&(?:effectSwf|effectGiftSwf|effectConfig)=[^&]*/g, '');
+		s = s.replace(/&effect\w*=[^&]*/g, '');
 	}
 	c.flashvars.value = s;
 	//rm.toggle().toggle();
