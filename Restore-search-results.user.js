@@ -2,6 +2,7 @@
 // @name           去除百度、搜狗重定向
 // @author         xinggsf
 // @namespace      Restore-search-results
+// @updateURL      https://raw.githubusercontent.com/xinggsf/gm/master/Restore-search-results.user.js
 // @description    去除百度、搜狗重定向
 // @version        2017.06.01
 // @include        http://www.baidu.com/*
