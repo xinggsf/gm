@@ -9,7 +9,7 @@
 // @exclude        http://*.dj92cc.com/*
 //全面支持音悦台HTML5播放，详见 https://greasyfork.org/scripts/14593
 // @exclude        http://*.yinyuetai.com/*
-// @version        2017.06.3
+// @version        2017.06.8
 // @encoding       utf-8
 // resource       player_swf https://bitbucket.org/kafan15536900/haoutil/raw/master/player/testmod/player.swf
 // @grant          GM_getResourceURL
@@ -30,24 +30,22 @@
 	Youku = {
 		matchPlayer: url => /^http:\/\/static\.youku\.com\/v.*?\/v\/swf\/upsplayer\//.test(url),
 		setPlayer(p, v) {
-			if (doc.domain.endsWith('youku.com')) {
-				p.height = '90%';
-				//unsafeWindow.scrollTo(0, 99);
-				unsafeWindow._ssPlayer = p.outerHTML.replace('direct', 'gpu');
-				unsafeWindow.document.querySelector("div.base_info+div").outerHTML =
-					'<a style="font-size:20px;" onclick="$(\'#movie_player\')[0].outerHTML=_ssPlayer;delete _ssPlayer;$(this).remove();">换原播放器</a>';
+			if (location.hostname.endsWith('.youku.com')) {
+				unsafeWindow.sessionStorage.P_l_h5 = true;
+				unsafeWindow.reload();
 			}
-
-			let m = v.match(regYk)[1],
-			s = getPlayerUrl('youku.swf');
-			if (typeof(s) ==='string')
-				setYkPlayer(p, s, m);
-			else s.then(url => {
-				setYkPlayer(p, url, m);
-				setTimeout(() => URL.revokeObjectURL(url), 3e3);
-			})
-			.then(console.log)
-			.catch(console.error);
+			else {
+				let m = v.match(regYk)[1],
+				s = getPlayerUrl('youku.swf');
+				if (typeof(s) ==='string')
+					setYkPlayer(p, s, m);
+				else s.then(url => {
+					setYkPlayer(p, url, m);
+					setTimeout(() => URL.revokeObjectURL(url), 3e3);
+				})
+				.then(console.log)
+				.catch(console.error);
+			}
 		}
 	},
 	YkOutsite = {
@@ -68,7 +66,7 @@
 					setTimeout(() => URL.revokeObjectURL(url), 3e3);
 				});
 			} else {
-				setYkPlayer(p, 'http://static.youku.com/v1.0.0658/v/swf/youku.swf', m);
+				setYkPlayer(p, 'http://static.youku.com/v1.0.0658/v/swf/player.swf', m);
 			}
 		}
 	},
@@ -92,7 +90,7 @@
 		}
 	},
 	Tudou = {
-		matchPlayer: url => doc.domain.endsWith('tudou.com') && url.startsWith('http://static.youku.com/v'),
+		matchPlayer: url => location.hostname.endsWith('tudou.com') && url.startsWith('http://static.youku.com/v'),
 		setPlayer(p, v) {
 			console.log(doc.domain);
 			p.data = noAdPlayerPath + 'tudou.swf';
@@ -104,20 +102,10 @@
 		setPlayer(p, v) {
 			p.data = noAdPlayerPath + 'iqiyi.swf';
 			openFlashGPU(p);
-			/*
-			let opts = {};
-			opts.params = { 'wMode' : 'gpu' };
-			opts.vars = { cid: 'qc_100001_300089'};
-			let vars = s.split('&');
-			for (let k of vars) {
-				s = k.split('=');
-				opts.vars[s[0]] = s[1];
-			}
-			s = unsafeWindow.Q.player.create(p.id, opts); */
 		}
 	},
 	Sohu = {
-		matchPlayer: url => doc.domain === 'tv.sohu.com' && url.startsWith('http://tv.sohu.com/upload/swf/'),
+		matchPlayer: url => location.hostname === 'tv.sohu.com' && url.startsWith('http://tv.sohu.com/upload/swf/'),
 		setPlayer(p, v) {
 			p.src = noAdPlayerPath + 'sohu.swf';
 			openFlashGPU(p);
