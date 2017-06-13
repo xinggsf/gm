@@ -5,7 +5,7 @@
 // @description 启用B站的h5播放，自动宽屏、自动播放、原生右键菜单、关弹幕
 // @homepage    http://bbs.kafan.cn/thread-2061994-1-1.html
 // @downloadUrl https://raw.githubusercontent.com/xinggsf/gm/master/bilibili-h5.user.js
-// @version     2017.05.12
+// @version     2017.06.12
 // @include     *://www.bilibili.com/video/av*
 // @include     *://www.bilibili.com/*/html5player.html*
 // @include     *://bangumi.bilibili.com/anime/v/*
@@ -44,7 +44,14 @@ function setContextMenuHandler() {
 
 localStorage.setItem('bilibililover', 'YESYESYES');
 localStorage.setItem('defaulth5', '1');
+
+let num = 0;
 const timer = setInterval( ()=> {
+	if (num > 5) {
+        clearInterval(timer);
+		return;
+	}
+	++num;
     let p = q('video');
     if (p) {
         p.setAttribute('autoplay','autoplay');//自动播放
