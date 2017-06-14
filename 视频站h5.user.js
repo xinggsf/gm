@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站h5
 // @description      视频站启用html5播放器
-// @version          0.2.1
+// @version          0.2.3
 // @include          *://*.qq.com/*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
@@ -24,6 +24,7 @@ Object.defineProperty(navigator, 'plugins', {
 
 let siteFn, v; //video element
 const stepLen = 5, //快进快退5秒
+skipLen = 21, //shift + 快进快退
 u = location.hostname,
 
 $ = id => document.getElementById(id),
@@ -50,7 +51,7 @@ getAllDuration = css => {
 		n += k * multiplier;
 		multiplier *= 60;
 	}
-	return n;
+	return n || 2e4;
 },
 hotKey = function (e) {
 	//console.log('hotKey', v.seeking, v.seekable);
@@ -65,13 +66,13 @@ hotKey = function (e) {
 		//e.stopPropagation();
 		break;
 	case 37: //left
-		seekPoint -= stepLen;
+		seekPoint -= e.shiftKey ? skipLen : stepLen;
 		if (seekPoint < 0) seekPoint = 0;
 		v.currentTime = seekPoint;
 		break;
 	case 39: //right
 		//if (v.readyState !== 4) return;
-		seekPoint += stepLen;
+		seekPoint += e.shiftKey ? skipLen : stepLen;
 		v.currentTime = seekPoint;
 		break;
 	}
@@ -112,20 +113,28 @@ else if (u.endsWith('.le.com')) {
 }
 else if (u.endsWith('tv.sohu.com')) {
 	if (window.chrome && !u.startsWith('m.')) //火狐请用UA工具
-		fakeUA('Mozilla/5.0 (Linux; U; Android 4.0.4; en-gb; GT-I9300 Build/IMM76D) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30');
+		fakeUA('Mozilla/5.0 (Linux; U; Android 4.0.4) AppleWebKit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30');
 	init();
 }
 else if (u.endsWith('.tudou.com')) {
 	//fakeUA('Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/55.0.10 Mobile Safari/535.19');
 	siteFn = () => {
 		//获取播放时长
-		const totalTime = getAllDuration('span.td-h5__player__console__time-total');
-		if (v.duration < totalTime) {
-			//保持原状
+		const cur = ~~v.duration +1,
+		totalTime = getAllDuration('span.td-h5__player__console__time-total');
+		//console.log(cur, totalTime);
+		if (cur < totalTime) {
+			//分段播放时，保持播放器原状
 			q('#td-h5+div').remove();
+			v.currentTime = 66;//跳过片头
 		}
 		else {
-			location.replace(v.src);
+			document.body.innerHTML = `<video width="100%" height="100%" autoplay controls src="${v.src}"/>`;
+			setTimeout(() => {
+				v = q('video');
+				if (cur > 666) v.currentTime = 66;
+				v.oncanplay = onCanplay;
+			}, 9);
 		}
 	};
 	init();
