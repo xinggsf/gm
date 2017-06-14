@@ -43,7 +43,7 @@ function setContextMenuHandler() {
 }
 
 localStorage.setItem('bilibililover', 'YESYESYES');
-localStorage.setItem('defaulth5', '1');
+localStorage.defaulth5 = 1;
 
 let num = 0;
 const timer = setInterval( ()=> {
