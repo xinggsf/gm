@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name             视频站h5
 // @description      视频站启用html5播放器
-// @version          0.3.1
+// @version          0.3.2
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
+// @exclude          *://lpl.qq.com/es/lpl/*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
 // @include          *://*.le.com/*.html*
@@ -20,15 +21,48 @@
 'use strict';
 
 Object.defineProperty(navigator, 'plugins', {
-	get() {
+	get: function() {
 		return { length: 0 };
 	}
 });
+String.prototype.r1 = function(r) {
+	return r.test(this) && RegExp.$1;
+};
+//由jQuery.cookie.js改写 http://blog.wpjam.com/m/jquery-cookies/
+function cookie(name, value, options) {
+	let s;
+	if (typeof value === 'undefined') { //read cookie
+		s = document.cookie;
+		s = s && s.r1(new RegExp(name +'=([^;]+)'));
+		return s && decodeURIComponent(s) || null;
+	}
+	options = options || {};//options: expires,path,domain,secure
+	if (value == null) {
+		value = '';
+		options.expires = -1;//delete cookie
+	}
+	s = name + '=' + encodeURIComponent(value);
+	if (options.expires && (typeof options.expires === 'number' || options.expires.toUTCString)) {
+		let date;
+		if (typeof options.expires === 'number') {
+			date = new Date();
+			date.setTime(date.getTime() + (options.expires * 24 * 36e5));
+		} else {
+			date = options.expires;
+		}
+		s += '; expires=' + date.toUTCString();
+	}
+	delete options.expires;
+	for (let i in options)
+		s += '; ' + i + '=' + options[i];
+	//console.log(s);
+	document.cookie = s;
+}
 
 let siteFn, v, totalTime,
 	path = location.pathname;
 const stepLen = 5, //快进快退5秒
-skipLen = 21, //shift + 快进快退
+skipLen = 27, //shift + 快进快退
 u = location.hostname,
 mDomain = u.split('.').reverse()[1],//主域名
 
@@ -36,10 +70,8 @@ $ = id => document.getElementById(id),
 q = css => document.querySelector(css),
 $C = (name, attr) => {
 	const el = document.createElement(name);
-	if (attr) {
-		for (var i in attr) //用var修正TM的for-in循环BUG
-			el.setAttribute(i, attr[i]);
-	}
+	//用var i修正TM的for-in循环BUG
+	if (attr) for (var i in attr) el.setAttribute(i, attr[i]);
 	return el;
 },
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
@@ -50,7 +82,7 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 }),
 getAllDuration = css => {
 	const a = q(css).innerHTML.split(':');
-	console.log(q(css), a);
+	//console.log(q(css), a);
 	let n = a.pop() *1, multiplier = 1;
 	for (let k of a.reverse()) {
 		multiplier *= 60;
@@ -83,7 +115,7 @@ hotKey = function (e) {
 },
 onCanplay = function (e) {
 	//v.removeEventListener('oncanplay', onCanplay);
-	//v.oncanplay = null;//注释应对列表播放而不刷新页面
+	//v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
 	console.log('脚本[启用html5播放器]，事件oncanplay');
 	const r = path !== location.pathname;//点播了另一个视频
 	if (totalTime && !r) return;//分段视频返回
@@ -92,15 +124,17 @@ onCanplay = function (e) {
 	siteFn && siteFn();
 	totalTime = totalTime || Math.round(v.duration);
 	//跳过片头
-	if (totalTime > 666 && !['youku', 'le', 'lesports'].includes(mDomain))
-		v.currentTime = 66;
+	if (totalTime > 666 && !['youku'].includes(mDomain))
+		setTimeout( () => {
+			v.currentTime = 66;
+		}, 9);
 	if (r) path = location.pathname;
 },
 init = () => {
 	let mo = new MutationObserver(records => {
 		v = q('video');
 		if (v) {
-			//console.log('mo', v.oncanplay);
+			//console.log(mo, v.oncanplay);
 			v.oncanplay = onCanplay;
 			mo.disconnect();
 			mo = undefined;
@@ -110,6 +144,14 @@ init = () => {
 		childList : true,
 		subtree : true
 	}), !1);
+},
+//终于可以完全屏蔽alicdn.com和mmstat.com二个统计/广告域名了，只为24字节的字符串就访问一大堆乱七八糟的东西
+checkYK_cna = domain => {
+	!cookie('cna') && cookie('cna', 'dZm+Ecpc9zwCAdpA3yZ5tuBx', {
+		expires: 3e3,//day
+		path: '/',
+		'domain': domain
+	});
 };
 
 switch (mDomain) {
@@ -118,6 +160,7 @@ case 'qq':
 	break;
 case 'youku':
     sessionStorage.P_l_h5 = 1;
+	checkYK_cna('.youku.com');
 	init();
 	break;
 case 'le':
@@ -134,7 +177,7 @@ case 'sohu':
 	};
 /* 	unsafeWindow.setTimeout( () => {
 		if (isUseH5Player) {
-			isUseH5Player = () => 1;
+			isUseH5Player = () => true;
 			console.log(_videoInfo.videoLength);
 		}
 	}, 99); */
@@ -149,7 +192,7 @@ case 'tudou':
 		const cur = ~~v.duration +1;
 		//console.log(cur, totalTime);
 		if (cur < totalTime) {
-			//分段播放时，保持播放器原状
+			//分段视频，保持播放器原状
 			q('#td-h5+div').remove();
 		}
 		else {
@@ -157,11 +200,11 @@ case 'tudou':
 			setTimeout(() => {
 				v = q('video');
 				if (totalTime > 666) v.currentTime = 66;
-				//v.oncanplay = onCanplay;
 			}, 9);
 		}
 	};
 	init();
+	checkYK_cna('.tudou.com');
 	break;
 case 'panda':
     localStorage.setItem('panda.tv/user/player', {useH5player: true});
