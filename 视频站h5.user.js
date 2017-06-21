@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站h5
 // @description      视频站启用html5播放器
-// @version          0.3.2
+// @version          0.3.3
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://lpl.qq.com/es/lpl/*
@@ -83,35 +83,12 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 getAllDuration = css => {
 	const a = q(css).innerHTML.split(':');
 	//console.log(q(css), a);
-	let n = a.pop() *1, multiplier = 1;
+	let n = a.pop() | 0, multiplier = 1;
 	for (let k of a.reverse()) {
 		multiplier *= 60;
 		n += k * multiplier;
 	}
 	return n || 2e4;
-},
-hotKey = function (e) {
-	//console.log('hotKey', v.seeking, v.seekable);
-	// 可播放
-	//if (!v.seekable) return;
-	//if (v.readyState !== 4) return;
-	let seekPoint = ~~v.currentTime;
-	switch (e.keyCode) {
-	case 32: //space
-		if (v.paused) v.play();
-		else v.pause();
-		e.preventDefault();
-		//e.stopPropagation();
-		break;
-	case 37: //left
-		seekPoint -= e.shiftKey ? skipLen : stepLen;
-		if (seekPoint < 0) seekPoint = 0;
-		v.currentTime = seekPoint;
-		break;
-	case 39: //right
-		seekPoint += e.shiftKey ? skipLen : stepLen;
-		v.currentTime = seekPoint;
-	}
 },
 onCanplay = function (e) {
 	//v.removeEventListener('oncanplay', onCanplay);
@@ -130,6 +107,32 @@ onCanplay = function (e) {
 		}, 9);
 	if (r) path = location.pathname;
 },
+hotKey = function (e) {
+	//console.log('hotKey', v.seeking, v.seekable);
+	// 可播放
+	//if (!v.seekable || v.readyState !== 4) return;
+	switch (e.keyCode) {
+	case 32: //space
+		v.paused ? v.play() : v.pause();
+		e.preventDefault();
+		//e.stopPropagation();
+		break;
+	case 37: //left
+		v.currentTime -= e.shiftKey ? skipLen : stepLen;
+		break;
+	case 39: //right
+		v.currentTime += e.shiftKey ? skipLen : stepLen;
+		break;
+	case 38: //加音量
+		//v.volume = v.volume.toFixed(2) + 0.01;
+		v.volume += 0.1;
+		e.preventDefault();
+		break;
+	case 40: //降音量
+		v.volume -= 0.1;
+		e.preventDefault();
+	}
+},
 init = () => {
 	let mo = new MutationObserver(records => {
 		v = q('video');
@@ -146,11 +149,11 @@ init = () => {
 	}), !1);
 },
 //终于可以完全屏蔽alicdn.com和mmstat.com二个统计/广告域名了，只为24字节的字符串就访问一大堆乱七八糟的东西
-checkYK_cna = domain => {
+checkYK_cna = () => {
 	!cookie('cna') && cookie('cna', 'dZm+Ecpc9zwCAdpA3yZ5tuBx', {
 		expires: 3e3,//day
 		path: '/',
-		'domain': domain
+		'domain': u.slice(u.indexOf('.'))
 	});
 };
 
@@ -160,12 +163,16 @@ case 'qq':
 	break;
 case 'youku':
     sessionStorage.P_l_h5 = 1;
-	checkYK_cna('.youku.com');
+	checkYK_cna();
 	init();
 	break;
 case 'le':
 case 'lesports':
 	fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
+	siteFn = () => {
+		totalTime = __INFO__.video.duration;
+		//__INFO__.video.adseed = 0;
+	};
 	init();
 	break;
 case 'sohu':
@@ -175,12 +182,29 @@ case 'sohu':
 	siteFn = () => {
 		totalTime = getAllDuration('span.x-duration-txt');
 	};
-/* 	unsafeWindow.setTimeout( () => {
+/*
+	unsafeWindow.setTimeout( () => {
 		if (isUseH5Player) {
 			isUseH5Player = () => true;
 			console.log(_videoInfo.videoLength);
 		}
-	}, 99); */
+	}, 99);
+	document.addEventListener('DOMContentLoaded', e => {
+		if (!u.startsWith('my.')) return;
+		const t = q('#crumbsBar h2');//视频标题，点播时改变
+		t && new MutationObserver(records => {//点播后发生
+			if (!q('div[data-tab=album-box-playlist]')) return;
+			const el = q('video');
+			console.log('crumbsBar', el);
+			if (!el || v === el) {
+				location.reload();
+				return;
+			}
+			v = el;
+			v.oncanplay = onCanplay;
+		}).observe(t, {childList: true});
+	}, !1);
+*/
 	init();
 	break;
 case 'tudou':
@@ -204,8 +228,8 @@ case 'tudou':
 		}
 	};
 	init();
-	checkYK_cna('.tudou.com');
+	checkYK_cna();
 	break;
 case 'panda':
-    localStorage.setItem('panda.tv/user/player', {useH5player: true});
+    localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
 }
