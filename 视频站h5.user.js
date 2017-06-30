@@ -1,21 +1,24 @@
 // ==UserScript==
 // @name             视频站h5
 // @description      视频站启用html5播放器
-// @version          0.3.3
+// @version          0.3.4
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
+// @exclude          *://user.qzone.qq.com/*
 // @exclude          *://lpl.qq.com/es/lpl/*
+// @exclude          *://qt.qq.com/zhibo/index.html*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
 // @include          *://*.le.com/*.html*
 // @include          *://*.lesports.com/*.html*
 // @include          *://tv.sohu.com/*.shtml*
-// @include          *://m*.tv.sohu.com/*.shtml*
+// @include          *://m.tv.sohu.com/*.shtml*
+// @include          *://my.tv.sohu.com/*.shtml*
 // @include          https://www.panda.tv/*
 // @exclude          https://www.panda.tv/
 // @grant            unsafeWindow
 // @run-at           document-start
-// @namespace  https://greasyfork.org/users/7036-xinggsf
+// @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
 'use strict';
@@ -168,12 +171,14 @@ case 'youku':
 	break;
 case 'le':
 case 'lesports':
-	fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
-	siteFn = () => {
-		totalTime = __INFO__.video.duration;
-		//__INFO__.video.adseed = 0;
-	};
-	init();
+	if (!window.mozInnerScreenX) {//firefox黑屏
+        fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
+        siteFn = () => {
+            totalTime = __INFO__.video.duration;
+            //__INFO__.video.adseed = 0;
+        };
+        init();
+    }
 	break;
 case 'sohu':
 	//if (window.chrome)
