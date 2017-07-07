@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name             视频站h5
-// @description      视频站启用html5播放器
-// @version          0.3.4
+// @name             视频站启用html5播放器
+// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、搜狐、乐视、央视等。并添加播放快捷键：快进、进退、暂停/播放、音量调节
+// @version          0.3.6
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://user.qzone.qq.com/*
@@ -9,6 +9,9 @@
 // @exclude          *://qt.qq.com/zhibo/index.html*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
+// @include          http://*.cctv.com/*
+// @exclude          http://tv.cctv.com/live/*
+// @include          http://*.cntv.cn/*
 // @include          *://*.le.com/*.html*
 // @include          *://*.lesports.com/*.html*
 // @include          *://tv.sohu.com/*.shtml*
@@ -68,7 +71,7 @@ const stepLen = 5, //快进快退5秒
 skipLen = 27, //shift + 快进快退
 u = location.hostname,
 mDomain = u.split('.').reverse()[1],//主域名
-
+ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 $ = id => document.getElementById(id),
 q = css => document.querySelector(css),
 $C = (name, attr) => {
@@ -169,6 +172,11 @@ case 'youku':
 	checkYK_cna();
 	init();
 	break;
+case 'cctv':
+case 'cntv':
+    fakeUA(ua_samsung);
+	init();
+	break;
 case 'le':
 case 'lesports':
 	if (!window.mozInnerScreenX) {//firefox黑屏
@@ -181,8 +189,7 @@ case 'lesports':
     }
 	break;
 case 'sohu':
-	//if (window.chrome)
-		fakeUA('Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30');
+	fakeUA(ua_samsung);
 	// q('meta[name=mobile-agent]').remove();
 	siteFn = () => {
 		totalTime = getAllDuration('span.x-duration-txt');
@@ -213,7 +220,7 @@ case 'sohu':
 	init();
 	break;
 case 'tudou':
-	//fakeUA('Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) Chrome/55.0.10 Mobile');
+	//fakeUA(ua_samsung);
 	siteFn = () => {
 		//获取播放时长
 		//totalTime = getAllDuration('span.td-h5__player__console__time-total');
