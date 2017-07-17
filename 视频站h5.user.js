@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、搜狐、乐视、央视等。并添加播放快捷键：快进、进退、暂停/播放、音量调节
-// @version          0.3.6
+// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、搜狐、乐视、央视等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
+// @version          0.3.7
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://user.qzone.qq.com/*
@@ -9,14 +9,18 @@
 // @exclude          *://qt.qq.com/zhibo/index.html*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
-// @include          http://*.cctv.com/*
+// include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
-// @include          http://*.cntv.cn/*
+// include          http://*.cntv.cn/*
 // @include          *://*.le.com/*.html*
 // @include          *://*.lesports.com/*.html*
 // @include          *://tv.sohu.com/*.shtml*
 // @include          *://m.tv.sohu.com/*.shtml*
 // @include          *://my.tv.sohu.com/*.shtml*
+// @include          http://www.fun.tv/vplay/v-*
+// @include          http://www.fun.tv/vplay/g-*
+// @include          http://m.fun.tv/ivplay/*
+// @include          http://m.fun.tv/implay/*
 // @include          https://www.panda.tv/*
 // @exclude          https://www.panda.tv/
 // @grant            unsafeWindow
@@ -219,6 +223,29 @@ case 'sohu':
 */
 	init();
 	break;
+case 'fun':
+    if (u.startsWith('m.')) {
+        init();
+        return;
+    }
+    let vid = path.r1(/\bv-(\d+)/);
+    if (path.startsWith('/vplay/v-')) {
+        location.assign('http://m.fun.tv/ivplay/?vid='+vid);
+        return;
+    }
+    let mid = path.r1(/\/g-(\d+)/);
+    if (vid) {
+        location.assign(`http://m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
+        return;
+    }
+
+	document.addEventListener('DOMContentLoaded', e => {
+		//vid = window.vplay.videoid;
+        const x = document.querySelectorAll('li.torr-list.nowplay,a.vd-list-item.nowplay');
+        if (x.length) vid = x[0].getAttribute('data-vid');
+        location.assign(`http://m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
+	}, !1);
+    break;
 case 'tudou':
 	//fakeUA(ua_samsung);
 	siteFn = () => {
