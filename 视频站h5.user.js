@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、搜狐、乐视、央视等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.3.7
+// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
+// @version          0.3.8
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://user.qzone.qq.com/*
@@ -17,10 +17,9 @@
 // @include          *://tv.sohu.com/*.shtml*
 // @include          *://m.tv.sohu.com/*.shtml*
 // @include          *://my.tv.sohu.com/*.shtml*
-// @include          http://www.fun.tv/vplay/v-*
-// @include          http://www.fun.tv/vplay/g-*
-// @include          http://m.fun.tv/ivplay/*
-// @include          http://m.fun.tv/implay/*
+// @include          *://www.fun.tv/vplay/v-*
+// @include          *://www.fun.tv/vplay/g-*
+// @include          *://m.fun.tv/*
 // @include          https://www.panda.tv/*
 // @exclude          https://www.panda.tv/
 // @grant            unsafeWindow
@@ -172,25 +171,25 @@ case 'qq':
 	fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	break;
 case 'youku':
-    sessionStorage.P_l_h5 = 1;
+	sessionStorage.P_l_h5 = 1;
 	checkYK_cna();
 	init();
 	break;
 case 'cctv':
 case 'cntv':
-    fakeUA(ua_samsung);
+	fakeUA(ua_samsung);
 	init();
 	break;
 case 'le':
 case 'lesports':
 	if (!window.mozInnerScreenX) {//firefox黑屏
-        fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
-        siteFn = () => {
-            totalTime = __INFO__.video.duration;
-            //__INFO__.video.adseed = 0;
-        };
-        init();
-    }
+		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
+		siteFn = () => {
+			totalTime = __INFO__.video.duration;
+			//__INFO__.video.adseed = 0;
+		};
+		init();
+	}
 	break;
 case 'sohu':
 	fakeUA(ua_samsung);
@@ -198,56 +197,30 @@ case 'sohu':
 	siteFn = () => {
 		totalTime = getAllDuration('span.x-duration-txt');
 	};
-/*
-	unsafeWindow.setTimeout( () => {
-		if (isUseH5Player) {
-			isUseH5Player = () => true;
-			console.log(_videoInfo.videoLength);
-		}
-	}, 99);
-	document.addEventListener('DOMContentLoaded', e => {
-		if (!u.startsWith('my.')) return;
-		const t = q('#crumbsBar h2');//视频标题，点播时改变
-		t && new MutationObserver(records => {//点播后发生
-			if (!q('div[data-tab=album-box-playlist]')) return;
-			const el = q('video');
-			console.log('crumbsBar', el);
-			if (!el || v === el) {
-				location.reload();
-				return;
-			}
-			v = el;
-			v.oncanplay = onCanplay;
-		}).observe(t, {childList: true});
-	}, !1);
-*/
 	init();
 	break;
 case 'fun':
-    if (u.startsWith('m.')) {
-        init();
-        return;
-    }
-    let vid = path.r1(/\bv-(\d+)/);
-    if (path.startsWith('/vplay/v-')) {
-        location.assign('http://m.fun.tv/ivplay/?vid='+vid);
-        return;
-    }
-    let mid = path.r1(/\/g-(\d+)/);
-    if (vid) {
-        location.assign(`http://m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
-        return;
-    }
+	if (u.startsWith('m.')) {
+		/^\/[mv]play/.test(path) && location.assign(path.replace('/', '/i') + location.search);
+		if (path.includes('play')) //是播放页
+			init();
+		return;
+	}
+	let vid = path.r1(/\bv-(\d+)/);
+	path.startsWith('/vplay/v-') && location.assign('//m.fun.tv/ivplay/?vid='+vid);
+	let mid = path.r1(/\/g-(\d+)/);
+	vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
 
-	document.addEventListener('DOMContentLoaded', e => {
+	document.addEventListener('DOMContentLoaded', ev => {
 		//vid = window.vplay.videoid;
-        const x = document.querySelectorAll('li.torr-list.nowplay,a.vd-list-item.nowplay');
-        if (x.length) vid = x[0].getAttribute('data-vid');
-        location.assign(`http://m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
+		const x = q('.nowplay[data-vid]');
+		if (x) {
+			vid = x.getAttribute('data-vid');
+			location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
+		}
 	}, !1);
-    break;
+	break;
 case 'tudou':
-	//fakeUA(ua_samsung);
 	siteFn = () => {
 		//获取播放时长
 		//totalTime = getAllDuration('span.td-h5__player__console__time-total');
@@ -256,9 +229,8 @@ case 'tudou':
 		//console.log(cur, totalTime);
 		if (cur < totalTime) {
 			//分段视频，保持播放器原状
-			q('#td-h5+div').remove();
-		}
-		else {
+			q('#td-h5 +div').remove();
+		} else {
 			document.body.innerHTML = `<video width="100%" height="100%" autoplay controls src="${v.src}"/>`;
 			setTimeout(() => {
 				v = q('video');
@@ -270,5 +242,5 @@ case 'tudou':
 	checkYK_cna();
 	break;
 case 'panda':
-    localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
+	localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
 }
