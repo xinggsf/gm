@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.3.8
+// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
+// @version          0.3.9
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://user.qzone.qq.com/*
@@ -12,6 +12,9 @@
 // include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
 // include          http://*.cntv.cn/*
+// @include          *://video.sina.*.html*
+// @include          *://weibo.com/*
+// @include          *://*.le.com/*.html*
 // @include          *://*.le.com/*.html*
 // @include          *://*.lesports.com/*.html*
 // @include          *://tv.sohu.com/*.shtml*
@@ -73,7 +76,7 @@ let siteFn, v, totalTime,
 const stepLen = 5, //快进快退5秒
 skipLen = 27, //shift + 快进快退
 u = location.hostname,
-mDomain = u.split('.').reverse()[1],//主域名
+mDomain = u.startsWith('video.sina.') ? 'sina' : u.split('.').reverse()[1],//主域名
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 $ = id => document.getElementById(id),
 q = css => document.querySelector(css),
@@ -180,6 +183,11 @@ case 'cntv':
 	fakeUA(ua_samsung);
 	init();
 	break;
+case 'sina':
+	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
+case 'weibo':
+	init();
+	break;
 case 'le':
 case 'lesports':
 	if (!window.mozInnerScreenX) {//firefox黑屏
@@ -202,8 +210,7 @@ case 'sohu':
 case 'fun':
 	if (u.startsWith('m.')) {
 		/^\/[mv]play/.test(path) && location.assign(path.replace('/', '/i') + location.search);
-		if (path.includes('play')) //是播放页
-			init();
+		path.includes('play') && init();
 		return;
 	}
 	let vid = path.r1(/\bv-(\d+)/);
