@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        bilibili-H5
-// @author      nanavao, micky7q7, xinggsf
-// @namespace   nana_vao_bilibili
+// @author      xinggsf, nanavao, micky7q7
+// @namespace   bilibili-H5
 // @description 启用B站的h5播放，自动宽屏、自动播放、原生右键菜单、关弹幕
 // @homepage    http://bbs.kafan.cn/thread-2061994-1-1.html
 // @downloadUrl https://raw.githubusercontent.com/xinggsf/gm/master/bilibili-h5.user.js
-// @version     2017.07.24
+// @version     2017.08.18
 // @include     *://www.bilibili.com/video/av*
 // @include     *://www.bilibili.com/*/html5player.html*
 // @include     *://bangumi.bilibili.com/anime/v/*
@@ -18,16 +18,17 @@
 const q = css => document.querySelector(css);
 
 const doClick = e => {
-    e.click ? e.click(): e.dispatchEvent(new MouseEvent('click'));
+    if (e) e.click ? e.click(): e.dispatchEvent(new MouseEvent('click'));
 };
 
 const setPlayer = v => {
-	v.setAttribute('autoplay','');//自动播放
-	q('.bilibili-player-video-btn-widescreen').click(); //开宽屏
-	q('.bilibili-player-video-btn-repeat').click(); //循环播放
-	doClick(q('i[name=ctlbar_danmuku_close]')); //关弹幕
+	v.setAttribute('autoplay', '');//自动播放
+	doClick(q('i.bilibili-player-iconfont-widescreen.icon-24wideoff')); //开宽屏
+	doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //循环播放
+	//单击下一视频按钮后，B站的弹幕按钮有问题 div.bilibili-player-video-btn-danmaku:not(video-state-danmaku-off)
+	doClick(q('div[name=ctlbar_danmuku_close]'));//关弹幕
 	//doClick(q('ul.bpui-selectmenu-list li[data-value="3"]'));//超清
-	//setTimeout(setContextMenuHandler, 800);//原生右键菜单
+	setTimeout(setContextMenuHandler, 800);//原生右键菜单
 };
 
 function setContextMenuHandler() {
@@ -54,32 +55,14 @@ localStorage.setItem('bilibililover', 'YESYESYES');
 localStorage.defaulth5 = 1;
 
 let mo = new MutationObserver(records => {
-    //bangumi.bilibili.com的播放器在子窗口
-    if (location.host.startsWith('bangumi.') && q('.player-wrapper')) {
-		mo.disconnect();
-		mo = undefined;
-        scrollTo(0, q('.player-wrapper').offsetTop);
-		return;
-    }
-	for (let r of records) {
-		if (r.type === 'attribute' && r.target.matches('video')) {
-			setPlayer(r.target);
-			return;
-		}
-
-		if (r.type === 'childList' && r.addedNodes)
-			for (let v of r.addedNodes) {
-				if (v.nodeName ==='VIDEO') {
-					setPlayer(v);
-					self === top && scrollTo(0, q('.player-wrapper').offsetTop);
-					return;
-				}
-			}
+	for (let r of records) if (r.type === 'childList' && r.addedNodes) {
+		if (self === top && r.target.id ==='bofqi')
+			return scrollTo(0, r.target.closest('.player-wrapper').offsetTop);
+		if (r.target.matches('.bilibili-player-video'))
+			return setPlayer(r.addedNodes[0]);
 	}
 });
 mo.observe(document.body, {
 	childList : true,
-	subtree : true,
-	attributes: true,
-	attributeFilter: ['src']
+	subtree : true
 });

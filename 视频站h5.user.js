@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.3.9
+// @version          0.5.0
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
+// @exclude          *://live.qq.com/*
 // @exclude          *://user.qzone.qq.com/*
 // @exclude          *://lpl.qq.com/es/lpl/*
 // @exclude          *://qt.qq.com/zhibo/index.html*
@@ -40,52 +41,16 @@ Object.defineProperty(navigator, 'plugins', {
 String.prototype.r1 = function(r) {
 	return r.test(this) && RegExp.$1;
 };
-//由jQuery.cookie.js改写 http://blog.wpjam.com/m/jquery-cookies/
-function cookie(name, value, options) {
-	let s;
-	if (typeof value === 'undefined') { //read cookie
-		s = document.cookie;
-		s = s && s.r1(new RegExp(name +'=([^;]+)'));
-		return s && decodeURIComponent(s) || null;
-	}
-	options = options || {};//options: expires,path,domain,secure
-	if (value == null) {
-		value = '';
-		options.expires = -1;//delete cookie
-	}
-	s = name + '=' + encodeURIComponent(value);
-	if (options.expires && (typeof options.expires === 'number' || options.expires.toUTCString)) {
-		let date;
-		if (typeof options.expires === 'number') {
-			date = new Date();
-			date.setTime(date.getTime() + (options.expires * 24 * 36e5));
-		} else {
-			date = options.expires;
-		}
-		s += '; expires=' + date.toUTCString();
-	}
-	delete options.expires;
-	for (let i in options)
-		s += '; ' + i + '=' + options[i];
-	//console.log(s);
-	document.cookie = s;
-}
 
 let siteFn, v, totalTime,
+	oldCanplay = null,
 	path = location.pathname;
 const stepLen = 5, //快进快退5秒
 skipLen = 27, //shift + 快进快退
 u = location.hostname,
 mDomain = u.startsWith('video.sina.') ? 'sina' : u.split('.').reverse()[1],//主域名
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
-$ = id => document.getElementById(id),
 q = css => document.querySelector(css),
-$C = (name, attr) => {
-	const el = document.createElement(name);
-	//用var i修正TM的for-in循环BUG
-	if (attr) for (var i in attr) el.setAttribute(i, attr[i]);
-	return el;
-},
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
@@ -106,6 +71,7 @@ onCanplay = function (e) {
 	//v.removeEventListener('oncanplay', onCanplay);
 	//v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
 	console.log('脚本[启用html5播放器]，事件oncanplay');
+	oldCanplay && oldCanplay(e);
 	const r = path !== location.pathname;//点播了另一个视频
 	if (totalTime && !r) return;//分段视频返回
 	if (!totalTime) document.addEventListener('keydown', hotKey, !1);
@@ -113,10 +79,9 @@ onCanplay = function (e) {
 	siteFn && siteFn();
 	totalTime = totalTime || Math.round(v.duration);
 	//跳过片头
-	if (totalTime > 666 && !['youku'].includes(mDomain))
-		setTimeout( () => {
-			v.currentTime = 66;
-		}, 9);
+	if (totalTime > 666 && 'youku' !== mDomain) setTimeout( () => {
+		v.currentTime = 66;
+	}, 9);
 	if (r) path = location.pathname;
 },
 hotKey = function (e) {
@@ -146,26 +111,17 @@ hotKey = function (e) {
 	}
 },
 init = () => {
-	let mo = new MutationObserver(records => {
+	new MutationObserver(records => {
 		v = q('video');
 		if (v) {
-			//console.log(mo, v.oncanplay);
+			oldCanplay = v.oncanplay;
 			v.oncanplay = onCanplay;
 			mo.disconnect();
 			mo = undefined;
 		}
-	});
-	document.addEventListener('DOMContentLoaded', e => mo.observe(document.body, {
+	}).observe(document.documentElement, {
 		childList : true,
 		subtree : true
-	}), !1);
-},
-//终于可以完全屏蔽alicdn.com和mmstat.com二个统计/广告域名了，只为24字节的字符串就访问一大堆乱七八糟的东西
-checkYK_cna = () => {
-	!cookie('cna') && cookie('cna', 'dZm+Ecpc9zwCAdpA3yZ5tuBx', {
-		expires: 3e3,//day
-		path: '/',
-		'domain': u.slice(u.indexOf('.'))
 	});
 };
 
@@ -175,7 +131,6 @@ case 'qq':
 	break;
 case 'youku':
 	sessionStorage.P_l_h5 = 1;
-	checkYK_cna();
 	init();
 	break;
 case 'cctv':
