@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.5.0
+// @version          0.5.1
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://live.qq.com/*
@@ -111,13 +111,12 @@ hotKey = function (e) {
 	}
 },
 init = () => {
-	new MutationObserver(records => {
+	new MutationObserver(function(records) {
 		v = q('video');
 		if (v) {
 			oldCanplay = v.oncanplay;
 			v.oncanplay = onCanplay;
-			mo.disconnect();
-			mo = undefined;
+			this.disconnect();
 		}
 	}).observe(document.documentElement, {
 		childList : true,
@@ -201,7 +200,6 @@ case 'tudou':
 		}
 	};
 	init();
-	checkYK_cna();
 	break;
 case 'panda':
 	localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
