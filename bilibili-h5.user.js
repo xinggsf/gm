@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name        bilibili-H5
 // @author      xinggsf, nanavao, micky7q7
-// @namespace   bilibili-H5
+// @namespace   nana_vao_bilibili
 // @description 启用B站的h5播放，自动宽屏、自动播放、原生右键菜单、关弹幕
 // @homepage    http://bbs.kafan.cn/thread-2061994-1-1.html
 // @downloadUrl https://raw.githubusercontent.com/xinggsf/gm/master/bilibili-h5.user.js
-// @version     2017.08.18
+// @version     2017.08.21
 // @include     *://www.bilibili.com/video/av*
 // @include     *://www.bilibili.com/*/html5player.html*
 // @include     *://bangumi.bilibili.com/anime/v/*
@@ -24,11 +24,11 @@ const doClick = e => {
 const setPlayer = v => {
 	v.setAttribute('autoplay', '');//自动播放
 	doClick(q('i.bilibili-player-iconfont-widescreen.icon-24wideoff')); //开宽屏
-	doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //循环播放
+	doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 	//单击下一视频按钮后，B站的弹幕按钮有问题 div.bilibili-player-video-btn-danmaku:not(video-state-danmaku-off)
 	doClick(q('div[name=ctlbar_danmuku_close]'));//关弹幕
 	//doClick(q('ul.bpui-selectmenu-list li[data-value="3"]'));//超清
-	setTimeout(setContextMenuHandler, 800);//原生右键菜单
+	//setTimeout(setContextMenuHandler, 800);//原生右键菜单
 };
 
 function setContextMenuHandler() {
@@ -54,15 +54,21 @@ function setContextMenuHandler() {
 localStorage.setItem('bilibililover', 'YESYESYES');
 localStorage.defaulth5 = 1;
 
-let mo = new MutationObserver(records => {
+let scrolled = !1;
+new MutationObserver(records => {
 	for (let r of records) if (r.type === 'childList' && r.addedNodes) {
-		if (self === top && r.target.id ==='bofqi')
-			return scrollTo(0, r.target.closest('.player-wrapper').offsetTop);
+		if (!scrolled && self === top && r.target.id ==='bofqi') {
+			scrollTo(0, r.target.closest('.player-wrapper').offsetTop);
+			scrolled = true;
+			return;
+		}
 		if (r.target.matches('.bilibili-player-video'))
 			return setPlayer(r.addedNodes[0]);
 	}
-});
-mo.observe(document.body, {
+})
+.observe(document.body, {
 	childList : true,
 	subtree : true
+	//attributes: true,
+	//attributeFilter: ['src']
 });
