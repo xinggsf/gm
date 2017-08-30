@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.5.2
+// @version          0.5.3
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://live.qq.com/*
@@ -42,9 +42,9 @@ String.prototype.r1 = function(r) {
 	return r.test(this) && RegExp.$1;
 };
 
-let siteFn, v, totalTime,
+let v, totalTime,
 	oldCanplay = null,
-	playNext = null,
+	playerInfo = {},
 	path = location.pathname,
 isFullScreen = () => {
 	return !!(document.fullscreen || document.webkitIsFullScreen || document.mozFullScreen ||
@@ -53,7 +53,7 @@ isFullScreen = () => {
 //惰性函数
 requestFullScreen = v => {
 	const fn = v.requestFullscreen || v.webkitRequestFullScreen || v.mozRequestFullScreen || v.msRequestFullScreen;
-	if (fn) requestFullScreen = v => !isFullScreen() && fn.call(v);
+	if (fn) requestFullScreen = v => fn.call(v);
 	else requestFullScreen = () => {};
 	requestFullScreen(v);
 };
@@ -78,16 +78,19 @@ getAllDuration = css => {
 	}
 	return n || 2e4;
 },
-onCanplay = function (e) {
+doClick = css => {
+	if (!css) return !1;
+	const x = q(css);
+	x && x.click();
+	return !!x;
+},
+onCanplay = function(e) {
 	//v.removeEventListener('oncanplay', onCanplay);
 	//v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
 	console.log('脚本[启用html5播放器]，事件oncanplay');
 	oldCanplay && oldCanplay(e);
 	const r = path !== location.pathname;//点播了另一个视频
 	if (totalTime && !r) return;//分段视频返回
-	if (!totalTime) document.addEventListener('keydown', hotKey, !1);
-	totalTime = 0;
-	siteFn && siteFn();
 	totalTime = totalTime || Math.round(v.duration);
 	//跳过片头
 	if (totalTime > 666 && 'youku' !== mDomain) setTimeout( () => {
@@ -95,7 +98,7 @@ onCanplay = function (e) {
 	}, 9);
 	if (r) path = location.pathname;
 },
-hotKey = function (e) {
+hotKey = function(e) {
 	if (e.ctrlKey || e.altKey)
 		return;
 	if (['INPUT', 'TEXTAREA'].includes(e.target.nodeName))
@@ -120,7 +123,7 @@ hotKey = function (e) {
 		v.currentTime += n;
 		break;
 	case 78: // N 下一首
-		playNext && playNext();
+		doClick(playerInfo.nextCSS);
 		break;
 	//case 80: // P 上一首
 	case 38: //加音量
@@ -136,7 +139,7 @@ hotKey = function (e) {
 		e.preventDefault();
 		break;
 	case 13: //全屏
-		requestFullScreen(v);
+		if (!isFullScreen()) doClick(playerInfo.fullCSS) || requestFullScreen(v);
 		break;
 	case 88: //按键X：减速播放 -0.1
 		n = v.playbackRate;
@@ -165,13 +168,17 @@ hotKey = function (e) {
 		break;
 	}
 },
-init = () => {
+init = (cb) => {
 	new MutationObserver(function(records) {
 		v = q('video');
 		if (v) {
 			oldCanplay = v.oncanplay;
 			v.oncanplay = onCanplay;
 			this.disconnect();
+			cb && cb();
+			document.addEventListener('keydown', hotKey, !1);
+			if (playerInfo.timeCSS)
+				totalTime = getAllDuration(playerInfo.timeCSS);
 		}
 	}).observe(document.documentElement, {
 		childList : true,
@@ -201,13 +208,11 @@ case 'le':
 case 'lesports':
 	if (!window.mozInnerScreenX) {//firefox黑屏
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
-		siteFn = () => {
-			totalTime = __INFO__.video.duration;
-			//__INFO__.video.adseed = 0;
-		};
-		playNext = () => {
-			const x = q('div.hv_ico_next');
-			x && x.click();
+		//totalTime = __INFO__.video.duration;
+		playerInfo = {
+			timeCSS: 'span.time_total',
+			nextCSS: 'div.hv_ico_next',
+			fullCSS: 'div.hv_ico_screen'
 		};
 		init();
 	}
@@ -215,12 +220,10 @@ case 'lesports':
 case 'sohu':
 	fakeUA(ua_samsung);
 	// q('meta[name=mobile-agent]').remove();
-	siteFn = () => {
-		totalTime = getAllDuration('span.x-duration-txt');
-	};
-	playNext = () => {
-		const x = q('li.on[data-vid]+li > a');
-		x && x.click();
+	playerInfo = {
+		timeCSS: 'span.x-duration-txt',
+		nextCSS: 'li.on[data-vid]+li > a',
+		fullCSS: 'div.x-fs-btn'
 	};
 	init();
 	break;
@@ -228,9 +231,9 @@ case 'fun':
 	if (u.startsWith('m.')) {
 		/^\/[mv]play/.test(path) && location.assign(path.replace('/', '/i') + location.search);
 		if (path.includes('play')) {
-			playNext = () => {
-				const x = q('a.btn.next-btn');
-				x && x.click();
+			playerInfo = {
+				nextCSS: 'a.btn.next-btn',
+				fullCSS: 'a.btn.full-btn'
 			};
 			init();
 		}
@@ -251,7 +254,7 @@ case 'fun':
 	}, !1);
 	break;
 case 'tudou':
-	siteFn = () => {
+	init(() => {
 		//获取播放时长
 		//totalTime = getAllDuration('span.td-h5__player__console__time-total');
 		totalTime = ~~q('meta[name=duration]').getAttribute('content');
@@ -267,8 +270,7 @@ case 'tudou':
 				if (totalTime > 666) v.currentTime = 66;
 			}, 9);
 		}
-	};
-	init();
+	});
 	break;
 case 'panda':
 	localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
