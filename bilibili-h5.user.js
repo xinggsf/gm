@@ -56,7 +56,7 @@ localStorage.defaulth5 = 1;
 
 let scrolled = !1;
 new MutationObserver(records => {
-	for (let r of records) if (r.type === 'childList' && r.addedNodes) {
+	for (let r of records) if (r.addedNodes) {
 		if (!scrolled && self === top && r.target.id ==='bofqi') {
 			scrollTo(0, r.target.closest('.player-wrapper').offsetTop);
 			scrolled = true;

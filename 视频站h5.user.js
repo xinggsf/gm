@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.5.1
+// @version          0.5.2
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://*.qq.com/*
 // @exclude          *://live.qq.com/*
@@ -44,10 +44,21 @@ String.prototype.r1 = function(r) {
 
 let siteFn, v, totalTime,
 	oldCanplay = null,
-	path = location.pathname;
-const stepLen = 5, //快进快退5秒
-skipLen = 27, //shift + 快进快退
-u = location.hostname,
+	playNext = null,
+	path = location.pathname,
+isFullScreen = () => {
+	return !!(document.fullscreen || document.webkitIsFullScreen || document.mozFullScreen ||
+        document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+},
+//惰性函数
+requestFullScreen = v => {
+	const fn = v.requestFullscreen || v.webkitRequestFullScreen || v.mozRequestFullScreen || v.msRequestFullScreen;
+	if (fn) requestFullScreen = v => !isFullScreen() && fn.call(v);
+	else requestFullScreen = () => {};
+	requestFullScreen(v);
+};
+
+const u = location.hostname,
 mDomain = u.startsWith('video.sina.') ? 'sina' : u.split('.').reverse()[1],//主域名
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 q = css => document.querySelector(css),
@@ -85,29 +96,73 @@ onCanplay = function (e) {
 	if (r) path = location.pathname;
 },
 hotKey = function (e) {
+	if (e.ctrlKey || e.altKey)
+		return;
+	if (['INPUT', 'TEXTAREA'].includes(e.target.nodeName))
+		return;
 	//console.log('hotKey', v.seeking, v.seekable);
 	// 可播放
 	//if (!v.seekable || v.readyState !== 4) return;
+	let n;
 	switch (e.keyCode) {
 	case 32: //space
+		if (e.shiftKey) return;
 		v.paused ? v.play() : v.pause();
 		e.preventDefault();
 		//e.stopPropagation();
 		break;
 	case 37: //left
-		v.currentTime -= e.shiftKey ? skipLen : stepLen;
+		n = e.shiftKey ? 27 : 5; //快进快退5秒,shift + 快进快退
+		v.currentTime -= n;
 		break;
 	case 39: //right
-		v.currentTime += e.shiftKey ? skipLen : stepLen;
+		n = e.shiftKey ? 27 : 5; //快进快退5秒,shift + 快进快退
+		v.currentTime += n;
 		break;
+	case 78: // N 下一首
+		playNext && playNext();
+		break;
+	//case 80: // P 上一首
 	case 38: //加音量
-		//v.volume = v.volume.toFixed(2) + 0.01;
-		v.volume += 0.1;
+		n = v.volume + 0.1;
+		if (e.shiftKey || n > 1) return;
+		v.volume = n.toFixed(2);
 		e.preventDefault();
 		break;
 	case 40: //降音量
-		v.volume -= 0.1;
+		n = v.volume - 0.1;
+		if (e.shiftKey || n < 0) return;
+		v.volume = n.toFixed(2);
 		e.preventDefault();
+		break;
+	case 13: //全屏
+		requestFullScreen(v);
+		break;
+	case 88: //按键X：减速播放 -0.1
+		n = v.playbackRate;
+		if (n > 0.1) {
+			n -= 0.1;
+			v.playbackRate = n.toFixed(1);
+		}
+		break;
+	case 67: //按键C：加速播放 +0.1
+		n = v.playbackRate;
+		if (n < 16) {
+			n += 0.1;
+			v.playbackRate = n.toFixed(1);
+		}
+		break;
+	case 90: //按键Z：正常速度播放
+		v.playbackRate = 1;
+		break;
+	case 70: //按键F：下一帧
+		if (!v.paused) v.pause();
+		v.currentTime += Number(1 / 30);
+		break;
+	case 68: //按键D：上一帧
+		if (!v.paused) v.pause();
+		v.currentTime -= Number(1 / 30);
+		break;
 	}
 },
 init = () => {
@@ -150,6 +205,10 @@ case 'lesports':
 			totalTime = __INFO__.video.duration;
 			//__INFO__.video.adseed = 0;
 		};
+		playNext = () => {
+			const x = q('div.hv_ico_next');
+			x && x.click();
+		};
 		init();
 	}
 	break;
@@ -159,12 +218,22 @@ case 'sohu':
 	siteFn = () => {
 		totalTime = getAllDuration('span.x-duration-txt');
 	};
+	playNext = () => {
+		const x = q('li.on[data-vid]+li > a');
+		x && x.click();
+	};
 	init();
 	break;
 case 'fun':
 	if (u.startsWith('m.')) {
 		/^\/[mv]play/.test(path) && location.assign(path.replace('/', '/i') + location.search);
-		path.includes('play') && init();
+		if (path.includes('play')) {
+			playNext = () => {
+				const x = q('a.btn.next-btn');
+				x && x.click();
+			};
+			init();
+		}
 		return;
 	}
 	let vid = path.r1(/\bv-(\d+)/);
