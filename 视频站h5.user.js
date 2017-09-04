@@ -1,28 +1,28 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.5.3
+// @version          0.5.5
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
+// @include          *://pan.baidu.com/play/*
 // @include          *://*.qq.com/*
 // @exclude          *://live.qq.com/*
 // @exclude          *://user.qzone.qq.com/*
-// @exclude          *://lpl.qq.com/es/lpl/*
-// @exclude          *://qt.qq.com/zhibo/index.html*
+// @exclude          *://lpl.qq.com/*
+// @exclude          *://qt.qq.com/zhibo/*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
 // include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
 // include          http://*.cntv.cn/*
-// @include          *://video.sina.*.html*
+// @include          *://video.sina.*
 // @include          *://weibo.com/*
-// @include          *://*.le.com/*.html*
+// @include          *://www.weibo.com/*
 // @include          *://*.le.com/*.html*
 // @include          *://*.lesports.com/*.html*
 // @include          *://tv.sohu.com/*.shtml*
-// @include          *://m.tv.sohu.com/*.shtml*
-// @include          *://my.tv.sohu.com/*.shtml*
-// @include          *://www.fun.tv/vplay/v-*
-// @include          *://www.fun.tv/vplay/g-*
+// @include          *://*.tv.sohu.com/*.shtml*
+// @include          *://film.sohu.com/album/*
+// @include          *://www.fun.tv/vplay/*
 // @include          *://m.fun.tv/*
 // @include          https://www.panda.tv/*
 // @exclude          https://www.panda.tv/
@@ -85,9 +85,12 @@ doClick = css => {
 	return !!x;
 },
 onCanplay = function(e) {
-	//v.removeEventListener('oncanplay', onCanplay);
 	//v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
 	console.log('脚本[启用html5播放器]，事件oncanplay');
+	if (playerInfo.onMetadata) {
+		playerInfo.onMetadata();
+		delete playerInfo.onMetadata;
+	}
 	oldCanplay && oldCanplay(e);
 	const r = path !== location.pathname;//点播了另一个视频
 	if (totalTime && !r) return;//分段视频返回
@@ -99,30 +102,26 @@ onCanplay = function(e) {
 	if (r) path = location.pathname;
 },
 hotKey = function(e) {
-	if (e.ctrlKey || e.altKey)
-		return;
-	if (['INPUT', 'TEXTAREA'].includes(e.target.nodeName))
-		return;
-	//console.log('hotKey', v.seeking, v.seekable);
-	// 可播放
-	//if (!v.seekable || v.readyState !== 4) return;
+	if (e.ctrlKey || e.altKey) return;
+	if (/INPUT|TEXTAREA/.test(e.target.nodeName)) return;
 	let n;
 	switch (e.keyCode) {
 	case 32: //space
-		if (e.shiftKey) return;
+		if (e.shiftKey || playerInfo.disableSpace) return;
 		v.paused ? v.play() : v.pause();
 		e.preventDefault();
 		//e.stopPropagation();
 		break;
 	case 37: //left
-		n = e.shiftKey ? 27 : 5; //快进快退5秒,shift + 快进快退
+		n = e.shiftKey ? 27 : 5; //快退5秒,shift加速
 		v.currentTime -= n;
 		break;
 	case 39: //right
-		n = e.shiftKey ? 27 : 5; //快进快退5秒,shift + 快进快退
+		n = e.shiftKey ? 27 : 5; //快进5秒,shift加速
 		v.currentTime += n;
 		break;
 	case 78: // N 下一首
+		if (e.shiftKey) return;
 		doClick(playerInfo.nextCSS);
 		break;
 	//case 80: // P 上一首
@@ -139,9 +138,11 @@ hotKey = function(e) {
 		e.preventDefault();
 		break;
 	case 13: //全屏
-		if (!isFullScreen()) doClick(playerInfo.fullCSS) || requestFullScreen(v);
+		if (e.shiftKey) doClick(playerInfo.webfullCSS);
+		else if (!isFullScreen()) doClick(playerInfo.fullCSS) || requestFullScreen(v);
 		break;
 	case 88: //按键X：减速播放 -0.1
+		if (e.shiftKey) return;
 		n = v.playbackRate;
 		if (n > 0.1) {
 			n -= 0.1;
@@ -149,6 +150,7 @@ hotKey = function(e) {
 		}
 		break;
 	case 67: //按键C：加速播放 +0.1
+		if (e.shiftKey) return;
 		n = v.playbackRate;
 		if (n < 16) {
 			n += 0.1;
@@ -156,26 +158,28 @@ hotKey = function(e) {
 		}
 		break;
 	case 90: //按键Z：正常速度播放
+		if (e.shiftKey) return;
 		v.playbackRate = 1;
 		break;
 	case 70: //按键F：下一帧
+		if (e.shiftKey) return;
 		if (!v.paused) v.pause();
 		v.currentTime += Number(1 / 30);
 		break;
 	case 68: //按键D：上一帧
+		if (e.shiftKey) return;
 		if (!v.paused) v.pause();
 		v.currentTime -= Number(1 / 30);
 		break;
 	}
 },
-init = (cb) => {
+init = () => {
 	new MutationObserver(function(records) {
 		v = q('video');
 		if (v) {
 			oldCanplay = v.oncanplay;
 			v.oncanplay = onCanplay;
 			this.disconnect();
-			cb && cb();
 			document.addEventListener('keydown', hotKey, !1);
 			if (playerInfo.timeCSS)
 				totalTime = getAllDuration(playerInfo.timeCSS);
@@ -186,23 +190,35 @@ init = (cb) => {
 	});
 };
 
+if (mDomain !== 'panda') init();
+
 switch (mDomain) {
 case 'qq':
+	playerInfo = {
+		disableSpace: true,
+		//playCSS: 'txpdiv.txp_btn_play',
+		nextCSS: 'txpdiv.txp_btn_next',
+		webfullCSS: 'txpdiv.txp_btn_fake[data-status="false"]',
+		fullCSS: 'txpdiv.txp_btn_fullscreen'
+	};
 	fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	break;
 case 'youku':
 	sessionStorage.P_l_h5 = 1;
-	init();
+	playerInfo = {
+		disableSpace: true,
+		//playCSS: 'button.control-play-icon',
+		nextCSS: 'button.control-next-video',
+		fullCSS: 'button.control-fullscreen-icon'
+	};
 	break;
 case 'cctv':
 case 'cntv':
 	fakeUA(ua_samsung);
-	init();
 	break;
 case 'sina':
 	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
-case 'weibo':
-	init();
+//case 'weibo':
 	break;
 case 'le':
 case 'lesports':
@@ -214,18 +230,15 @@ case 'lesports':
 			nextCSS: 'div.hv_ico_next',
 			fullCSS: 'div.hv_ico_screen'
 		};
-		init();
 	}
 	break;
 case 'sohu':
 	fakeUA(ua_samsung);
-	// q('meta[name=mobile-agent]').remove();
 	playerInfo = {
 		timeCSS: 'span.x-duration-txt',
 		nextCSS: 'li.on[data-vid]+li > a',
 		fullCSS: 'div.x-fs-btn'
 	};
-	init();
 	break;
 case 'fun':
 	if (u.startsWith('m.')) {
@@ -235,7 +248,6 @@ case 'fun':
 				nextCSS: 'a.btn.next-btn',
 				fullCSS: 'a.btn.full-btn'
 			};
-			init();
 		}
 		return;
 	}
@@ -254,9 +266,8 @@ case 'fun':
 	}, !1);
 	break;
 case 'tudou':
-	init(() => {
+	playerInfo.onMetadata = () => {
 		//获取播放时长
-		//totalTime = getAllDuration('span.td-h5__player__console__time-total');
 		totalTime = ~~q('meta[name=duration]').getAttribute('content');
 		const cur = ~~v.duration +1;
 		//console.log(cur, totalTime);
@@ -270,7 +281,7 @@ case 'tudou':
 				if (totalTime > 666) v.currentTime = 66;
 			}, 9);
 		}
-	});
+	};
 	break;
 case 'panda':
 	localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
