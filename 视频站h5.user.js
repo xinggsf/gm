@@ -215,19 +215,32 @@ case 'youku':
 		onMetadata: () => {
 			const bar = q('.h5player-dashboard');
 			if (!bar) return;
+			const layer = q('.h5-layer-conatiner');
 			const player = bar.closest('.youku-film-player');
+			let timer = null;
 			bar.addEventListener('mousemove', ev => {
+				if (timer) {
+					clearTimeout(timer);
+					timer = null;
+				}
 				ev.preventDefault();
 				ev.stopPropagation();
 			}, !1);
-			player.addEventListener('mousemove', ev => {
+			layer.addEventListener('mousemove', ev => {
+				ev.preventDefault();
+				ev.stopPropagation();
 				if (bar.offsetWidth === 0) {
 					//控制栏隐藏，则显示之
-					player.dispatchEvent(new MouseEvent('mouseout'));
-					player.dispatchEvent(new MouseEvent('mouseover'));
+					bar.style.display = 'block';
 				}
-				//控制栏显示，则定时隐藏
-				else player.dispatchEvent(new MouseEvent('mouseout'));
+				else if (!timer) {
+					//控制栏显示，则定时隐藏
+					timer = setTimeout(() => {
+						bar.style.display = 'none';
+						player.dispatchEvent(new MouseEvent('mouseout'));
+						timer = null;
+					}, 2600);
+				}
 			}, !1);
 		}
 	};
