@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.5.5
+// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
+// @version          0.5.6
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/play/*
-// @include          *://*.qq.com/*
-// @exclude          *://live.qq.com/*
-// @exclude          *://user.qzone.qq.com/*
-// @exclude          *://lpl.qq.com/*
-// @exclude          *://qt.qq.com/zhibo/*
+// @include          *://v.qq.com/*
+// @include          *://lol.qq.com/v/*
+// @include          *://film.qq.com/*
+// @include          *://view.inews.qq.com/*
+// @include          *://news.qq.com/*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
 // include          http://*.cctv.com/*
@@ -102,8 +102,9 @@ onCanplay = function(e) {
 	if (r) path = location.pathname;
 },
 hotKey = function(e) {
-	if (e.ctrlKey || e.altKey) return;
-	if (/INPUT|TEXTAREA/.test(e.target.nodeName)) return;
+	//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
+	if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA/.test(e.target.nodeName))
+		return;
 	let n;
 	switch (e.keyCode) {
 	case 32: //space
@@ -208,8 +209,27 @@ case 'youku':
 	playerInfo = {
 		disableSpace: true,
 		//playCSS: 'button.control-play-icon',
-		nextCSS: 'button.control-next-video',
-		fullCSS: 'button.control-fullscreen-icon'
+		//nextCSS: 'button.control-next-video',
+		fullCSS: 'button.control-fullscreen-icon',
+		//修正播放控制栏不能正常隐藏
+		onMetadata: () => {
+			const bar = q('.h5player-dashboard');
+			if (!bar) return;
+			const player = bar.closest('.youku-film-player');
+			bar.addEventListener('mousemove', ev => {
+				ev.preventDefault();
+				ev.stopPropagation();
+			}, !1);
+			player.addEventListener('mousemove', ev => {
+				if (bar.offsetWidth === 0) {
+					//控制栏隐藏，则显示之
+					player.dispatchEvent(new MouseEvent('mouseout'));
+					player.dispatchEvent(new MouseEvent('mouseover'));
+				}
+				//控制栏显示，则定时隐藏
+				else player.dispatchEvent(new MouseEvent('mouseout'));
+			}, !1);
+		}
 	};
 	break;
 case 'cctv':
@@ -273,7 +293,7 @@ case 'tudou':
 		//console.log(cur, totalTime);
 		if (cur < totalTime) {
 			//分段视频，保持播放器原状
-			q('#td-h5 +div').remove();
+			q('.td-h5__appguide-fix').remove();
 		} else {
 			document.body.innerHTML = `<video width="100%" height="100%" autoplay controls src="${v.src}"/>`;
 			setTimeout(() => {
@@ -281,6 +301,7 @@ case 'tudou':
 				if (totalTime > 666) v.currentTime = 66;
 			}, 9);
 		}
+		document.body.style.paddingBottom = 0;
 	};
 	break;
 case 'panda':
