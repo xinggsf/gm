@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频等。并添加播放快捷键：快进、快退、暂停/播放、音量调节
-// @version          0.5.6
+// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频、龙珠直播、熊猫直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
+// @version          0.5.7
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/play/*
 // @include          *://v.qq.com/*
@@ -26,7 +26,11 @@
 // @include          *://m.fun.tv/*
 // @include          https://www.panda.tv/*
 // @exclude          https://www.panda.tv/
+// include          https://*.zhanqi.tv/*  强制https页面，不能加载http的XHR视频内容
+// exclude          https://www.zhanqi.tv/
+// @include          *://*.longzhu.com/*
 // @grant            unsafeWindow
+// @require          https://cdn.jsdelivr.net/npm/hls.js@latest
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
@@ -43,6 +47,7 @@ String.prototype.r1 = function(r) {
 };
 
 let v, totalTime,
+	isLive = !1,
 	oldCanplay = null,
 	playerInfo = {},
 	path = location.pathname,
@@ -62,6 +67,7 @@ const u = location.hostname,
 mDomain = u.startsWith('video.sina.') ? 'sina' : u.split('.').reverse()[1],//主域名
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 q = css => document.querySelector(css),
+//$cls = name => document.getElementsByClassName(name)[0],
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
@@ -105,13 +111,16 @@ hotKey = function(e) {
 	//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
 	if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA/.test(e.target.nodeName))
 		return;
+	if (isLive && [37,39,78,88,67,90].includes(e.keyCode))
+		return;
 	let n;
 	switch (e.keyCode) {
 	case 32: //space
 		if (e.shiftKey || playerInfo.disableSpace) return;
+		playerInfo.playCSS ? doClick(playerInfo.playCSS) :
 		v.paused ? v.play() : v.pause();
 		e.preventDefault();
-		//e.stopPropagation();
+		e.stopPropagation();
 		break;
 	case 37: //left
 		n = e.shiftKey ? 27 : 5; //快退5秒,shift加速
@@ -174,7 +183,15 @@ hotKey = function(e) {
 		break;
 	}
 },
-init = () => {
+doHls = () => {
+	if (!v || !/\.m3u8($|\?)/.test(v.src) || !Hls.isSupported())
+		return;
+	const hls = new Hls();
+	hls.loadSource(v.src);
+	hls.attachMedia(v);
+	hls.on(Hls.Events.MANIFEST_PARSED, () => v.play());
+},
+init = cb => {
 	new MutationObserver(function(records) {
 		v = q('video');
 		if (v) {
@@ -184,14 +201,13 @@ init = () => {
 			document.addEventListener('keydown', hotKey, !1);
 			if (playerInfo.timeCSS)
 				totalTime = getAllDuration(playerInfo.timeCSS);
+			cb && cb();
 		}
 	}).observe(document.documentElement, {
 		childList : true,
 		subtree : true
 	});
 };
-
-if (mDomain !== 'panda') init();
 
 switch (mDomain) {
 case 'qq':
@@ -207,16 +223,18 @@ case 'qq':
 case 'youku':
 	sessionStorage.P_l_h5 = 1;
 	playerInfo = {
-		disableSpace: true,
+		disableSpace: true,//切换至播放时异常
 		//playCSS: 'button.control-play-icon',
 		//nextCSS: 'button.control-next-video',
 		fullCSS: 'button.control-fullscreen-icon',
 		//修正播放控制栏不能正常隐藏
 		onMetadata: () => {
+			q('.youku_layer_logo').remove();
 			const bar = q('.h5player-dashboard');
 			if (!bar) return;
+			//const player = bar.closest('.youku-film-player');
 			const layer = q('.h5-layer-conatiner');
-			const player = bar.closest('.youku-film-player');
+			const top_bar = layer.querySelector('.top_area');//全屏时的顶部状态栏
 			let timer = null;
 			bar.addEventListener('mousemove', ev => {
 				if (timer) {
@@ -226,10 +244,12 @@ case 'youku':
 				ev.preventDefault();
 				ev.stopPropagation();
 			}, !1);
+			//拦截鼠标消息，阻断官方的消息处理
 			layer.addEventListener('mousemove', ev => {
 				ev.preventDefault();
 				ev.stopPropagation();
 				if (bar.offsetWidth === 0) {
+					isFullScreen() && (top_bar.style.display = 'block');
 					//控制栏隐藏，则显示之
 					bar.style.display = 'block';
 				}
@@ -237,11 +257,23 @@ case 'youku':
 					//控制栏显示，则定时隐藏
 					timer = setTimeout(() => {
 						bar.style.display = 'none';
-						player.dispatchEvent(new MouseEvent('mouseout'));
+						isFullScreen() && (top_bar.style.display = 'none');
 						timer = null;
 					}, 2600);
 				}
 			}, !1);
+			//修正下一个按钮无效
+			const btn = q('button.control-next-video');
+			if (btn) {
+				let e, attr;
+				e = q('.program.current');
+				e = e && e.closest('.item') || q('.item.current');
+				e = e.nextSibling.querySelector('a');//下一个视频链接
+				attr = e.closest('[item-id]').getAttribute('item-id');
+				playerInfo.nextCSS = `[item-id="${attr}"] a`;
+
+				btn.addEventListener('click', ev => e.click());
+			}
 		}
 	};
 	break;
@@ -319,4 +351,12 @@ case 'tudou':
 	break;
 case 'panda':
 	localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
+	isLive = true;
+	break;
+case 'longzhu':
+//case 'zhanqi':
+	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
+	isLive = true;
 }
+
+['longzhu', 'zhanqi'].includes(mDomain) ? init(doHls) : init();
