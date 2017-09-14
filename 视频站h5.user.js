@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频、龙珠直播、熊猫直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
-// @version          0.5.7
+// @version          0.5.8
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/play/*
 // @include          *://v.qq.com/*
@@ -14,7 +14,8 @@
 // include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
 // include          http://*.cntv.cn/*
-// @include          *://video.sina.*
+// @include          *://video.sina.com.cn/
+// @include          *://video.sina.cn/
 // @include          *://weibo.com/*
 // @include          *://www.weibo.com/*
 // @include          *://*.le.com/*.html*
@@ -45,6 +46,8 @@ Object.defineProperty(navigator, 'plugins', {
 String.prototype.r1 = function(r) {
 	return r.test(this) && RegExp.$1;
 };
+if (window.chrome)
+	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
 let v, totalTime,
 	isLive = !1,
@@ -56,11 +59,16 @@ isFullScreen = () => {
         document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
 },
 //惰性函数
-requestFullScreen = v => {
+requestFullScreen = () => {
 	const fn = v.requestFullscreen || v.webkitRequestFullScreen || v.mozRequestFullScreen || v.msRequestFullScreen;
-	if (fn) requestFullScreen = v => fn.call(v);
-	else requestFullScreen = () => {};
-	requestFullScreen(v);
+	requestFullScreen = fn ? () => fn.call(v): () => {};
+	requestFullScreen();
+},
+//惰性函数
+exitFullScreen = () => {
+	const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+	exitFullScreen = fn ? () => fn.call(document): () => {};
+	exitFullScreen();
 };
 
 const u = location.hostname,
@@ -88,7 +96,11 @@ doClick = css => {
 	if (!css) return !1;
 	const x = q(css);
 	x && x.click();
+	//x && x.dispatchEvent(new MouseEvent('click'));
 	return !!x;
+},
+removeAllElem = css => {
+	for (let e of document.querySelectorAll(css)) e.remove();
 },
 onCanplay = function(e) {
 	//v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
@@ -102,7 +114,7 @@ onCanplay = function(e) {
 	if (totalTime && !r) return;//分段视频返回
 	totalTime = totalTime || Math.round(v.duration);
 	//跳过片头
-	if (totalTime > 666 && 'youku' !== mDomain) setTimeout( () => {
+	if (!isLive && totalTime > 666 && 'youku' !== mDomain) setTimeout( () => {
 		v.currentTime = 66;
 	}, 9);
 	if (r) path = location.pathname;
@@ -117,7 +129,7 @@ hotKey = function(e) {
 	switch (e.keyCode) {
 	case 32: //space
 		if (e.shiftKey || playerInfo.disableSpace) return;
-		playerInfo.playCSS ? doClick(playerInfo.playCSS) :
+		//playerInfo.playCSS ? doClick(playerInfo.playCSS) :
 		v.paused ? v.play() : v.pause();
 		e.preventDefault();
 		e.stopPropagation();
@@ -149,7 +161,7 @@ hotKey = function(e) {
 		break;
 	case 13: //全屏
 		if (e.shiftKey) doClick(playerInfo.webfullCSS);
-		else if (!isFullScreen()) doClick(playerInfo.fullCSS) || requestFullScreen(v);
+		else if (!isFullScreen()) doClick(playerInfo.fullCSS) || requestFullScreen();
 		break;
 	case 88: //按键X：减速播放 -0.1
 		if (e.shiftKey) return;
@@ -262,6 +274,12 @@ case 'youku':
 					}, 2600);
 				}
 			}, !1);
+			layer.addEventListener('click', ev => {
+				v.paused ? v.play() : v.pause();
+			}, !1);
+			layer.addEventListener('dblclick', ev => {
+				isFullScreen() ? exitFullScreen() : doClick('button.control-fullscreen-icon');
+			}, !1);
 			//修正下一个按钮无效
 			const btn = q('button.control-next-video');
 			if (btn) {
@@ -269,10 +287,9 @@ case 'youku':
 				e = q('.program.current');
 				e = e && e.closest('.item') || q('.item.current');
 				e = e.nextSibling.querySelector('a');//下一个视频链接
+				btn.addEventListener('click', ev => e.click());
 				attr = e.closest('[item-id]').getAttribute('item-id');
 				playerInfo.nextCSS = `[item-id="${attr}"] a`;
-
-				btn.addEventListener('click', ev => e.click());
 			}
 		}
 	};
@@ -307,20 +324,23 @@ case 'sohu':
 	break;
 case 'fun':
 	if (u.startsWith('m.')) {
-		/^\/[mv]play/.test(path) && location.assign(path.replace('/', '/i') + location.search);
-		if (path.includes('play')) {
-			playerInfo = {
-				nextCSS: 'a.btn.next-btn',
-				fullCSS: 'a.btn.full-btn'
-			};
-		}
-		return;
+		if (!path.includes('play')) return;//非播放页，不执行init()
+		/^\/[mv]/.test(path) && location.assign(path.replace('/', '/i') + location.search);
+		playerInfo = {
+			nextCSS: 'a.btn.next-btn',
+			fullCSS: 'a.btn.full-btn'
+		};
+		break;
 	}
 	let vid = path.r1(/\bv-(\d+)/);
-	path.startsWith('/vplay/v-') && location.assign('//m.fun.tv/ivplay/?vid='+vid);
-	let mid = path.r1(/\/g-(\d+)/);
-	vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
+	let mid = path.r1(/\bg-(\d+)/);
+	//剧集path: /implay/，单视频path: /ivplay/
+	if (vid) {
+		mid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
+		location.assign('//m.fun.tv/ivplay/?vid='+vid);
+	}
 
+	if (!mid) return;//非播放页，不执行init()
 	document.addEventListener('DOMContentLoaded', ev => {
 		//vid = window.vplay.videoid;
 		const x = q('.nowplay[data-vid]');
@@ -332,12 +352,10 @@ case 'fun':
 	break;
 case 'tudou':
 	playerInfo.onMetadata = () => {
-		//获取播放时长
 		totalTime = ~~q('meta[name=duration]').getAttribute('content');
 		const cur = ~~v.duration +1;
-		//console.log(cur, totalTime);
 		if (cur < totalTime) {
-			//分段视频，保持播放器原状
+			//分段视频，保持播放器原状 removeAllElem('#td-h5~div')
 			q('.td-h5__appguide-fix').remove();
 		} else {
 			document.body.innerHTML = `<video width="100%" height="100%" autoplay controls src="${v.src}"/>`;
@@ -351,9 +369,14 @@ case 'tudou':
 	break;
 case 'panda':
 	localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
+	playerInfo = {
+		webfullCSS: 'span.h5player-control-bar-fullscreen',
+		fullCSS: 'span.h5player-control-bar-allfullscreen'
+	};
 	isLive = true;
 	break;
 case 'longzhu':
+	//setTimeout(() => removeAllElem('script[src*="toushibao.com"]'), 9);
 //case 'zhanqi':
 	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
 	isLive = true;
