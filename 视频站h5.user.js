@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频、龙珠直播、熊猫直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
-// @version          0.5.8
+// @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频、熊猫、龙珠、战旗直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
+// @version          0.5.9
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/play/*
 // @include          *://v.qq.com/*
@@ -14,8 +14,8 @@
 // include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
 // include          http://*.cntv.cn/*
-// @include          *://video.sina.com.cn/
-// @include          *://video.sina.cn/
+// @include          *://video.sina.com.cn/*
+// @include          *://video.sina.cn/*
 // @include          *://weibo.com/*
 // @include          *://www.weibo.com/*
 // @include          *://*.le.com/*.html*
@@ -27,8 +27,7 @@
 // @include          *://m.fun.tv/*
 // @include          https://www.panda.tv/*
 // @exclude          https://www.panda.tv/
-// include          https://*.zhanqi.tv/*  强制https页面，不能加载http的XHR视频内容
-// exclude          https://www.zhanqi.tv/
+// @include          https://*.zhanqi.tv/*
 // @include          *://*.longzhu.com/*
 // @grant            unsafeWindow
 // @require          https://cdn.jsdelivr.net/npm/hls.js@latest
@@ -38,11 +37,6 @@
 // ==/UserScript==
 'use strict';
 
-Object.defineProperty(navigator, 'plugins', {
-	get: function() {
-		return { length: 0 };
-	}
-});
 String.prototype.r1 = function(r) {
 	return r.test(this) && RegExp.$1;
 };
@@ -103,21 +97,18 @@ removeAllElem = css => {
 	for (let e of document.querySelectorAll(css)) e.remove();
 },
 onCanplay = function(e) {
-	//v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
+	v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
 	console.log('脚本[启用html5播放器]，事件oncanplay');
 	if (playerInfo.onMetadata) {
 		playerInfo.onMetadata();
 		delete playerInfo.onMetadata;
 	}
 	oldCanplay && oldCanplay(e);
-	const r = path !== location.pathname;//点播了另一个视频
-	if (totalTime && !r) return;//分段视频返回
 	totalTime = totalTime || Math.round(v.duration);
 	//跳过片头
 	if (!isLive && totalTime > 666 && 'youku' !== mDomain) setTimeout( () => {
 		v.currentTime = 66;
 	}, 9);
-	if (r) path = location.pathname;
 },
 hotKey = function(e) {
 	//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
@@ -213,6 +204,7 @@ init = cb => {
 			document.addEventListener('keydown', hotKey, !1);
 			if (playerInfo.timeCSS)
 				totalTime = getAllDuration(playerInfo.timeCSS);
+			console.log(v);
 			cb && cb();
 		}
 	}).observe(document.documentElement, {
@@ -282,13 +274,12 @@ case 'youku':
 			}, !1);
 			//修正下一个按钮无效
 			const btn = q('button.control-next-video');
-			if (btn) {
-				let e, attr;
-				e = q('.program.current');
+			if (btn && btn.offsetWidth>1) {
+				let e = q('.program.current');
 				e = e && e.closest('.item') || q('.item.current');
 				e = e.nextSibling.querySelector('a');//下一个视频链接
 				btn.addEventListener('click', ev => e.click());
-				attr = e.closest('[item-id]').getAttribute('item-id');
+				const attr = e.closest('[item-id]').getAttribute('item-id');
 				playerInfo.nextCSS = `[item-id="${attr}"] a`;
 			}
 		}
@@ -377,9 +368,32 @@ case 'panda':
 	break;
 case 'longzhu':
 	//setTimeout(() => removeAllElem('script[src*="toushibao.com"]'), 9);
-//case 'zhanqi':
-	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
 	isLive = true;
+	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
+	break;
+case 'zhanqi':
+	setTimeout(function getM3u8_Addr() {
+		const e = q('#BFPlayerID');
+		if (!e) {
+			setTimeout(getM3u8_Addr, 300);
+			return;
+		}
+		let s = e.children.flashvars.value,
+		url = s.r1(/PlayUrl=([^&]+)/);//视频
+		if (!url) {
+			isLive = true;
+			s = s.r1(/VideoLevels=([^&]+)/);//直播
+			s = atob(s);
+			url = JSON.parse(s).streamUrl;
+		}
+		console.log(url);
+		e.parentNode.innerHTML = `<video width="100%" height="100%" autoplay controls src="${url}"/>`;
+	}, 300);
 }
 
+(mDomain!== 'zhanqi') && Object.defineProperty(navigator, 'plugins', {
+	get: function() {
+		return { length: 0 };
+	}
+});
 ['longzhu', 'zhanqi'].includes(mDomain) ? init(doHls) : init();
