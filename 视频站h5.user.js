@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频、熊猫、龙珠、战旗直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
-// @version          0.5.9
+// @version          0.6.0
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/play/*
+// @include          *://pan.baidu.com/share/link?*
 // @include          *://v.qq.com/*
 // @include          *://lol.qq.com/v/*
 // @include          *://film.qq.com/*
@@ -37,9 +38,6 @@
 // ==/UserScript==
 'use strict';
 
-String.prototype.r1 = function(r) {
-	return r.test(this) && RegExp.$1;
-};
 if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
@@ -70,6 +68,7 @@ mDomain = u.startsWith('video.sina.') ? 'sina' : u.split('.').reverse()[1],//主
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 q = css => document.querySelector(css),
 //$cls = name => document.getElementsByClassName(name)[0],
+r1 = (regp, s) => regp.test(s) && RegExp.$1,
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
@@ -151,8 +150,10 @@ hotKey = function(e) {
 		e.preventDefault();
 		break;
 	case 13: //全屏
-		if (e.shiftKey) doClick(playerInfo.webfullCSS);
-		else if (!isFullScreen()) doClick(playerInfo.fullCSS) || requestFullScreen();
+		if (e.shiftKey)
+			doClick(playerInfo.webfullCSS);
+		else if (!isFullScreen())
+			doClick(playerInfo.fullCSS) || requestFullScreen();
 		break;
 	case 88: //按键X：减速播放 -0.1
 		if (e.shiftKey) return;
@@ -213,6 +214,12 @@ init = cb => {
 	});
 };
 
+if (mDomain!== 'zhanqi') Object.defineProperty(navigator, 'plugins', {
+	get: function() {
+		return { length: 0 };
+	}
+});
+
 switch (mDomain) {
 case 'qq':
 	playerInfo = {
@@ -233,9 +240,9 @@ case 'youku':
 		fullCSS: 'button.control-fullscreen-icon',
 		//修正播放控制栏不能正常隐藏
 		onMetadata: () => {
-			q('.youku_layer_logo').remove();
 			const bar = q('.h5player-dashboard');
 			if (!bar) return;
+			q('.youku_layer_logo').remove();
 			//const player = bar.closest('.youku-film-player');
 			const layer = q('.h5-layer-conatiner');
 			const top_bar = layer.querySelector('.top_area');//全屏时的顶部状态栏
@@ -277,7 +284,9 @@ case 'youku':
 			if (btn && btn.offsetWidth>1) {
 				let e = q('.program.current');
 				e = e && e.closest('.item') || q('.item.current');
-				e = e.nextSibling.querySelector('a');//下一个视频链接
+				e = e.nextSibling;
+				if (!e) return;
+				e = e.querySelector('a');//下一个视频链接
 				btn.addEventListener('click', ev => e.click());
 				const attr = e.closest('[item-id]').getAttribute('item-id');
 				playerInfo.nextCSS = `[item-id="${attr}"] a`;
@@ -323,8 +332,8 @@ case 'fun':
 		};
 		break;
 	}
-	let vid = path.r1(/\bv-(\d+)/);
-	let mid = path.r1(/\bg-(\d+)/);
+	let vid = r1(/\bv-(\d+)/, path);
+	let mid = r1(/\bg-(\d+)/, path);
 	//剧集path: /implay/，单视频path: /ivplay/
 	if (vid) {
 		mid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
@@ -367,33 +376,26 @@ case 'panda':
 	isLive = true;
 	break;
 case 'longzhu':
-	//setTimeout(() => removeAllElem('script[src*="toushibao.com"]'), 9);
 	isLive = true;
 	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
 	break;
 case 'zhanqi':
 	setTimeout(function getM3u8_Addr() {
-		const e = q('#BFPlayerID');
+		const e = q('#BFPlayerID');//flash ID
 		if (!e) {
 			setTimeout(getM3u8_Addr, 300);
 			return;
 		}
 		let s = e.children.flashvars.value,
-		url = s.r1(/PlayUrl=([^&]+)/);//视频
+		url = r1(/PlayUrl=([^&]+)/, s);//视频
 		if (!url) {
 			isLive = true;
-			s = s.r1(/VideoLevels=([^&]+)/);//直播
+			s = r1(/VideoLevels=([^&]+)/, s);//直播
 			s = atob(s);
 			url = JSON.parse(s).streamUrl;
 		}
-		console.log(url);
 		e.parentNode.innerHTML = `<video width="100%" height="100%" autoplay controls src="${url}"/>`;
 	}, 300);
 }
 
-(mDomain!== 'zhanqi') && Object.defineProperty(navigator, 'plugins', {
-	get: function() {
-		return { length: 0 };
-	}
-});
 ['longzhu', 'zhanqi'].includes(mDomain) ? init(doHls) : init();
