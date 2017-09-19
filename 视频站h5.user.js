@@ -1,17 +1,21 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、搜狐、乐视、央视、风行、百度云视频、熊猫、龙珠、战旗直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
-// @version          0.6.0
+// @version          0.6.1
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
-// @include          *://pan.baidu.com/play/*
-// @include          *://pan.baidu.com/share/link?*
+// @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
-// @include          *://lol.qq.com/v/*
 // @include          *://film.qq.com/*
 // @include          *://view.inews.qq.com/*
 // @include          *://news.qq.com/*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://video.tudou.com/v/*
+// @include          *://v.163.com/*.html*
+// include          *://live.163.com/*.html*
+// include          *://c.m.163.com/*.html
+// @include          *://ent.163.com/*.html*
+// @include          *://news.163.com/*.html*
+// @include          *://study.163.com/course/*.htm?courseId=*
 // include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
 // include          http://*.cntv.cn/*
@@ -31,7 +35,7 @@
 // @include          https://*.zhanqi.tv/*
 // @include          *://*.longzhu.com/*
 // @grant            unsafeWindow
-// @require          https://cdn.jsdelivr.net/npm/hls.js@latest
+// @require          https://cdn.jsdelivr.net/hls.js/latest/hls.min.js
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
@@ -41,8 +45,7 @@
 if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
-let v, totalTime,
-	isLive = !1,
+let v, vList, totalTime, isLive = !1,
 	oldCanplay = null,
 	playerInfo = {},
 	path = location.pathname,
@@ -56,7 +59,6 @@ requestFullScreen = () => {
 	requestFullScreen = fn ? () => fn.call(v): () => {};
 	requestFullScreen();
 },
-//惰性函数
 exitFullScreen = () => {
 	const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
 	exitFullScreen = fn ? () => fn.call(document): () => {};
@@ -66,6 +68,7 @@ exitFullScreen = () => {
 const u = location.hostname,
 mDomain = u.startsWith('video.sina.') ? 'sina' : u.split('.').reverse()[1],//主域名
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
+ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3',
 q = css => document.querySelector(css),
 //$cls = name => document.getElementsByClassName(name)[0],
 r1 = (regp, s) => regp.test(s) && RegExp.$1,
@@ -95,6 +98,11 @@ doClick = css => {
 removeAllElem = css => {
 	for (let e of document.querySelectorAll(css)) e.remove();
 },
+getVideo = () => {
+	vList = vList || document.getElementsByTagName('video');
+	for (let e of vList)
+		if (e.offsetWidth>1) return (v = e);
+},
 onCanplay = function(e) {
 	v.oncanplay = null;//注释掉，应对列表点播而不刷新页面
 	console.log('脚本[启用html5播放器]，事件oncanplay');
@@ -115,11 +123,11 @@ hotKey = function(e) {
 		return;
 	if (isLive && [37,39,78,88,67,90].includes(e.keyCode))
 		return;
+	vList && getVideo();
 	let n;
 	switch (e.keyCode) {
 	case 32: //space
 		if (e.shiftKey || playerInfo.disableSpace) return;
-		//playerInfo.playCSS ? doClick(playerInfo.playCSS) :
 		v.paused ? v.play() : v.pause();
 		e.preventDefault();
 		e.stopPropagation();
@@ -190,6 +198,15 @@ hotKey = function(e) {
 doHls = () => {
 	if (!v || !/\.m3u8($|\?)/.test(v.src) || !Hls.isSupported())
 		return;
+/* 	const config = {
+		debug: true,
+		xhrSetup: function (xhr, url) {
+			xhr.withCredentials = true; // do send cookie
+			xhr.setRequestHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
+			xhr.setRequestHeader("Access-Control-Allow-Origin", u);
+			xhr.setRequestHeader("Access-Control-Allow-Credentials", "true");
+		}
+	}; */
 	const hls = new Hls();
 	hls.loadSource(v.src);
 	hls.attachMedia(v);
@@ -224,25 +241,24 @@ switch (mDomain) {
 case 'qq':
 	playerInfo = {
 		disableSpace: true,
-		//playCSS: 'txpdiv.txp_btn_play',
 		nextCSS: 'txpdiv.txp_btn_next',
 		webfullCSS: 'txpdiv.txp_btn_fake[data-status="false"]',
-		fullCSS: 'txpdiv.txp_btn_fullscreen'
+		fullCSS: 'txpdiv.txp_btn_fullscreen',
+		onMetadata: getVideo,
 	};
 	fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	break;
 case 'youku':
 	sessionStorage.P_l_h5 = 1;
 	playerInfo = {
-		disableSpace: true,//切换至播放时异常
-		//playCSS: 'button.control-play-icon',
-		//nextCSS: 'button.control-next-video',
+		disableSpace: true,//切换至播放时异常，官方已拦截空格键
 		fullCSS: 'button.control-fullscreen-icon',
 		//修正播放控制栏不能正常隐藏
 		onMetadata: () => {
 			const bar = q('.h5player-dashboard');
 			if (!bar) return;
 			q('.youku_layer_logo').remove();
+			getVideo();
 			//const player = bar.closest('.youku-film-player');
 			const layer = q('.h5-layer-conatiner');
 			const top_bar = layer.querySelector('.top_area');//全屏时的顶部状态栏
@@ -274,6 +290,7 @@ case 'youku':
 				}
 			}, !1);
 			layer.addEventListener('click', ev => {
+				getVideo();
 				v.paused ? v.play() : v.pause();
 			}, !1);
 			layer.addEventListener('dblclick', ev => {
@@ -298,9 +315,9 @@ case 'cctv':
 case 'cntv':
 	fakeUA(ua_samsung);
 	break;
+case '163':
 case 'sina':
-	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
-//case 'weibo':
+	fakeUA(ua_ipad2);
 	break;
 case 'le':
 case 'lesports':
@@ -340,16 +357,11 @@ case 'fun':
 		location.assign('//m.fun.tv/ivplay/?vid='+vid);
 	}
 
-	if (!mid) return;//非播放页，不执行init()
-	document.addEventListener('DOMContentLoaded', ev => {
-		//vid = window.vplay.videoid;
-		const x = q('.nowplay[data-vid]');
-		if (x) {
-			vid = x.getAttribute('data-vid');
-			location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
-		}
-	}, !1);
-	break;
+	mid && setTimeout( () => {
+		vid = unsafeWindow.vplay.videoid;
+		vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
+	}, 99);
+	return;//非播放页，不执行init()
 case 'tudou':
 	playerInfo.onMetadata = () => {
 		totalTime = ~~q('meta[name=duration]').getAttribute('content');
@@ -377,7 +389,7 @@ case 'panda':
 	break;
 case 'longzhu':
 	isLive = true;
-	fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
+	fakeUA(ua_ipad2);
 	break;
 case 'zhanqi':
 	setTimeout(function getM3u8_Addr() {
