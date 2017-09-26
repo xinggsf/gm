@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、网易短视频[娱乐、云课堂、新闻]、搜狐、乐视、央视、风行、百度云视频、熊猫、龙珠、战旗直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
-// @version          0.6.2
+// @version          0.6.3
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -15,10 +15,12 @@
 // include          *://c.m.163.com/*.html
 // @include          *://ent.163.com/*.html*
 // @include          *://news.163.com/*.html*
+// @include          *://news.163.com/special/*
 // @include          *://study.163.com/course/*.htm?courseId=*
 // include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
 // include          http://*.cntv.cn/*
+// @include          *://news.sina.com.cn/*
 // @include          *://video.sina.com.cn/*
 // @include          *://video.sina.cn/*
 // @include          *://weibo.com/*
@@ -48,10 +50,21 @@ if (window.chrome)
 let v, vList, totalTime, isLive = !1,
 	oldCanplay = null,
 	playerInfo = {},
-	path = location.pathname;
+	path = location.pathname,
+requestFullScreen = () => {
+	const fn = v.requestFullscreen || v.webkitRequestFullScreen || v.mozRequestFullScreen || v.msRequestFullScreen;
+	requestFullScreen = fn ? () => fn.call(v): () => {};
+	requestFullScreen();
+},
+exitFullScreen = () => {
+	const d = document,
+	fn = d.exitFullscreen || d.webkitExitFullscreen || d.mozCancelFullScreen || d.msExitFullscreen;
+	exitFullScreen = fn ? () => fn.call(d): () => {};
+	exitFullScreen();
+};
 
 const u = location.hostname,
-mDomain = u.startsWith('video.sina.') ? 'sina' : u.split('.').reverse()[1],//主域名
+mDomain = u.includes('.sina.') ? 'sina' : u.split('.').reverse()[1],//主域名
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3',
 q = css => document.querySelector(css),
@@ -63,17 +76,10 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	configurable: false,
 	enumerable: true
 }),
-isFullScreen = () => !!(document.fullscreen || document.webkitIsFullScreen || document.mozFullScreen ||
-    document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement),
-requestFullScreen = () => {
-	const fn = v.requestFullscreen || v.webkitRequestFullScreen || v.mozRequestFullScreen || v.msRequestFullScreen;
-	requestFullScreen = fn ? () => fn.call(v): () => {};
-	requestFullScreen();
-},
-exitFullScreen = () => {
-	const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
-	exitFullScreen = fn ? () => fn.call(document): () => {};
-	exitFullScreen();
+isFullScreen = () => {
+	const d = document;
+	return !!(d.fullscreen || d.webkitIsFullScreen || d.mozFullScreen ||
+    d.fullscreenElement || d.webkitFullscreenElement || d.mozFullScreenElement);
 },
 getAllDuration = css => {
 	const a = q(css).innerHTML.split(':');
@@ -109,7 +115,6 @@ onCanplay = function(e) {
 	}
 	oldCanplay && oldCanplay(e);
 	totalTime = totalTime || Math.round(v.duration);
-	//youku都跳过片头功能都未起作用
 	if (!isLive && totalTime > 666 && 'qq' !== mDomain) setTimeout(() => {
 		v.currentTime = 66;//跳过片头
 	}, 9);
@@ -123,6 +128,7 @@ hotKey = function(e) {
 	if (isLive && [37,39,78,88,67,90].includes(e.keyCode))
 		return;
 	vList && getVideo();
+	if (!v || v.offsetWidth === 0) v = q('video');
 	let n;
 	switch (e.keyCode) {
 	case 32: //space
@@ -222,7 +228,7 @@ init = cb => {
 	});
 };
 
-if (mDomain!== 'zhanqi') Object.defineProperty(navigator, 'plugins', {
+if (mDomain !== 'zhanqi') Object.defineProperty(navigator, 'plugins', {
 	get: function() {
 		return { length: 0 };
 	}
@@ -307,8 +313,8 @@ case 'cctv':
 case 'cntv':
 	fakeUA(ua_samsung);
 	break;
-case '163':
 case 'sina':
+case '163':
 	fakeUA(ua_ipad2);
 	break;
 case 'le':
