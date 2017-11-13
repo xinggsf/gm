@@ -5,7 +5,7 @@
 // @description 启用B站的h5播放，自动宽屏、自动播放、原生右键菜单、关弹幕
 // @homepage    http://bbs.kafan.cn/thread-2061994-1-1.html
 // @downloadUrl https://raw.githubusercontent.com/xinggsf/gm/master/bilibili-h5.user.js
-// @version     2017.08.21
+// @version     2017.11.13
 // @include     *://www.bilibili.com/video/av*
 // @include     *://www.bilibili.com/*/html5player.html*
 // @include     *://bangumi.bilibili.com/anime/v/*
@@ -26,7 +26,7 @@ const setPlayer = v => {
 	doClick(q('i.bilibili-player-iconfont-widescreen.icon-24wideoff')); //开宽屏
 	doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 	//单击下一视频按钮后，B站的弹幕按钮有问题 div.bilibili-player-video-btn-danmaku:not(video-state-danmaku-off)
-	doClick(q('div[name=ctlbar_danmuku_close]'));//关弹幕
+	doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
 	//doClick(q('ul.bpui-selectmenu-list li[data-value="3"]'));//超清
 	//setTimeout(setContextMenuHandler, 800);//原生右键菜单
 };
@@ -38,7 +38,7 @@ function setContextMenuHandler() {
     inElement = (e, x, y) => {
 		console.log(e.getBoundingClientRect);
         const r = e.getBoundingClientRect();
-        return r.left < x < r.right && r.top < y < r.bottom;
+        return r.left < x && x < r.right && r.top < y && y < r.bottom;
     },
 
     danmuClicked = (arr, x, y) => arr.some(e => inElement(e, x, y)),
