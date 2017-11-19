@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。支持站点：优.土、QQ、新浪、微博、网易短视频[娱乐、云课堂、新闻]、搜狐、乐视、央视、风行、百度云视频、熊猫、龙珠、战旗直播等。并添加播放快捷键：快进、快退、暂停/播放、音量调节、下一个视频、全屏、上下帧、播放速度调节
-// @version          0.6.3
+// @version          0.6.4
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
+// @include          *://v.sports.qq.com/*
 // @include          *://film.qq.com/*
 // @include          *://view.inews.qq.com/*
 // @include          *://news.qq.com/*
@@ -47,7 +48,7 @@
 if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
-let v, vList, totalTime, isLive = !1,
+let v, vList, totalTime, initCb, isLive = !1,
 	oldCanplay = null,
 	playerInfo = {},
 	path = location.pathname,
@@ -103,8 +104,14 @@ removeAllElem = css => {
 },
 getVideo = () => {
 	vList = vList || document.getElementsByTagName('video');
+	if (v.offsetWidth>1) return;
 	for (let e of vList)
-		if (e.offsetWidth>1) return (v = e);
+		if (e.offsetWidth>1) {
+			e.playbackRate = v.playbackRate;
+			e.volume = v.volume;
+			v = e;
+			break;
+		}
 },
 onCanplay = function(e) {
 	v.oncanplay = null;
@@ -138,11 +145,9 @@ hotKey = function(e) {
 		e.stopPropagation();
 		break;
 	case 37: //left
-		n = e.shiftKey ? 27 : 5; //快退5秒,shift加速
-		v.currentTime -= n;
-		break;
+		n = e.shiftKey ? -27 : -5; //快退5秒,shift加速
 	case 39: //right
-		n = e.shiftKey ? 27 : 5; //快进5秒,shift加速
+		n = n || (e.shiftKey ? 27 : 5); //快进5秒,shift加速
 		v.currentTime += n;
 		break;
 	case 78: // N 下一首
@@ -150,36 +155,29 @@ hotKey = function(e) {
 		break;
 	//case 80: // P 上一首
 	case 38: //加音量
-		n = v.volume + 0.1;
-		if (n > 1) return;
-		v.volume = n.toFixed(2);
-		e.preventDefault();
-		break;
+		n = .1;
 	case 40: //降音量
-		n = v.volume - 0.1;
-		if (n < 0) return;
-		v.volume = n.toFixed(2);
+		n = n || -0.1;
+		n += v.volume;
+		if (0 <= n && n <= 1) v.volume = n;
 		e.preventDefault();
 		break;
 	case 13: //全屏
-		if (e.shiftKey)
+		if (isFullScreen())
+			exitFullScreen();
+		else if (e.shiftKey)
 			doClick(playerInfo.webfullCSS);
-		else if (!isFullScreen())
-			doClick(playerInfo.fullCSS) || requestFullScreen();
-		break;
-	case 88: //按键X：减速播放 -0.1
-		n = v.playbackRate;
-		if (n > 0.1) {
-			n -= 0.1;
-			v.playbackRate = n.toFixed(1);
-		}
+		else if (playerInfo.fullCSS)
+			doClick(playerInfo.fullCSS);
+		else
+			requestFullScreen();
 		break;
 	case 67: //按键C：加速播放 +0.1
-		n = v.playbackRate;
-		if (n < 16) {
-			n += 0.1;
-			v.playbackRate = n.toFixed(1);
-		}
+		n = .1;
+	case 88: //按键X：减速播放 -0.1
+		n = n || -0.1;
+		n += v.playbackRate;
+		if (0 < n && n <= 16) v.playbackRate = n;
 		break;
 	case 90: //按键Z：正常速度播放
 		v.playbackRate = 1;
@@ -193,17 +191,7 @@ hotKey = function(e) {
 	}
 },
 doHls = () => {
-	if (!v || !v.src.includes('.m3u8') || !Hls.isSupported())
-		return;
-/* 	const config = {
-		debug: true,
-		xhrSetup: function (xhr, url) {
-			xhr.withCredentials = true; // do send cookie
-			xhr.setRequestHeader("Access-Control-Allow-Headers", "Content-Type, Accept, X-Requested-With");
-			xhr.setRequestHeader("Access-Control-Allow-Origin", u);
-			xhr.setRequestHeader("Access-Control-Allow-Credentials", "true");
-		}
-	}; */
+	if (!v || !v.src.includes('.m3u8') || !Hls.isSupported()) return;
 	const hls = new Hls();
 	hls.loadSource(v.src);
 	hls.attachMedia(v);
@@ -219,7 +207,7 @@ init = cb => {
 			document.addEventListener('keydown', hotKey, !1);
 			if (playerInfo.timeCSS)
 				totalTime = getAllDuration(playerInfo.timeCSS);
-			console.log(v);
+			//console.log(v);
 			cb && cb();
 		}
 	}).observe(document.documentElement, {
@@ -255,8 +243,8 @@ case 'youku':
 		onMetadata: () => {
 			const bar = q('.h5player-dashboard');
 			if (!bar) return;
-			q('.youku_layer_logo').remove();
-			getVideo();
+			q('.youku-layer-logo').remove();
+			if (v.src.startsWith('http')) getVideo();//初始化vList，旧版用flv.js~地址以blob:开头
 			const player = bar.closest('.youku-film-player'),
 			layer = player.querySelector('.h5-ext-layer-adsdk'),//.h5-layer-conatiner
 			top_bar = player.querySelector('.top_area');//全屏时的顶部状态栏
@@ -319,15 +307,16 @@ case '163':
 	break;
 case 'le':
 case 'lesports':
-	if (!window.mozInnerScreenX) {//firefox黑屏
-		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
-		//totalTime = __INFO__.video.duration;
-		playerInfo = {
-			timeCSS: 'span.time_total',
-			nextCSS: 'div.hv_ico_next',
-			fullCSS: 'div.hv_ico_screen'
-		};
-	}
+	//firefox 56以下 黑屏
+	const isFX57 = r1(/Firefox\/(\d+)/, navigator.userAgent);
+	if (isFX57 && isFX57 < 57) return;
+	fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
+	//totalTime = __INFO__.video.duration;
+	playerInfo = {
+		timeCSS: 'span.time_total',
+		nextCSS: 'div.hv_ico_next',
+		fullCSS: 'div.hv_ico_screen'
+	};
 	break;
 case 'sohu':
 	fakeUA(ua_samsung);
@@ -359,7 +348,7 @@ case 'fun':
 		vid = unsafeWindow.vplay.videoid;
 		vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
 	}, 99);
-	return;//非播放页，不执行init()
+	return;//非播放页，不执行init
 case 'tudou':
 	playerInfo.onMetadata = () => {
 		totalTime = ~~q('meta[name=duration]').getAttribute('content');
@@ -378,7 +367,7 @@ case 'tudou':
 	};
 	break;
 case 'panda':
-	localStorage.setItem('panda.tv/user/player', '{"useH5player": 1}');
+	localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
 	playerInfo = {
 		webfullCSS: 'span.h5player-control-bar-fullscreen',
 		fullCSS: 'span.h5player-control-bar-allfullscreen'
@@ -388,7 +377,7 @@ case 'panda':
 case 'longzhu':
 	isLive = true;
 	fakeUA(ua_ipad2);
-	init(() => {
+	initCb = () => {
 		if (v.src && v.src.includes('.m3u8'))
 			doHls();
 		else {
@@ -403,7 +392,7 @@ case 'longzhu':
 			});
 			setTimeout(() => q('.player.report-rbi-click').click(), 1200);
 		}
-	});
+	};
 	break;
 case 'zhanqi':
 	setTimeout(function getM3u8_Addr() {
@@ -422,7 +411,7 @@ case 'zhanqi':
 		}
 		e.parentNode.innerHTML = `<video width="100%" height="100%" autoplay controls src="${url}"/>`;
 	}, 300);
-	init(doHls);
+	initCb = doHls;
 }
 
-!['longzhu', 'zhanqi'].includes(mDomain) && init();
+init(initCb);

@@ -4,23 +4,16 @@
 // @description    Remove all link redirection on Google Search Results,and Google image Search!
 // @homepageURL    https://greasyfork.org/scripts/19713
 // updateURL       https://greasyfork.org/scripts/19713.js
-// @include        /^https?:\/\/www\.google(?:\.\w+)+\/(?:search|webhp|#)/
+// @include        https://www.google.*
+// @include        https://prism-kangaroo.glitch.me/search?*
 // @grant          none
-// @version        2016.5.15
+// @version        2017.11.15
 // ==/UserScript==
 
-"use strict";
-if (window.chrome)
-	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
-//let soutu = location.hash.includes('#imgrc='),
-new MutationObserver(rs => {
-	let a, c = document.querySelectorAll('a[onmousedown*="return rwt"]');
-	for (a of c) a.removeAttribute('onmousedown');
-	c = document.querySelectorAll('a[jsaction^="mousedown:irc."]');
-	for (a of c) {
-		a.removeAttribute('jsaction');
-		a.outerHTML = a.outerHTML;
-	}
-}).observe(document.body, {
-	childList: true, subtree: true
+Object.defineProperty(window, 'rwt', {
+  writable: false
 });
+main.addEventListener('mousedown', ev => {//图片搜索
+	if (ev.target.matches('img') && ev.target.parentNode.matches('a[jsaction^="mousedown:irc."]'))
+		ev.stopPropagation();
+}, !1);
