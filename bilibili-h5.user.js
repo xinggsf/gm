@@ -53,6 +53,11 @@ function setContextMenuHandler() {
 
 localStorage.setItem('bilibililover', 'YESYESYES');
 localStorage.defaulth5 = 1;
+Object.defineProperty(navigator, 'plugins', {
+	get: function() {
+		return { length: 0 };
+	}
+});
 
 let scrolled = !1;
 new MutationObserver(records => {

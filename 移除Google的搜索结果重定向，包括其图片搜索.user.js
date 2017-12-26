@@ -13,7 +13,7 @@
 Object.defineProperty(window, 'rwt', {
   writable: false
 });
-main.addEventListener('mousedown', ev => {//图片搜索
+main && main.addEventListener('mousedown', ev => {//图片搜索
 	if (ev.target.matches('img') && ev.target.parentNode.matches('a[jsaction^="mousedown:irc."]'))
 		ev.stopPropagation();
 }, !1);
