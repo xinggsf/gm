@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name             ÊÓÆµÕ¾ÆôÓÃhtml5²¥·ÅÆ÷
-// @description      Óµ±§html5£¬¸æ±ğFlash¡£Ìí¼Ó¿ì½İ¼ü£º¿ì½ø¡¢¿ìÍË¡¢ÔİÍ£/²¥·Å¡¢ÒôÁ¿¡¢ÏÂÒ»¼¯¡¢ÇĞ»»[ÍòÄÜÍøÒ³]È«ÆÁ¡¢ÉÏÏÂÖ¡¡¢²¥·ÅËÙ¶È¡£Ö§³ÖÕ¾µã£ºÓÅ.ÍÁ¡¢QQ¡¢ĞÂÀË¡¢Î¢²©¡¢ÍøÒ×ÊÓÆµ[ÓéÀÖ¡¢ÔÆ¿ÎÌÃ¡¢ĞÂÎÅ]¡¢ËÑºü¡¢ÀÖÊÓ¡¢ÑëÊÓ¡¢·çĞĞ¡¢°Ù¶ÈÔÆÊÓÆµ¡¢ĞÜÃ¨¡¢ÁúÖé¡¢Õ½ÆìÖ±²¥µÈ£¬¿É×Ô¶¨ÒåÕ¾µã
-// @version          0.66
+// @name             è§†é¢‘ç«™å¯ç”¨html5æ’­æ”¾å™¨
+// @description      æ‹¥æŠ±html5ï¼Œå‘Šåˆ«Flashã€‚æ·»åŠ å¿«æ·é”®ï¼šå¿«è¿›ã€å¿«é€€ã€æš‚åœ/æ’­æ”¾ã€éŸ³é‡ã€ä¸‹ä¸€é›†ã€åˆ‡æ¢[ä¸‡èƒ½ç½‘é¡µ]å…¨å±ã€ä¸Šä¸‹å¸§ã€æ’­æ”¾é€Ÿåº¦ã€‚æ”¯æŒç«™ç‚¹ï¼šä¼˜.åœŸã€QQã€æ–°æµªã€å¾®åšã€ç½‘æ˜“è§†é¢‘[å¨±ä¹ã€äº‘è¯¾å ‚ã€æ–°é—»]ã€æœç‹ã€ä¹è§†ã€å¤®è§†ã€é£è¡Œã€ç™¾åº¦äº‘è§†é¢‘ã€ç†ŠçŒ«ã€é¾™ç ã€æˆ˜æ——ç›´æ’­ç­‰ï¼Œå¯è‡ªå®šä¹‰ç«™ç‚¹
+// @version          0.67
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -12,15 +12,10 @@
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://*.tudou.com/v/*
 // @include          *://v.163.com/*.html*
-// include          *://live.163.com/*.html*
-// include          *://c.m.163.com/*.html
 // @include          *://ent.163.com/*.html*
 // @include          *://news.163.com/*.html*
 // @include          *://news.163.com/special/*
 // @include          *://study.163.com/course/*.htm?courseId=*
-// include          http://*.cctv.com/*
-// @exclude          http://tv.cctv.com/live/*
-// include          http://*.cntv.cn/*
 // @include          *://news.sina.com.cn/*
 // @include          *://video.sina.com.cn/*
 // @include          *://video.sina.cn/*
@@ -42,7 +37,7 @@
 // @require          https://cdn.jsdelivr.net/hls.js/latest/hls.min.js
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
-// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/ÊÓÆµÕ¾h5.user.js
+// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/è§†é¢‘ç«™h5.user.js
 // ==/UserScript==
 'use strict';
 
@@ -78,7 +73,7 @@ class Fullscreen {
 	}
 }
 
-//ÍòÄÜÍøÒ³È«ÆÁ,´úÂë²Î¿¼ÁË£ºhttps://github.com/gooyie/ykh5p
+//ä¸‡èƒ½ç½‘é¡µå…¨å±,ä»£ç å‚è€ƒäº†ï¼šhttps://github.com/gooyie/ykh5p
 class WebFullscreen {
 	constructor(video) {
 		this._video = video;
@@ -102,8 +97,11 @@ class WebFullscreen {
 	}
 
 	_checkContainer() {
-		if (!this._container || this._container === this._video)
-			this._container = WebFullscreen.getPlayerContainer(this._video);
+		const e = this._video;
+		if (!this._container || this._container === e) {
+			this._container = WebFullscreen.getPlayerContainer(e);
+			//this._container !== e && e.classList.contains('webfullscreen') && e.classList.remove('webfullscreen');
+		}
 	}
 
 	get container() {
@@ -112,19 +110,17 @@ class WebFullscreen {
 	}
 
 	static getPlayerContainer(video) {
-		let p, e = video;
-		//if (e.readyState < 2) e = e.parentNode;
-		const d = document.body,
-		w = e.clientWidth,
-		h = e.clientHeight;
-		//console.log(e, w, h);
-		//if (w <33 || h <9) return;
+		let d = document.body,
+		e = video,
 		p = e.parentNode;
-		while (p !== d && p.clientWidth - w < 5 && p.clientHeight - h < 5) {
+		if (p === d) return e;
+		const w = p.clientWidth,
+		h = p.clientHeight;
+		do {
 			e = p;
 			p = e.parentNode;
-		}
-		console.dirxml(e);
+		} while (p !== d && (p.clientWidth - w < 5) && (p.clientHeight - h < 5))
+		//console.dirxml(e);
 		return e;
 	}
 
@@ -143,7 +139,7 @@ class WebFullscreen {
 
 	static isFull(video) {
 		//return this.container.classList.contains('webfullscreen');
-		// <5 ÔÊĞí±ß¿ò
+		//å…è®¸è¾¹æ¡†
 		return window.innerWidth -video.clientWidth < 5 && window.innerHeight - video.clientHeight < 5;
 	}
 
@@ -170,7 +166,7 @@ let v, vList, totalTime, initCb, webFull, fullScreen,
 	path = location.pathname;
 
 const u = location.hostname,
-mDomain = u.includes('.sina.') ? 'sina' : u.split('.').reverse()[1],//Ö÷ÓòÃû
+mDomain = u.includes('.sina.') ? 'sina' : u.split('.').reverse()[1],//ä¸»åŸŸå
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3',
 q = css => document.querySelector(css),
@@ -183,7 +179,6 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 }),
 getAllDuration = css => {
 	const a = q(css).innerHTML.split(':');
-	//console.log(q(css), a);
 	let n = a.pop() | 0, multiplier = 1;
 	for (let k of a.reverse()) {
 		multiplier *= 60;
@@ -213,7 +208,7 @@ getVideo = () => {
 },
 onCanplay = function(e) {
 	v.oncanplay = null;
-	console.log('½Å±¾[ÆôÓÃhtml5²¥·ÅÆ÷]£¬ÊÂ¼şoncanplay');
+	console.log('è„šæœ¬[å¯ç”¨html5æ’­æ”¾å™¨]ï¼Œäº‹ä»¶oncanplay');
 	if (playerInfo.onMetadata) {
 		playerInfo.onMetadata();
 		delete playerInfo.onMetadata;
@@ -221,11 +216,11 @@ onCanplay = function(e) {
 	oldCanplay && oldCanplay(e);
 	totalTime = totalTime || Math.round(v.duration);
 	if (!isLive && totalTime > 666 && 'qq' !== mDomain) setTimeout(() => {
-		v.currentTime = 66;//Ìø¹ıÆ¬Í·
+		v.currentTime = 66;//è·³è¿‡ç‰‡å¤´
 	}, 9);
 },
 hotKey = function(e) {
-	//ÅĞ¶Ïctrl,alt,shiftÈı¼ü×´Ì¬£¬·ÀÖ¹ä¯ÀÀÆ÷¿ì½İ¼ü±»Õ¼ÓÃ
+	//åˆ¤æ–­ctrl,alt,shiftä¸‰é”®çŠ¶æ€ï¼Œé˜²æ­¢æµè§ˆå™¨å¿«æ·é”®è¢«å ç”¨
 	if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA/.test(e.target.nodeName))
 		return;
 	if (e.shiftKey && ![13,37,39].includes(e.keyCode))
@@ -243,24 +238,24 @@ hotKey = function(e) {
 		e.stopPropagation();
 		break;
 	case 37: //left
-		n = e.shiftKey ? -27 : -5; //¿ìÍË5Ãë,shift¼ÓËÙ
+		n = e.shiftKey ? -27 : -5; //å¿«é€€5ç§’,shiftåŠ é€Ÿ
 	case 39: //right
-		n = n || (e.shiftKey ? 27 : 5); //¿ì½ø5Ãë,shift¼ÓËÙ
+		n = n || (e.shiftKey ? 27 : 5); //å¿«è¿›5ç§’,shiftåŠ é€Ÿ
 		v.currentTime += n;
 		break;
-	case 78: // N ÏÂÒ»Ê×
+	case 78: // N ä¸‹ä¸€é¦–
 		doClick(playerInfo.nextCSS);
 		break;
-	//case 80: // P ÉÏÒ»Ê×
-	case 38: //¼ÓÒôÁ¿
+	//case 80: // P ä¸Šä¸€é¦–
+	case 38: //åŠ éŸ³é‡
 		n = .1;
-	case 40: //½µÒôÁ¿
+	case 40: //é™éŸ³é‡
 		n = n || -0.1;
 		n += v.volume;
 		if (0 <= n && n <= 1) v.volume = n;
 		e.preventDefault();
 		break;
-	case 13: //È«ÆÁ
+	case 13: //å…¨å±
 		if (e.shiftKey) {
 			webFull ? webFull.toggle() : doClick(playerInfo.webfullCSS);
 		} else {
@@ -275,19 +270,19 @@ hotKey = function(e) {
 			webFull ? webFull.toggle() : doClick(playerInfo.webfullCSS);
 		}
 		break;
-	case 67: //°´¼üC£º¼ÓËÙ²¥·Å +0.1
+	case 67: //æŒ‰é”®Cï¼šåŠ é€Ÿæ’­æ”¾ +0.1
 		n = .1;
-	case 88: //°´¼üX£º¼õËÙ²¥·Å -0.1
+	case 88: //æŒ‰é”®Xï¼šå‡é€Ÿæ’­æ”¾ -0.1
 		n = n || -0.1;
 		n += v.playbackRate;
 		if (0 < n && n <= 16) v.playbackRate = n;
 		break;
-	case 90: //°´¼üZ£ºÕı³£ËÙ¶È²¥·Å
+	case 90: //æŒ‰é”®Zï¼šæ­£å¸¸é€Ÿåº¦æ’­æ”¾
 		v.playbackRate = 1;
 		break;
-	case 70: //°´¼üF£ºÏÂÒ»Ö¡
+	case 70: //æŒ‰é”®Fï¼šä¸‹ä¸€å¸§
 		n = .03;
-	case 68: //°´¼üD£ºÉÏÒ»Ö¡
+	case 68: //æŒ‰é”®Dï¼šä¸Šä¸€å¸§
 		n = n || -0.03;
 		if (!v.paused) v.pause();
 		v.currentTime += n;
@@ -311,17 +306,13 @@ init = cb => {
 			setTimeout(() => {
 				v.focus();
 				if (!playerInfo.webfullCSS) webFull = new WebFullscreen(v);
-			}, 399);
+			}, 300);
 			if (!playerInfo.fullCSS) fullScreen = new Fullscreen(v);
-
-			if (playerInfo.timeCSS)
-				totalTime = getAllDuration(playerInfo.timeCSS);
-			//console.log(v);
+			if (playerInfo.timeCSS) totalTime = getAllDuration(playerInfo.timeCSS);
 			cb && cb();
 		}
 	}).observe(document.documentElement, {
-		childList : true,
-		subtree : true
+		childList : true, subtree : true
 	});
 };
 
@@ -346,60 +337,19 @@ const router = {
 	youku() {
 		sessionStorage.P_l_h5 = 1;
 		playerInfo = {
-			disableSpace: true,//ÇĞ»»ÖÁ²¥·ÅÊ±Òì³££¬¹Ù·½ÒÑÀ¹½Ø¿Õ¸ñ¼ü
 			fullCSS: '.control-icon.control-settings-icon ~ button:not([style="display: none;"])',
 			timeCSS: 'span.control-time-duration',
-			//ĞŞÕı²¥·Å¿ØÖÆÀ¸²»ÄÜÕı³£Òş²Ø
 			onMetadata: () => {
-				const bar = q('.h5player-dashboard');
-				if (!bar) return;
 				q('.youku-layer-logo').remove();
-				if (v.src.startsWith('http')) getVideo();//³õÊ¼»¯vList£¬¾É°æÓÃflv.js~µØÖ·ÒÔblob:¿ªÍ·
-				const player = bar.closest('.youku-film-player'),
-				layer = player.querySelector('.h5-ext-layer-adsdk'),//.h5-layer-conatiner
-				top_bar = player.querySelector('.top_area');//È«ÆÁÊ±µÄ¶¥²¿×´Ì¬À¸
-				let timer = null;
-				bar.addEventListener('mousemove', ev => {
-					if (timer) {
-						clearTimeout(timer);
-						timer = null;
-					}
-					ev.preventDefault();
-					ev.stopPropagation();
-				}, !1);
-				//À¹½ØÊó±êÏûÏ¢£¬×è¶Ï¹Ù·½µÄÏûÏ¢´¦Àí
-				layer.addEventListener('mousemove', ev => {
-					ev.preventDefault();
-					ev.stopPropagation();
-					if (bar.offsetWidth === 0) {
-						isFullScreen() && (top_bar.style.display = 'block');
-						//¿ØÖÆÀ¸Òş²Ø£¬ÔòÏÔÊ¾Ö®
-						bar.style.display = 'block';
-					}
-					else if (!timer) {
-						//¿ØÖÆÀ¸ÏÔÊ¾£¬Ôò¶¨Ê±Òş²Ø
-						timer = setTimeout(() => {
-							bar.style.display = 'none';
-							isFullScreen() && (top_bar.style.display = 'none');
-							timer = null;
-						}, 2600);
-					}
-				}, !1);
-				layer.addEventListener('click', ev => {
-					getVideo();
-					v.paused ? v.play() : v.pause();
-				}, !1);
-				layer.addEventListener('dblclick', ev => {
-					isFullScreen() ? exitFullScreen() : doClick('button.control-fullscreen-icon');
-				}, !1);
-				//ĞŞÕıÏÂÒ»¸ö°´Å¥ÎŞĞ§
+				if (v.src.startsWith('http')) getVideo();//åˆå§‹åŒ–vListï¼Œæ—§ç‰ˆç”¨flv.js~åœ°å€ä»¥blob:å¼€å¤´
+				//ä¿®æ­£ä¸‹ä¸€ä¸ªæŒ‰é’®æ— æ•ˆ
 				const btn = q('button.control-next-video');
 				if (btn && btn.offsetWidth>1) {
 					let e = q('.program.current');
 					e = e && e.closest('.item') || q('.item.current');
 					e = e.nextSibling;
 					if (!e) return;
-					e = e.querySelector('a');//ÏÂÒ»¸öÊÓÆµÁ´½Ó
+					e = e.querySelector('a');//ä¸‹ä¸€ä¸ªè§†é¢‘é“¾æ¥
 					btn.addEventListener('click', ev => e.click());
 					const attr = e.closest('[item-id]').getAttribute('item-id');
 					playerInfo.nextCSS = `[item-id="${attr}"] a`;
@@ -417,7 +367,7 @@ const router = {
 	},
 
 	le() {
-		//firefox 56ÒÔÏÂ ºÚÆÁ
+		//firefox 56ä»¥ä¸‹ é»‘å±
 		const isFX57 = r1(/Firefox\/(\d+)/, navigator.userAgent);
 		if (isFX57 && isFX57 < 57) return true;
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
@@ -441,7 +391,7 @@ const router = {
 
 	fun() {
 		if (u.startsWith('m.')) {
-			if (!path.includes('play')) return true;//·Ç²¥·ÅÒ³£¬²»Ö´ĞĞinit()
+			if (!path.includes('play')) return true;//éæ’­æ”¾é¡µï¼Œä¸æ‰§è¡Œinit()
 			/^\/[mv]/.test(path) && location.assign(path.replace('/', '/i') + location.search);
 			playerInfo = {
 				nextCSS: 'a.btn.next-btn',
@@ -452,17 +402,17 @@ const router = {
 		}
 		let vid = r1(/\bv-(\d+)/, path);
 		let mid = r1(/\bg-(\d+)/, path);
-		//¾ç¼¯path: /implay/£¬µ¥ÊÓÆµpath: /ivplay/
+		//å‰§é›†path: /implay/ï¼Œå•è§†é¢‘path: /ivplay/
 		if (vid) {
 			mid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
 			location.assign('//m.fun.tv/ivplay/?vid='+vid);
 		}
 
-		mid && setTimeout( () => {
+		mid && setTimeout(() => {
 			vid = unsafeWindow.vplay.videoid;
 			vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
 		}, 99);
-		return true;//·Ç²¥·ÅÒ³£¬²»Ö´ĞĞinit
+		return true;
 	},
 
 	panda() {
@@ -503,10 +453,10 @@ const router = {
 				return;
 			}
 			let s = e.children.flashvars.value,
-			url = r1(/PlayUrl=([^&]+)/, s);//ÊÓÆµ
+			url = r1(/PlayUrl=([^&]+)/, s);//è§†é¢‘
 			if (!url) {
 				isLive = true;
-				s = r1(/VideoLevels=([^&]+)/, s);//Ö±²¥
+				s = r1(/VideoLevels=([^&]+)/, s);//ç›´æ’­
 				s = atob(s);
 				url = JSON.parse(s).streamUrl;
 			}
