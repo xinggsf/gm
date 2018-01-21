@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      拥抱html5，告别Flash。添加快捷键：快进、快退、暂停/播放、音量、下一集、切换[万能网页]全屏、上下帧、播放速度。支持站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、央视、风行、百度云视频、熊猫、龙珠、战旗直播等，可自定义站点
-// @version          0.68
+// @version          0.69
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -58,7 +58,7 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 getMainDomain = host => {
 	let a = host.split('.'),
 	i = a.length -2;
-	if (['com','net','org','gov','edu'].includes(a[i])) i--;
+	if (['com','tv','net','org','gov','edu'].includes(a[i])) i--;
 	return a[i];
 },
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
@@ -118,10 +118,8 @@ class WebFullscreen {
 
 	_checkContainer() {
 		const e = this._video;
-		if (!this._container || this._container === e) {
+		if (!this._container || this._container === e)
 			this._container = WebFullscreen.getPlayerContainer(e);
-			//this._container !== e && e.classList.contains('webfullscreen') && e.classList.remove('webfullscreen');
-		}
 	}
 
 	get container() {
@@ -158,8 +156,6 @@ class WebFullscreen {
 	}
 
 	static isFull(video) {
-		//return this.container.classList.contains('webfullscreen');
-		//允许边框
 		return window.innerWidth -video.clientWidth < 5 && window.innerHeight - video.clientHeight < 5;
 	}
 
@@ -192,26 +188,8 @@ events = {
 app = {
 	el: null,//video
 	isLive: !1,
-	_duration: 0,
-	get duration() {
-		if (this._duration) return this._duration;
-
-		if (this.timeCSS) {
-			const a = q(this.timeCSS).innerHTML.split(':');
-			let n = a.pop() | 0, multiplier = 1;
-			for (let k of a.reverse()) {
-				multiplier *= 60;
-				n += k * multiplier;
-			}
-			this._duration = n || 2e4;
-		} else {
-			this._duration = Math.round(this.el.duration);
-		}
-		return this._duration;
-	},
-
 	vList: null,
-	getVideo() {
+	getVideos() {
 		this.vList = this.vList || document.getElementsByTagName('video');
 		if (this.el.offsetWidth>1) return;
 		for (let e of this.vList)
@@ -236,8 +214,9 @@ app = {
 			v.oncanplay = this.onCanplay.bind(this);
 			document.addEventListener('keydown', this.hotKey.bind(this), !1);
 			setTimeout(() => {
-				v.focus();
 				if (!this.webfullCSS) webFull = new WebFullscreen(v);
+				if (this.nextCSS) this.btnNext = q(this.nextCSS);
+				v.focus();
 			}, 300);
 			if (!this.fullCSS)
 				fullScreen = new Fullscreen(v);
@@ -250,19 +229,14 @@ app = {
 				this.btnWFS = q(this.webfullCSS);
 				this.webFullScreen = () => this._convertView(this.btnWFS);
 			}
-			if (this.nextCSS) this.btnNext = q(this.nextCSS);
 			events.init && events.init();
 		}
 	},
 	onCanplay(e) {
-		const v = this.el;
-		v.oncanplay = null;
+		this.el.oncanplay = null;
 		console.log('脚本[启用html5播放器]，事件oncanplay');
 		events.canplay && events.canplay();
 		this.oldCanplay && this.oldCanplay(e);
-		if (!this.isLive && this.duration > 666 && !/qq|le/.test(u)) setTimeout(() => {
-			v.currentTime = 66;//跳过片头
-		}, 9);
 	},
 	hotKey(e) {
 		//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
@@ -272,9 +246,8 @@ app = {
 			return;
 		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode))
 			return;
-		this.getVideo();
+		this.getVideos();
 		const v = this.el;
-		// if (!v || v.offsetWidth === 0) v = q('video');
 		let n;
 		switch (e.keyCode) {
 		case 32: //space
@@ -361,14 +334,14 @@ const router = {
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
 		});
-		events.on('canplay', app.getVideo);
+		events.on('canplay', app.getVideos);
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 
 	youku() {
 		events.on('canplay', () => {
 			q('.youku-layer-logo').remove();
-			if (app.el.src.startsWith('http')) app.getVideo();//初始化vList，旧版用flv.js~地址以blob:开头
+			if (app.el.src.startsWith('http')) app.getVideos();//初始化vList，旧版用flv.js~地址以blob:开头
 			//修正下一个按钮无效
 			const btn = q('button.control-next-video');
 			if (btn && btn.offsetWidth>1) {
@@ -382,7 +355,6 @@ const router = {
 			}
 		});
 		app.fullCSS = '.control-fullscreen-icon';
-		app.timeCSS = '.control-time-duration';
 		sessionStorage.P_l_h5 = 1;
 	},
 
@@ -399,9 +371,7 @@ const router = {
 		const isFX57 = r1(/Firefox\/(\d+)/, navigator.userAgent);
 		if (isFX57 && isFX57 < 57) return true;
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
-		//totalTime = __INFO__.video.duration;
 		Object.assign(app, {
-			timeCSS: 'span.hv_total_time',
 			nextCSS: 'div.hv_ico_next',
 			webfullCSS: 'span.hv_ico_webfullscreen',
 			fullCSS: 'span.hv_ico_screen'
@@ -410,11 +380,8 @@ const router = {
 
 	sohu() {
 		fakeUA(ua_samsung);
-		Object.assign(app, {
-			timeCSS: 'span.x-duration-txt',
-			nextCSS: 'li.on[data-vid]+li > a',
-			fullCSS: 'div.x-fs-btn'
-		});
+		app.nextCSS = 'li.on[data-vid]+li a';
+		app.fullCSS = 'div.x-fs-btn';
 	},
 
 	fun() {
@@ -442,8 +409,8 @@ const router = {
 
 	panda() {
 		localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
-		app.webfullCSS = 'span.h5player-control-bar-fullscreen';
-		app.fullCSS = 'span.h5player-control-bar-allfullscreen';
+		app.webfullCSS = '.h5player-control-bar-fullscreen';
+		app.fullCSS = '.h5player-control-bar-allfullscreen';
 		app.isLive = true;
 	},
 
