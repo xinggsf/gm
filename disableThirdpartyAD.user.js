@@ -11,31 +11,21 @@
 // @version        2016.9.26
 // @encoding       utf-8
 // @run-at         document-start
-// @grant          unsafeWindow
 // ==/UserScript==
 "use strict";
-if (unsafeWindow.top === unsafeWindow.self) {
+if (top == self) {
 	let baseHost = '??',
 	urlWhiteList = [],
-	regIp = /(?:\d{1,3}\.){3}\d{1,3}/,
-	r = /:\/\/([^:\/]+)/,
-	getBaseHost = function (url) {//取主域名
-		let m = url.match(r);
-		if (!m || m[1].includes(baseHost))
-			return baseHost;
-		m = m[1];
-		let a = m.split('.');
-		if (a.length === 2)
-			return m;
-		let i, s, ret = a.pop();
-		for (i = 0; i < 2; i++) {
-			s = a.pop();
-			ret = s + '.' + ret;
-			//广告主域名一般超过3字符
-			if (!/[a-z]{2,3}/i.test(s))
-				return ret;
-		}
-		return ret;
+	getUrlHost = function(url) {
+		var a = document.createElement('a');
+		a.href = url;
+		return a.host;
+	},
+	getBaseDomain = function (host) {//取主域名
+		let a = host.split('.'),
+		i = a.length -2;
+		if (['com','tv','net','org','gov','edu'].includes(a[i])) i--;
+		return a[i];
 	},
 	delAdNode = function (e) {
 		switch (e.tagName) {
@@ -44,23 +34,23 @@ if (unsafeWindow.top === unsafeWindow.self) {
 			if (isThirdparty(e.getAttribute('src')))
 				e.parentNode.removeChild(e);
 			break;
-			/* case  'IMAGE':
-			case  'VIDEO':
+		/* case  'IMAGE':
+		case  'VIDEO':
 
-			case  'OBJECT':
-			case  'EMBED': */
+		case  'OBJECT':
+		case  'EMBED': */
 		}
 	},
 	isThirdparty = function (url) {
 		if (!url || urlWhiteList.includes(url))
 			return !1;
-		return baseHost !== getBaseHost(url);
+		return baseHost !== getBaseDomain(getUrlHost(url));
 	};
 
-	baseHost = regIp.test(location.hostname) ?
-		location.hostname : getBaseHost(location.hostname);
+	baseHost = /\.\d+$/.test(location.hostname) ?
+		location.hostname : getBaseDomain(location.hostname);
 	let mo = new MutationObserver(function (rs) {
-		for (let col of rs)
+		for (let col of rs) if (col.addedNodes)
 			for (let e of col.addedNodes)
 				delAdNode(e);
 	});
