@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      html5工具箱。添加快捷键：快进、快退、暂停/播放、音量、下一集、切换[万能网页]全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、央视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、火猫、龙珠、战旗。可自定义站点
-// @version          0.71
+// @description      html5工具箱--3大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
+// @version          0.72
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -30,14 +30,11 @@
 // @include          *://m.fun.tv/*
 // @include          *://www.yy.com/*
 // @include          *://www.huya.com/*
-// @include          https://www.douyu.com/*
-// include          https://www.huomao.com/*
+// @include          https://*.douyu.com/*
 // @include          https://www.panda.tv/*
-// include          https://*.zhanqi.tv/*
-// @include          *://*.longzhu.com/*
+// @include          *://star.longzhu.com/*
 // @grant            unsafeWindow
 // @grant            GM_addStyle
-// @require          https://cdn.jsdelivr.net/hls.js/latest/hls.min.js
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
@@ -49,7 +46,7 @@ if (window.chrome)
 
 const q = css => document.querySelector(css),
 doClick = e => {
-	if (e) e.click ? e.click() : e.dispatchEvent(new MouseEvent('click'));
+	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 },
 r1 = (regp, s) => regp.test(s) && RegExp.$1,
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
@@ -59,10 +56,10 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	enumerable: true
 }),
 //判断是否为Firefox，且低于量子版
-underFirefox57 = () => {
+underFirefox57 = (() => {
 	const x = r1(/Firefox\/(\d+)/, navigator.userAgent);
 	return x && x < 57;
-},
+})(),
 getMainDomain = host => {
 	let a = host.split('.'),
 	i = a.length -2;
@@ -70,9 +67,10 @@ getMainDomain = host => {
 	return a[i];
 },
 ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
+ua_chrome = 'Mozilla/5.0 (Windows NT 10.0; WOW64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9',
 ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
 
-class Fullscreen {
+class FullScreen {
 	constructor(video) {
 		this._video = video;
 		const d = document;
@@ -97,12 +95,12 @@ class Fullscreen {
 	}
 
 	toggle() {
-		Fullscreen.isFull() ? this.exit() : this.enter();
+		FullScreen.isFull() ? this.exit() : this.enter();
 	}
 }
 
 //万能网页全屏,代码参考了：https://github.com/gooyie/ykh5p
-class WebFullscreen {
+class FullPage {
 	constructor(video) {
 		this._video = video;
 		this._checkContainer();
@@ -127,7 +125,7 @@ class WebFullscreen {
 	_checkContainer() {
 		const e = this._video;
 		if (!this._container || this._container === e)
-			this._container = WebFullscreen.getPlayerContainer(e);
+			this._container = FullPage.getPlayerContainer(e);
 	}
 
 	get container() {
@@ -169,7 +167,7 @@ class WebFullscreen {
 
 	toggle() {
 		const d = document.body,
-		state = WebFullscreen.isFull(this.container);
+		state = FullPage.isFull(this.container);
 		d.style.overflow = state ? '' : 'hidden';
 		this.container.classList.toggle('webfullscreen');
 
@@ -183,7 +181,7 @@ class WebFullscreen {
 	}
 }
 
-let webFull, fullScreen;
+let _fp, _fs;
 
 const { host, pathname: path } = location,
 u = getMainDomain(host),//主域名
@@ -200,13 +198,12 @@ app = {
 	getVideos() {
 		this.vList = this.vList || document.getElementsByTagName('video');
 		if (this.el.offsetWidth>1) return;
-		for (let e of this.vList)
-			if (e.offsetWidth>1) {
-				e.playbackRate = this.el.playbackRate;
-				e.volume = this.el.volume;
-				this.el = e;
-				break;
-			}
+		for (let e of this.vList) if (e.offsetWidth>1) {
+			e.playbackRate = this.el.playbackRate;
+			e.volume = this.el.volume;
+			this.el = e;
+			break;
+		}
 	},
 	_convertView(btn) {
 		const s = btn.style.display || getComputedStyle(btn, '').getPropertyValue('display');
@@ -227,7 +224,7 @@ app = {
 		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode))
 			return;
 		this.getVideos();
-		this.checkElement();
+		this.checkUI();
 		const v = this.el;
 		let n;
 		switch (e.keyCode) {
@@ -248,7 +245,7 @@ app = {
 			break;
 		//case 80: // P 上一首
 		case 38: //加音量
-			n = .1;
+			n = 0.1;
 		case 40: //降音量
 			n = n || -0.1;
 			n += v.volume;
@@ -256,19 +253,21 @@ app = {
 			e.preventDefault();
 			break;
 		case 13: //全屏
-			if (e.shiftKey)
-				webFull ? webFull.toggle() : this.webFullScreen();
-			else
-				fullScreen ? fullScreen.toggle() : this.fullScreen();
+			if (e.shiftKey) {
+				_fp ? _fp.toggle() : this.fullPage();
+			} else {
+				_fs ? _fs.toggle() : this.fullScreen();
+			}
 			break;
 		case 27: //esc
-			if (Fullscreen.isFull())
-				fullScreen ? fullScreen.exit() : this.fullScreen();
-			else if (WebFullscreen.isFull(v))
-				webFull ? webFull.toggle() : this.webFullScreen();
+			if (FullScreen.isFull()) {
+				_fs ? _fs.exit() : this.fullScreen();
+			} else if (FullPage.isFull(v)) {
+				_fp ? _fp.toggle() : this.fullPage();
+			}
 			break;
 		case 67: //按键C：加速播放 +0.1
-			n = .1;
+			n = 0.1;
 		case 88: //按键X：减速播放 -0.1
 			n = n || -0.1;
 			n += v.playbackRate;
@@ -278,43 +277,29 @@ app = {
 			v.playbackRate = 1;
 			break;
 		case 70: //按键F：下一帧
-			n = .03;
+			n = 0.03;
 		case 68: //按键D：上一帧
 			n = n || -0.03;
 			if (!v.paused) v.pause();
 			v.currentTime += n;
 		}
 	},
-	doHls() {
-		const v = this.el;
-		if (!v || !v.src.includes('.m3u8') || !Hls.isSupported()) return;
-		const hls = new Hls();
-		hls.loadSource(v.src);
-		hls.attachMedia(v);
-		hls.on(Hls.Events.MANIFEST_PARSED, () => v.play());
-	},
-	checkElement() {
-		if (!this.webfullCSS)
-			webFull = webFull || new WebFullscreen(this.el);
-		else if (!this.btnWFS){
+	checkUI() {
+		if (!this.webfullCSS) {
+			_fp = _fp || new FullPage(this.el);
+		} else if (!this.btnWFS) {
 			this.btnWFS = q(this.webfullCSS);
-			this.webFullScreen = () => this._convertView(this.btnWFS);
+			this.fullPage = () => this._convertView(this.btnWFS);
 		}
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
-		if (!this.fullCSS)
-			fullScreen = fullScreen ||  new Fullscreen(this.el);
-		else if (!this.btnFS){
+		if (!this.fullCSS) {
+			_fs = _fs ||  new FullScreen(this.el);
+		} else if (!this.btnFS) {
 			this.btnFS = q(this.fullCSS);
-			//进入、退出、切换全屏:三合一
 			this.fullScreen = () => this._convertView(this.btnFS);
 		}
 	},
 	init() {
-		if (u !== 'zhanqi') Object.defineProperty(navigator, 'plugins', {
-			get: function() {
-				return { length: 0 };
-			}
-		});
 		const t = setInterval(() => {
 			if (events.loop) {
 				if (events.loop()) delete events.loop;
@@ -324,14 +309,15 @@ app = {
 			if (!v) return;
 			clearInterval(t);
 			this.el = v;
-			if (v.readyState<4) {
+			if (v.readyState < 4) {
 				this.oldCanplay = v.oncanplay;
 				v.oncanplay = this.onCanplay.bind(this);
+			} else {
+				this.onCanplay();
 			}
-			else this.onCanplay(this);
 
 			document.addEventListener('keydown', this.hotKey.bind(this), !1);
-			this.checkElement();
+			this.checkUI();
 			setTimeout(() => {
 				v.focus();
 			}, 300);
@@ -369,15 +355,12 @@ let router = {
 		});
 		app.fullCSS = '.control-fullscreen-icon';
 	},
-	cctv() {
-		fakeUA(ua_samsung);
-	},
 	sina() {
 		fakeUA(ua_ipad2);
 	},
 	le() {
 		//firefox 56以下 黑屏
-		if (underFirefox57()) return true;
+		//if (underFirefox57) return true;
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
 		Object.assign(app, {
 			nextCSS: 'div.hv_ico_next',
@@ -413,7 +396,6 @@ let router = {
 		return true;
 	}
 };
-router.cntv = router.cctv;
 router.lesports = router.le;
 router['163'] = router.sina;
 
@@ -436,63 +418,27 @@ if (!router[u]) { //直播站点
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
 		},
 		yy() {
-			if (!window.chrome) fakeUA('Mozilla/5.0 (Windows NT 10.0; WOW64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9');
+			if (!window.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 		},
 		huya() {
-			if (underFirefox57()) return true;
-			if (!window.chrome) fakeUA('Mozilla/5.0 (Windows NT 10.0; WOW64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9');
+			if (!window.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 		},
-		huomao() {
-			if (!window.chrome || !/^\/\d+/.test(path)) return true;
-			localStorage.setItem('hm_cookie_$', '{"ready_fireH5": true}');
-			app.webfullCSS = '.page-full-screen';
-			app.fullCSS = '.full-screen';
-
-		},
 		longzhu() {
-			fakeUA(ua_ipad2);
-			events.on('init', () => {
-				const v = app.el;
-				if (v.src && v.src.includes('.m3u8'))
-					app.doHls();
-				else {
-					q('#landscape_dialog').remove();
-					new MutationObserver(function(records) {
-						this.disconnect();
-						app.doHls();
-					})
-					.observe(v, {
-						attributes: true,
-						attributeFilter: ['src']
-					});
-					setTimeout(() => q('.player.report-rbi-click').click(), 1200);
-				}
-			});
-		},
-		zhanqi() {
-			events.on('loop', () => {
-				const e = q('#BFPlayerID');//flash ID
-				if (e) {
-					let s = e.children.flashvars.value,
-					url = r1(/PlayUrl=([^&]+)/, s);//视频
-					app.isLive = !url;
-					if (!url) {
-						s = r1(/VideoLevels=([^&]+)/, s);//直播
-						s = atob(s);
-						url = JSON.parse(s).streamUrl;
-					}
-					e.parentNode.innerHTML = `<video width="100%" height="100%" autoplay controls src="${url}"/>`;
-				}
-				return !!e;
-			});
-			events.on('init', app.doHls.bind(app));
+			if (!window.chrome) fakeUA(ua_chrome);
+			app.fullCSS = '#screen_vk';
 		}
 	};
 
 	if (router[u]) app.isLive = true;
 }
 
+router.baidu = router.weibo = ()=>{};
+router[u] && Object.defineProperty(navigator, 'plugins', {
+	get() {
+		return { length: 0 };
+	}
+});
 if (!router[u] || !router[u].call(null)) app.init();
