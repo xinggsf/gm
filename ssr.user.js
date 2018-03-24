@@ -12,6 +12,7 @@
 
 'use strict';
 var $table, ss_table, links_ss, links_ssr;
+$("table:first, .main h2").remove();
 $("table").each(function () { // 获取真实的数据table
     if (this.parentNode.clientHeight) $table = $(this);
 });

@@ -11,7 +11,7 @@
 // @grant          unsafeWindow
 // ==/UserScript==
 "use strict";
-if (unsafeWindow.top === unsafeWindow.self) {
+if (top === self) {
 	let r = /(?:^|\W|_)ad(?:$|\W|_)/,
 	delAdScript = function(e) {
 		if ('SCRIPT' === e.tagName &&
