@@ -63,11 +63,6 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	configurable: false,
 	enumerable: true
 }),
-//判断是否为Firefox，且低于量子版
-underFirefox57 = (() => {
-	const x = r1(/Firefox\/(\d+)/, navigator.userAgent);
-	return x && x < 57;
-})(),
 getMainDomain = host => {
 	let a = host.split('.'),
 	i = a.length -2;
@@ -216,7 +211,7 @@ app = {
 		}
 	},
 	_convertView(btn) {
-		const s = btn.style.display || getComputedStyle(btn, '').getPropertyValue('display');
+		const s = (btn.style && btn.style.display) || getComputedStyle(btn, '').getPropertyValue('display');
 		s === 'none' ? doClick(btn.nextElementSibling) : doClick(btn);
 		// !btn.clientWidth ? doClick(btn.nextElementSibling) : doClick(btn);
 	},
@@ -371,8 +366,6 @@ let router = {
 		fakeUA(ua_ipad2);
 	},
 	le() {
-		//firefox 56以下 黑屏
-		//if (underFirefox57) return true;
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
 		app.nextCSS = 'div.hv_ico_next';
 		app.webfullCSS = 'span.hv_ico_webfullscreen';
@@ -422,9 +415,11 @@ if (!router[u]) { //直播站点
 			events.on('observe', () => {
 				cleanAds();
 				const p = unsafeWindow.__player || unsafeWindow.__playerindex;
-				if (!path.lastIndexOf('/')||(p && p.isH5Support)) {//有直播的页面 $ROOM?.room_id  [ p && p.isH5Support --> p?.isH5Support ]
+				//if (!path.lastIndexOf('/')||(p && p.isH5Support))
+				if (p && p.isH5Support) {//有直播的页面 链判断运算符: $ROOM?.room_id  [ p && p.isH5Support --> p?.isH5Support ]
 					p.switchPlayer('h5');
 					if (path!=='/') return true;//直播间，去掉本函数调用
+					$$("div.row.theatre");
 				}
 			});
 			if (path!=='/') events.on('canplay', () => {
@@ -451,7 +446,11 @@ if (!router[u]) { //直播站点
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 		},
 		huya() {
-			if (underFirefox57) return true;
+			if (!ReadableStream) {
+				let s = document.createElement('script');
+				s.src = 'https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js';
+				document.head.appendChild(s);
+			}
 			if (!window.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
