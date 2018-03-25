@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.73
+// @version          0.75
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -31,7 +31,6 @@
 // @include          *://www.yy.com/*
 // @include          *://www.huya.com/*
 // @include          https://*.douyu.com/*
-// @exclude          https://www.douyu.com/
 // @include          https://www.panda.tv/*
 // @include          *://star.longzhu.com/*
 // @grant            unsafeWindow
@@ -46,7 +45,7 @@ if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
 const q = css => document.querySelector(css),
-$$ = (css, cb) => {
+$$ = (css, cb = e=>e.remove()) => {
 	const c = document.querySelectorAll(css);
 	// console.log(c);
 	if (cb) for (let e of c) {
@@ -112,6 +111,7 @@ class FullScreen {
 class FullPage {
 	constructor(video) {
 		this._video = video;
+		console.log(video);
 		this._checkContainer();
 		GM_addStyle(`
 			.z-top {
@@ -218,12 +218,13 @@ app = {
 	_convertView(btn) {
 		const s = btn.style.display || getComputedStyle(btn, '').getPropertyValue('display');
 		s === 'none' ? doClick(btn.nextElementSibling) : doClick(btn);
+		// !btn.clientWidth ? doClick(btn.nextElementSibling) : doClick(btn);
 	},
 	onCanplay(ev) {
 		console.log('脚本[启用html5播放器]，事件loadeddata');
 		//if (ev.target.readyState > 2)
 		events.canplay && events.canplay();
-		app.el.removeEventListener('loadeddata', app.onCanplay);
+		ev.target.removeEventListener('loadeddata', this.onCanplay, true);
 	},
 	hotKey(e) {
 		//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
@@ -311,7 +312,8 @@ app = {
 	},
 	bindEvent(v) {
 		this.el = v;
-		v.addEventListener('loadeddata',this.onCanplay);
+		this.onCanplay = this.onCanplay.bind(this);
+		v.addEventListener('loadeddata', this.onCanplay, true);
 		document.addEventListener('keydown', this.hotKey.bind(this), !1);
 		this.checkUI();
 		events.init && events.init();
@@ -319,8 +321,7 @@ app = {
 	init() {
 		document.addEventListener('DOMContentLoaded', () => {
 			let v = q('video');
-			if (v)
-				this.bindEvent(v);
+			if (v) this.bindEvent(v);
 			else {
 				this.observer = new MutationObserver(records => {
 					if (v = q('video')) {
@@ -411,34 +412,31 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
-			// '.watermark-4231db, .pop-zoom-container'
-			const css = '[class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*',
+			// .watermark-4231db, .animation_container-005ab7 +div
+			const css = '[class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, .pop-zoom-container',
 			css2 = 'i.sign-spec, a[href*="wan.douyu.com"]',
 			cleanAds = () => {
-				$$(css, e=>e.remove());
+				$$(css);
 				$$(css2, e=>e.parentNode.remove());
 			};
 			events.on('observe', () => {
-				const p = unsafeWindow.__player;
-				if (p && p.switchPlayer) {
-					app.observer.disconnect();
+				cleanAds();
+				const p = unsafeWindow.__player || unsafeWindow.__playerindex;
+				if (!path.lastIndexOf('/')||(p && p.isH5Support)) {//有直播的页面 $ROOM?.room_id  [ p && p.isH5Support --> p?.isH5Support ]
 					p.switchPlayer('h5');
-					cleanAds();
-					app.observer.observe(q('#js-room-video'), observeOpt);
-					return true;
+					if (path!=='/') return true;//直播间，去掉本函数调用
 				}
 			});
-			events.on('canplay', () => {
-				/* const player = app.el.closest('[id^="__h5player"');
+			if (path!=='/') events.on('canplay', () => {
+				const player = app.el.closest('[class|=app]');
+				cleanAds();
+				setTimeout(() => {
+					$$(`.box-19fed6, #${player.id}>div:not([class]):not([style])`);
+				}, 300);
 				new MutationObserver(rs => {
 					for (let r of rs)// if (r.target === player)
 						for (let e of r.addedNodes) e.remove();
 				}).observe(player, {childList : true});
-				*/
-				cleanAds();
-				setTimeout(() => {
-					$$('.box-19fed6, .animation_container-005ab7+div:not([class])', e=>e.remove());
-				}, 3000);
 			});
 			app.webfullCSS = 'div[title="网页全屏"]';
 			app.fullCSS = 'div[title="窗口全屏"]';
