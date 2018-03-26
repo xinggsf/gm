@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.75
+// @version          0.76
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -45,18 +45,48 @@ if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
 const q = css => document.querySelector(css),
-$$ = (css, cb = e=>e.remove()) => {
-	const c = document.querySelectorAll(css);
+$$ = (c, cb = e=>e.remove()) => {
+	if (typeof c === 'string')
+		c = document.querySelectorAll(c);
 	// console.log(c);
 	if (cb) for (let e of c) {
 		if (e && cb(e)===false) break;
 	}
 	return c;
 },
+r1 = (regp, s) => regp.test(s) && RegExp.$1,
+getStyle = (o, s) => {
+    if (o.style[s]) return o.style[s];
+    if (getComputedStyle) {//DOM
+		var x = getComputedStyle(o, '');
+		//s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
+		return x && x.getPropertyValue(s);
+	}
+},
+injectJS = s => {
+	const js = document.createElement('script');
+	if (s.startsWith('http')) js.src = s;
+	else js.textContent = s;
+	document.head.appendChild(js);
+},
+throttle = function(fn, delay){ //函数节流
+	let timer = null;
+	return (...args) => {
+		timer && clearTimeout(timer);
+		timer = setTimeout(() => {
+			fn.apply(this, args);
+			timer = null;
+		}, delay);
+	};
+},
 doClick = e => {
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 },
-r1 = (regp, s) => regp.test(s) && RegExp.$1,
+//判断是否为Firefox，且低于量子版
+underFirefox57 = (() => {
+	const x = r1(/Firefox\/(\d+)/, navigator.userAgent);
+	return x && x < 57;
+})(),
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
@@ -211,9 +241,7 @@ app = {
 		}
 	},
 	_convertView(btn) {
-		const s = (btn.style && btn.style.display) || getComputedStyle(btn, '').getPropertyValue('display');
-		s === 'none' ? doClick(btn.nextElementSibling) : doClick(btn);
-		// !btn.clientWidth ? doClick(btn.nextElementSibling) : doClick(btn);
+		(btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ? doClick(btn) : doClick(btn.nextSibling);// nextElementSibling
 	},
 	onCanplay(ev) {
 		console.log('脚本[启用html5播放器]，事件loadeddata');
@@ -405,32 +433,35 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
+			let isSwitchH5 = !1;
+			const css2 = 'i.sign-spec, a[href*="wan.douyu.com"]',
 			// .watermark-4231db, .animation_container-005ab7 +div
-			const css = '[class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, .pop-zoom-container',
-			css2 = 'i.sign-spec, a[href*="wan.douyu.com"]',
+			css = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, .no-login, .pop-zoom-container',
 			cleanAds = () => {
 				$$(css);
 				$$(css2, e=>e.parentNode.remove());
-			};
+			},
+			fnWrap = throttle(cleanAds, 100);
 			events.on('observe', () => {
-				cleanAds();
+				fnWrap();
 				const p = unsafeWindow.__player || unsafeWindow.__playerindex;
-				//if (!path.lastIndexOf('/')||(p && p.isH5Support))
-				if (p && p.isH5Support) {//有直播的页面 链判断运算符: $ROOM?.room_id  [ p && p.isH5Support --> p?.isH5Support ]
+				if (!isSwitchH5 && p) {//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
 					p.switchPlayer('h5');
-					if (path!=='/') return true;//直播间，去掉本函数调用
-					$$("div.row.theatre");
+					isSwitchH5 = true;
+					if (path!=='/') return true;//直播间。停止本函数调用
 				}
 			});
 			if (path!=='/') events.on('canplay', () => {
-				const player = app.el.closest('[class|=app]');
-				cleanAds();
+				const player = app.el.parentNode.parentNode;// .closest('[class|=app]');
 				setTimeout(() => {
-					$$(`.box-19fed6, #${player.id}>div:not([class]):not([style])`);
+					cleanAds();
+					//$$(`#${player.id}>div:not([class]):not([style])`);
+					$$(player.children, e => {
+						if (e.matches('div:not([class]):not([style])')) e.remove();
+					});
 				}, 300);
 				new MutationObserver(rs => {
-					for (let r of rs)// if (r.target === player)
-						for (let e of r.addedNodes) e.remove();
+					for (let r of rs) $$(r.addedNodes);
 				}).observe(player, {childList : true});
 			});
 			app.webfullCSS = 'div[title="网页全屏"]';
@@ -446,18 +477,17 @@ if (!router[u]) { //直播站点
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 		},
 		huya() {
-			if (!ReadableStream) {
-				let s = document.createElement('script');
-				s.src = 'https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js';
-				document.head.appendChild(s);
-			}
+			if (underFirefox57) return true;
 			if (!window.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 		},
 		longzhu() {
 			if (!window.chrome) fakeUA(ua_chrome);
+			if (!window.ReadableStream)
+				injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 			app.fullCSS = '#screen_vk';
+			//app.webfullCSS = '.full-screen-button-outer-box';
 		}
 	};
 
