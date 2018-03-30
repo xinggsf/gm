@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.76
+// @version          0.77
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -35,6 +35,9 @@
 // @include          *://star.longzhu.com/*
 // @grant            unsafeWindow
 // @grant            GM_addStyle
+// @grant            GM_registerMenuCommand
+// @grant            GM_setValue
+// @grant            GM_getValue
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
@@ -46,15 +49,18 @@ if (window.chrome)
 
 const q = css => document.querySelector(css),
 $$ = (c, cb = e=>e.remove()) => {
+	if (!c.length) return;
 	if (typeof c === 'string')
 		c = document.querySelectorAll(c);
-	// console.log(c);
 	if (cb) for (let e of c) {
 		if (e && cb(e)===false) break;
 	}
 	return c;
 },
 r1 = (regp, s) => regp.test(s) && RegExp.$1,
+sleep = ms => new Promise(resolve => {
+	setTimeout(resolve, ms);
+}),
 getStyle = (o, s) => {
     if (o.style[s]) return o.style[s];
     if (getComputedStyle) {//DOM
@@ -69,20 +75,20 @@ injectJS = s => {
 	else js.textContent = s;
 	document.head.appendChild(js);
 },
-throttle = function(fn, delay){ //函数节流
-	let timer = null;
-	return (...args) => {
+throttle = function(fn, delay = 100){ //函数节流
+	let timer = null, me = this;
+	return function(...args) {
 		timer && clearTimeout(timer);
 		timer = setTimeout(() => {
-			fn.apply(this, args);
+			fn.apply(me, args);
 			timer = null;
 		}, delay);
 	};
 },
+willRemove = throttle($$),//多处同时调用时须防止定时器冲突
 doClick = e => {
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 },
-//判断是否为Firefox，且低于量子版
 underFirefox57 = (() => {
 	const x = r1(/Firefox\/(\d+)/, navigator.userAgent);
 	return x && x < 57;
@@ -178,7 +184,6 @@ class FullPage {
 			e = p;
 			p = e.parentNode;
 		} while (p !== d && p.clientWidth - w < 5 && p.clientHeight - h < 5);
-		//console.dirxml(e);
 		return e;
 	}
 
@@ -215,7 +220,7 @@ class FullPage {
 	}
 }
 
-let _fp, _fs;
+let v, _fp, _fs;
 
 const { host, pathname: path } = location,
 observeOpt = {childList : true, subtree : true},
@@ -227,16 +232,15 @@ events = {
 	}
 },
 app = {
-	el: null,//video
 	isLive: !1,
 	vList: null,
 	getVideos() {
 		this.vList = this.vList || document.getElementsByTagName('video');
-		if (this.el.offsetWidth>1) return;
+		if (v.offsetWidth>1) return;
 		for (let e of this.vList) if (e.offsetWidth>1) {
-			e.playbackRate = this.el.playbackRate;
-			e.volume = this.el.volume;
-			this.el = e;
+			e.playbackRate = v.playbackRate;
+			e.volume = v.volume;
+			v = e;
 			break;
 		}
 	},
@@ -247,7 +251,7 @@ app = {
 		console.log('脚本[启用html5播放器]，事件loadeddata');
 		//if (ev.target.readyState > 2)
 		events.canplay && events.canplay();
-		ev.target.removeEventListener('loadeddata', this.onCanplay, true);
+		ev.target.removeEventListener('loadeddata', this.onCanplay);
 	},
 	hotKey(e) {
 		//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
@@ -259,7 +263,6 @@ app = {
 			return;
 		this.getVideos();
 		this.checkUI();
-		const v = this.el;
 		let n;
 		switch (e.keyCode) {
 		case 32: //space
@@ -320,31 +323,30 @@ app = {
 	},
 	checkUI() {
 		if (!this.webfullCSS) {
-			_fp = _fp || new FullPage(this.el);
+			_fp = _fp || new FullPage(v);
 		} else if (!this.btnWFS) {
 			this.btnWFS = q(this.webfullCSS);
 			this.fullPage = () => this._convertView(this.btnWFS);
 		}
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
 		if (!this.fullCSS) {
-			_fs = _fs ||  new FullScreen(this.el);
+			_fs = _fs ||  new FullScreen(v);
 		} else if (!this.btnFS) {
 			this.btnFS = q(this.fullCSS);
 			this.fullScreen = () => this._convertView(this.btnFS);
 		}
 	},
-	bindEvent(v) {
-		this.el = v;
+	bindEvent() {
 		this.onCanplay = this.onCanplay.bind(this);
-		v.addEventListener('loadeddata', this.onCanplay, true);
-		document.addEventListener('keydown', this.hotKey.bind(this), !1);
+		v.addEventListener('loadeddata', this.onCanplay);
+		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
 		events.init && events.init();
 	},
 	init() {
 		document.addEventListener('DOMContentLoaded', () => {
-			let v = q('video');
-			if (v) this.bindEvent(v);
+			v = q('video');
+			if (v) this.bindEvent();
 			else {
 				this.observer = new MutationObserver(records => {
 					if (v = q('video')) {
@@ -352,6 +354,7 @@ app = {
 						delete this.observer;
 						this.bindEvent(v);
 					}
+					if (this.adsCSS) willRemove(this.adsCSS);
 					if (events.observe && events.observe()) delete events.observe;
 				});
 				this.observer.observe(document.body, observeOpt);
@@ -373,9 +376,16 @@ let router = {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
+		events.on('init', () => {
+			//使用了优酷播放器YAPfY扩展
+			if (!app.btnFS) {
+				app.webfullCSS = '.ABP-Web-FullScreen';
+				app.fullCSS = '.ABP-FullScreen';
+			}
+		});
 		events.on('canplay', () => {
 			q('.youku-layer-logo').remove();
-			if (app.el.src.startsWith('http')) app.getVideos();//初始化vList，旧版用flv.js~地址以blob:开头
+			if (v.src.startsWith('http')) app.getVideos();//初始化vList，旧版用flv.js~地址以blob:开头
 			//修正下一个按钮无效 yk-trigger-layer
 			const btn = q('button.control-next-video');
 			if (btn && btn.offsetWidth>1) {
@@ -433,44 +443,69 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
-			let isSwitchH5 = !1;
-			const css2 = 'i.sign-spec, a[href*="wan.douyu.com"]',
-			// .watermark-4231db, .animation_container-005ab7 +div
-			css = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, .no-login, .pop-zoom-container',
-			cleanAds = () => {
-				$$(css);
-				$$(css2, e=>e.parentNode.remove());
-			},
-			fnWrap = throttle(cleanAds, 100);
+			let uw = unsafeWindow, isSwitchH5 = !1,
+			useDouyuExt = GM_getValue('useDouyuExt', !1),
+			css = 'i.sign-spec',//a[href*="wan.douyu.com"]
+			fnWrap = throttle($$),
+			s = '使用斗鱼HTML5播放器扩展  ';
+			s += useDouyuExt ? '√' : '？';
+			GM_registerMenuCommand(s, () => {
+				GM_setValue('useDouyuExt', !useDouyuExt);
+				location.reload();
+			});
 			events.on('observe', () => {
-				fnWrap();
-				const p = unsafeWindow.__player || unsafeWindow.__playerindex;
-				if (!isSwitchH5 && p) {//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
+				fnWrap(css, e=>e.parentNode.remove());
+				const p = uw.__player || uw.__playerindex;
+				if ((!useDouyuExt || path==='/') && !isSwitchH5 && p) {//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
 					p.switchPlayer('h5');
 					isSwitchH5 = true;
 					if (path!=='/') return true;//直播间。停止本函数调用
 				}
 			});
-			if (path!=='/') events.on('canplay', () => {
-				const player = app.el.parentNode.parentNode;// .closest('[class|=app]');
-				setTimeout(() => {
-					cleanAds();
-					//$$(`#${player.id}>div:not([class]):not([style])`);
-					$$(player.children, e => {
-						if (e.matches('div:not([class]):not([style])')) e.remove();
-					});
-				}, 300);
-				new MutationObserver(rs => {
+			events.on('canplay', function() {
+				$$(app.adsCSS);
+				$$(css, e=>e.parentNode.remove());
+				if (path==='/') return;
+				const player = v.parentNode.parentNode;// .closest('[class|=app]');
+				//willRemove(`#${player.id}>div:not([class]):not([style])`);
+				willRemove(player.children, e => {
+					if (e.matches('div:not([class]):not([style])')) e.remove();
+				});
+				this._mo = new MutationObserver(rs => {
 					for (let r of rs) $$(r.addedNodes);
-				}).observe(player, {childList : true});
+				});
+				this._mo.observe(player, {childList : true});
 			});
-			app.webfullCSS = 'div[title="网页全屏"]';
-			app.fullCSS = 'div[title="窗口全屏"]';
+			document.addEventListener('visibilitychange', ev => {
+				if (!document.hidden) {
+					$$(app.adsCSS);
+					$$(css, e=>e.parentNode.remove());
+				}
+			});
+			app.webfullCSS = useDouyuExt ? 'a.danmu-fullpage' : 'div[title="网页全屏"]';
+			app.fullCSS = useDouyuExt ? 'a.danmu-fullscreen': 'div[title="窗口全屏"]';
+			// .watermark-4231db, .animation_container-005ab7 +div
+			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container';
 		},
 		panda() {
 			localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
+			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container';
+			if (path!=='/') events.on('init', () => {
+				let fn, btnClose = q('a.room-chat-expand-btn');
+				if (btnClose) {
+					//这里用throttle代替setTimeout
+					fn = throttle(ev => btnClose.click(), 9);
+					// fn = async ev => {
+						// await sleep(9);
+						// btnClose.click();
+					// };
+					app.btnWFS.addEventListener('click', fn);
+					v.closest('.h5player-player-core-container').addEventListener('dblclick', fn);
+				}
+				(throttle($$, 900))(app.adsCSS);
+			});
 		},
 		yy() {
 			if (!window.chrome) fakeUA(ua_chrome);

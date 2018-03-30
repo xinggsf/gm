@@ -2,10 +2,11 @@
 // @name             龙珠直播启用html5
 // @namespace        xinggsf_longzhu
 // @description      龙珠直播启用html5
-// @version          0.01
+// @version          0.02
 // @include          *://y.longzhu.com/*
 // @include          *://m.longzhu.com/*
-// @require          https://cdn.jsdelivr.net/hls.js/latest/hls.min.js
+// require          https://cdn.jsdelivr.net/hls.js/latest/hls.min.js
+// @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @run-at           document-start
 // @grant            none
 // ==/UserScript==
@@ -27,6 +28,18 @@ doHls = v => {
 		return true;
 	}
 },
+createPlayer = v => {
+	if (v.src && v.src.includes('.m3u8')) {
+		new Clappr.Player({
+			source: v.src,
+			autoPlay: true,
+			parent: v.parentNode,
+			width: v.width || '100%',
+			height: v.height || '100%',
+		});
+		return true;
+	}
+},
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
@@ -43,7 +56,7 @@ fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, 
 let v, t = setInterval(() => {
 	v = v || q('video');
 	if (!v) return;
-	doHls(v) && clearInterval(t);
+	createPlayer(v) && clearInterval(t);
 	let e = q('#landscape_dialog');
 	e && e.remove();
 	e = q('.player.report-rbi-click');
