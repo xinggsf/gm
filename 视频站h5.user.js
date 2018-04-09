@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.77
+// @version          0.78
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://v.qq.com/*
@@ -223,7 +223,6 @@ class FullPage {
 let v, _fp, _fs;
 
 const { host, pathname: path } = location,
-observeOpt = {childList : true, subtree : true},
 u = getMainDomain(host),//主域名
 //容器，登记事件处理方法中的回调
 events = {
@@ -341,15 +340,17 @@ app = {
 		v.addEventListener('loadeddata', this.onCanplay);
 		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
-		events.init && events.init();
+		events.foundMV && events.foundMV();
+	},
+	findMV() {
+		return q('video');
 	},
 	init() {
 		document.addEventListener('DOMContentLoaded', () => {
-			v = q('video');
-			if (v) this.bindEvent();
+			if (v = this.findMV()) this.bindEvent();
 			else {
 				this.observer = new MutationObserver(records => {
-					if (v = q('video')) {
+					if (v = this.findMV()) {
 						this.observer.disconnect();
 						delete this.observer;
 						this.bindEvent(v);
@@ -357,7 +358,7 @@ app = {
 					if (this.adsCSS) willRemove(this.adsCSS);
 					if (events.observe && events.observe()) delete events.observe;
 				});
-				this.observer.observe(document.body, observeOpt);
+				this.observer.observe(document.body, {childList : true, subtree : true});
 			}
 			events.DOMReady && events.DOMReady();
 		});
@@ -376,7 +377,7 @@ let router = {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
-		events.on('init', () => {
+		events.on('foundMV', () => {
 			//使用了优酷播放器YAPfY扩展
 			if (!app.btnFS) {
 				app.webfullCSS = '.ABP-Web-FullScreen';
@@ -384,7 +385,7 @@ let router = {
 			}
 		});
 		events.on('canplay', () => {
-			q('.youku-layer-logo').remove();
+			$$('.settings-item.disable, .youku-layer-logo');//去水印。破解1080P？
 			if (v.src.startsWith('http')) app.getVideos();//初始化vList，旧版用flv.js~地址以blob:开头
 			//修正下一个按钮无效 yk-trigger-layer
 			const btn = q('button.control-next-video');
@@ -443,25 +444,31 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
-			let uw = unsafeWindow, isSwitchH5 = !1,
+			let uw = unsafeWindow,
 			useDouyuExt = GM_getValue('useDouyuExt', !1),
-			css = 'i.sign-spec',//a[href*="wan.douyu.com"]
+			css = 'i.sign-spec',
 			fnWrap = throttle($$),
-			s = '使用斗鱼HTML5播放器扩展  ';
+			s = '使用了斗鱼H5播放器扩展  ';
 			s += useDouyuExt ? '√' : '？';
 			GM_registerMenuCommand(s, () => {
 				GM_setValue('useDouyuExt', !useDouyuExt);
 				location.reload();
 			});
-			events.on('observe', () => {
+			app.findMV = function() {
 				fnWrap(css, e=>e.parentNode.remove());
 				const p = uw.__player || uw.__playerindex;
-				if ((!useDouyuExt || path==='/') && !isSwitchH5 && p) {//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
+				if (!p) return;
+				if (path==='/') {//主页
+					if (p.isSwitched) return q('video');
 					p.switchPlayer('h5');
-					isSwitchH5 = true;
-					if (path!=='/') return true;//直播间。停止本函数调用
+					p.isSwitched = true;
 				}
-			});
+				else if (useDouyuExt || p.isSwitched)
+					return q('#js-room-video video');
+				else {//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
+					p.switchPlayer('h5');
+				}
+			};
 			events.on('canplay', function() {
 				$$(app.adsCSS);
 				$$(css, e=>e.parentNode.remove());
@@ -471,10 +478,10 @@ if (!router[u]) { //直播站点
 				willRemove(player.children, e => {
 					if (e.matches('div:not([class]):not([style])')) e.remove();
 				});
-				this._mo = new MutationObserver(rs => {
+				new MutationObserver(rs => {
 					for (let r of rs) $$(r.addedNodes);
-				});
-				this._mo.observe(player, {childList : true});
+				})
+				.observe(player, {childList : true});
 			});
 			document.addEventListener('visibilitychange', ev => {
 				if (!document.hidden) {
@@ -485,14 +492,14 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = useDouyuExt ? 'a.danmu-fullpage' : 'div[title="网页全屏"]';
 			app.fullCSS = useDouyuExt ? 'a.danmu-fullscreen': 'div[title="窗口全屏"]';
 			// .watermark-4231db, .animation_container-005ab7 +div
-			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container';
+			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
 		panda() {
 			localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
 			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container';
-			if (path!=='/') events.on('init', () => {
+			if (path!=='/') events.on('foundMV', () => {
 				let fn, btnClose = q('a.room-chat-expand-btn');
 				if (btnClose) {
 					//这里用throttle代替setTimeout
