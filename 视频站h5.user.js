@@ -495,7 +495,7 @@ if (!router[u]) { //直播站点
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
 		panda() {
-			localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
+			if (!window.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
 			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container';
