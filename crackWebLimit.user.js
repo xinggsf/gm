@@ -10,14 +10,15 @@
 
 var w = unsafeWindow, $ = w.jQuery,
 events = ['contextmenu', 'dragstart', 'mouseup', 'mousedown', 'copy', 'beforecopy', 'selectstart', 'select', 'keydown'];
-function unbind(ele) {
+function unbind(e) {
+	e = e.wrappedJSObject || e;
 	events.forEach(function (evt) {
-		ele['on' + evt] = null;
-		if ($) $(ele).unbind(evt);
+		e['on' + evt] = null;
+		if ($) $(e).unbind(evt);
 	});
 }
 function runScript() {
-	[w, document, document.documentElement, document.body].forEach(unbind);
+	[document, document.body].forEach(unbind);
 	events.forEach.call(document.querySelectorAll('div'), unbind);
 }
 w.onload = runScript;

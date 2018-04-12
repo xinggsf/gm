@@ -5,20 +5,14 @@
 // @homepageURL       https://github.com/xinggsf/gm/
 // @supportURL        https://github.com/Cat7373/remove-web-limits/issues/
 // @author            Cat73  xinggsf
-// @version           1.5
+// @version           1.5.1
 // @license           LGPLv3
 // @include           http*
 // @grant             GM_addStyle
 // @run-at            document-start
 // ==/UserScript==
 
-'use strict';
-if (!Array.prototype.includes) {
-	Array.prototype.includes = function(s, pos) {
-		return this.indexOf(s, pos)> -1;
-	};
-}
-
+"use strict";
 // 域名规则列表
 let rules = {
 	white_rule: {
@@ -45,14 +39,11 @@ let white_list = [
 	'translate.google.'
 ];
 
-// 返回true的函数
 let returnTrue = e => true;
-// 获取随机字符串
-let getRandStr = () => '_X'+ Math.random().toString(36).slice(2);
 // 要处理的 event 列表
 let hook_eventNames, unhook_eventNames, eventNames;
-// 储存名称
-let storageName = getRandStr();
+// 获取随机字符串
+let storageName = '_X'+ Math.random().toString(36).slice(2,9);
 // 储存被 Hook 的函数
 let EventTarget_addEventListener = EventTarget.prototype.addEventListener;
 let document_addEventListener = document.addEventListener;
@@ -79,20 +70,27 @@ function addEventListener(type, func, useCapture) {
 
 // 清理或还原DOM节点的onxxx属性
 function clearLoop() {
-	let e, k, prop,
+	let e, type, prop,
 	c = [document,document.body, ...document.getElementsByTagName('div')];
 	// https://life.tw/?app=view&no=746862
 	e = document.querySelector('iframe[src="about:blank"]');
-	if (e && e.clientWidth>99 && e.clientHeight>99) c.push(e.contentWindow.document);
+	if (e && e.clientWidth>99 && e.clientHeight>11){
+		e = e.contentWindow.document;
+		c.push(e, e.body);
+	}
 
-	for (e of c) for (k of eventNames) {
-		prop = 'on' + k;
-		if (e && e[prop] !== null && e[prop] !== onxxx) {
-			if (unhook_eventNames.includes(k)) {
-				e[storageName + prop] = e[prop];
-				e[prop] = onxxx;
-			} else {
-				e[prop] = null;
+	for (e of c) {
+		if (!e) continue;
+		e = e.wrappedJSObject || e;
+		for (type of eventNames) {
+			prop = 'on' + type;
+			if (e[prop] !== null && e[prop] !== onxxx) {
+				if (unhook_eventNames.includes(type)) {
+					e[storageName + prop] = e[prop];
+					e[prop] = onxxx;
+				} else {
+					e[prop] = null;
+				}
 			}
 		}
 	}
@@ -111,7 +109,7 @@ function unhook(e, self, funcsName) {
 }
 function onxxx(e) {
 	let name = storageName + 'on' + e.type;
-	this[name](e);
+	(this[name])(e);
 	e.returnValue = true;
 	return true;
 }
@@ -123,31 +121,27 @@ function getRule(host) {
 	return rules.default_rule;
 }
 
-// 初始化
 function init() {
 	// 获取当前域名的规则
 	let rule = getRule(location.host);
 
 	// 设置 event 列表
 	hook_eventNames = rule.hook_eventNames.split("|");
-	// TODO Allowed to return value
+	// Allowed to return value
 	unhook_eventNames = rule.unhook_eventNames.split("|");
 	eventNames = hook_eventNames.concat(unhook_eventNames);
 
-	// 调用清理 DOM0 event 方法的循环
 	if (rule.dom0) {
 		setInterval(clearLoop, 9e3);
 		setTimeout(clearLoop, 1e3);
 		window.addEventListener('load', clearLoop, true);
 	}
 
-	// hook addEventListener
 	if (rule.hook_addEventListener) {
 		EventTarget.prototype.addEventListener = addEventListener;
 		document.addEventListener = addEventListener;
 	}
 
-	// hook preventDefault
 	if (rule.hook_preventDefault) {
 		Event.prototype.preventDefault = function () {
 			if (!eventNames.includes(this.type)) {
@@ -157,7 +151,7 @@ function init() {
 	}
 
 	// Hook set returnValue
-	if (rule.hook_set_returnValue) {
+	if (rule.hook_set_returnValue && 'returnValue' in Event.prototype) {
 		Object.defineProperty(Event.prototype, 'returnValue', {
 			set() {
 				if (this.returnValue !== true && eventNames.includes(this.type)) {
@@ -167,21 +161,17 @@ function init() {
 		});
 	}
 
-	/*  Hook HTMLElement's setter  fail to hook! why?
-	for (let p of eventNames) {
-		Object.defineProperty(HTMLElement.prototype, 'on'+ p, {
-			set(val) {
-				if (val !== null) this['on'+ p] = null;
-			}
-		});
-	} */
-
-	console.debug('url: ' + location.href, 'storageName：' + storageName, 'rule: ' + rule.name);
+	console.log('url: ' + location.href, '\nstorageName：' + storageName, 'rule: ' + rule.name);
 	if (rule.add_css) GM_addStyle(
-	`html, * {
-		-webkit-user-select:text !important; -moz-user-select:text !important;
-	}
-	::selection {color:#111; background:#05D3F9; !important;}`);
+		`html, * {
+			-ms-user-select:text !important;
+			-webkit-user-select:text !important;
+			-moz-user-select:text !important;
+			user-select:text !important;
+		}
+		::-moz-selection {color:#111 !important; background:#05D3F9 !important;}
+		::selection {color:#111 !important; background:#05D3F9 !important;}`
+	);
 }
 
 init();
