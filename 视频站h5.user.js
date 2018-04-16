@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.78
+// @version          0.79
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
+// @include          *://yun.baidu.com/*
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
 // @include          *://film.qq.com/*
@@ -11,6 +12,7 @@
 // @include          *://news.qq.com/*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://*.tudou.com/v/*
+// @include          *://www.bilibili.com/*
 // @include          *://v.163.com/*.html*
 // @include          *://ent.163.com/*.html*
 // @include          *://news.163.com/*.html*
@@ -30,7 +32,7 @@
 // @include          *://m.fun.tv/*
 // @include          *://www.yy.com/*
 // @include          *://www.huya.com/*
-// @include          https://*.douyu.com/*
+// @include          https://www.douyu.com/*
 // @include          https://www.panda.tv/*
 // @include          *://star.longzhu.com/*
 // @grant            unsafeWindow
@@ -244,7 +246,7 @@ app = {
 		}
 	},
 	_convertView(btn) {
-		(btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ? doClick(btn) : doClick(btn.nextSibling);// nextElementSibling
+		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ? doClick(btn) : doClick(btn.nextSibling);
 	},
 	onCanplay(ev) {
 		console.log('脚本[启用html5播放器]，事件loadeddata');
@@ -401,6 +403,21 @@ let router = {
 		});
 		app.fullCSS = '.control-fullscreen-icon';
 	},
+	bilibili() {
+		localStorage.bilibililover = 'YESYESYES';
+		localStorage.defaulth5 = 1;
+		app.nextCSS = '.bilibili-player-video-btn-next';
+		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
+		app.fullCSS = '.bilibili-player-iconfont-fullscreen';
+		events.on('foundMV', () => {
+			window.scrollTo(0, q('#bofqi').parentNode.parentNode.offsetTop);
+			v.setAttribute('autoplay', '');//自动播放
+			doClick(q('i.bilibili-player-iconfont-widescreen.icon-24wideoff')); //开宽屏
+			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
+			doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
+			// doClick(q('li.bpui-selectmenu-list-row[data-value="64"]'));//720P
+		});
+	},
 	sina() {
 		fakeUA(ua_ipad2);
 	},
@@ -542,4 +559,4 @@ router[u] && Object.defineProperty(navigator, 'plugins', {
 		return { length: 0 };
 	}
 });
-if (!router[u] || !router[u].call(null)) app.init();
+if (!router[u] || !router[u]()) app.init();

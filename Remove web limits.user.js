@@ -10,6 +10,7 @@
 // @include           http*
 // @grant             GM_addStyle
 // @run-at            document-start
+// @updateUrl    https://raw.githubusercontent.com/xinggsf/gm/master/Remove%20web%20limits.user.js
 // ==/UserScript==
 
 "use strict";
@@ -39,6 +40,7 @@ let white_list = [
 	'translate.google.'
 ];
 
+let hasReturnValue = 'returnValue' in Event.prototype;
 let returnTrue = e => true;
 // 要处理的 event 列表
 let hook_eventNames, unhook_eventNames, eventNames;
@@ -104,13 +106,13 @@ function unhook_f(e) {
 }
 function unhook(e, self, funcsName) {
 	for (let func of self[funcsName]) func(e);
-	e.returnValue = true;
+	if (hasReturnValue) e.returnValue = true;
 	return true;
 }
 function onxxx(e) {
 	let name = storageName + 'on' + e.type;
 	(this[name])(e);
-	e.returnValue = true;
+	if (hasReturnValue) e.returnValue = true;
 	return true;
 }
 
@@ -151,7 +153,7 @@ function init() {
 	}
 
 	// Hook set returnValue
-	if (rule.hook_set_returnValue && 'returnValue' in Event.prototype) {
+	if (rule.hook_set_returnValue && hasReturnValue) {
 		Object.defineProperty(Event.prototype, 'returnValue', {
 			set() {
 				if (this.returnValue !== true && eventNames.includes(this.type)) {

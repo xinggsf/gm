@@ -5,11 +5,9 @@
 // @description 启用B站的h5播放，自动宽屏、自动播放、原生右键菜单、关弹幕
 // @homepage    http://bbs.kafan.cn/thread-2061994-1-1.html
 // @downloadUrl https://raw.githubusercontent.com/xinggsf/gm/master/bilibili-h5.user.js
-// @version     2017.11.13
-// @include     *://www.bilibili.com/video/av*
-// @include     *://www.bilibili.com/*/html5player.html*
-// @include     *://bangumi.bilibili.com/anime/v/*
-// @include     *://bangumi.bilibili.com/anime/*/play*
+// @version     2018.04.13
+// @include     *://www.bilibili.com/*
+// @include     *://bangumi.bilibili.com/*
 // @grant       unsafeWindow
 // @run-at      document-body
 // ==/UserScript==
@@ -27,7 +25,7 @@ const setPlayer = v => {
 	doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 	//单击下一视频按钮后，B站的弹幕按钮有问题 div.bilibili-player-video-btn-danmaku:not(video-state-danmaku-off)
 	doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
-	//doClick(q('ul.bpui-selectmenu-list li[data-value="3"]'));//超清
+	// doClick(q('li.bpui-selectmenu-list-row[data-value="64"]'));//720P
 	//setTimeout(setContextMenuHandler, 800);//原生右键菜单
 };
 
@@ -36,7 +34,7 @@ function setContextMenuHandler() {
     danmuMenuHandler = gMenuEvent.handler,
 
     inElement = (e, x, y) => {
-		console.log(e.getBoundingClientRect);
+		//console.log(e.getBoundingClientRect);
         const r = e.getBoundingClientRect();
         return r.left < x && x < r.right && r.top < y && y < r.bottom;
     },
@@ -61,9 +59,9 @@ Object.defineProperty(navigator, 'plugins', {
 
 let scrolled = !1;
 new MutationObserver(records => {
-	for (let r of records) if (r.addedNodes) {
-		if (!scrolled && self === top && r.target.id ==='bofqi') {
-			scrollTo(0, r.target.closest('.player-wrapper').offsetTop);
+	for (let r of records) if (!!r.addedNodes.length) {
+		if (!scrolled && window === window.top && r.target.id ==='bofqi') {
+			scrollTo(0, r.target.parentNode.parentNode.offsetTop);
 			scrolled = true;
 			return;
 		}
