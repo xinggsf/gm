@@ -70,4 +70,4 @@ setTimeout(() => {
 	mo.observe(document.body || document.documentElement, {
 		childList: true, subtree: true
 	});
-}, 299);
+}, 99);
