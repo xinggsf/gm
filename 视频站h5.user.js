@@ -415,9 +415,9 @@ let router = {
 		events.on('canplay', () => {
 			w.scrollTo(0, q('#bofqi').parentNode.parentNode.offsetTop);
 			doClick(q('i[name=play_button]'));//自动播放
-			doClick(q('i[name=widescreen]')); //开宽屏
+			doClick(q('i[name=web_fullscreen]')); //开宽屏
 			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
-			doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
+			// doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
 			// doClick(q('li.bpui-selectmenu-list-row[data-value="64"]'));//720P
 		});
 	},
@@ -505,7 +505,7 @@ if (!router[u]) { //直播站点
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
 		panda() {
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
 			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container, .room-banner-images';
@@ -564,9 +564,4 @@ if (!router[u]) { //直播站点
 }
 
 router.baidu = router.weibo = noopFn;
-!/bilibili|douyu|panda/.test(u) && Object.defineProperty(navigator, 'plugins', {
-	get() {
-		return { length: 0 };
-	}
-});
 if (!router[u] || !router[u]()) app.init();
