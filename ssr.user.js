@@ -6,7 +6,7 @@
 // @match        https://free-ss.site/
 // @match        https://free-ss.gq/
 // @require      https://cdn.jsdelivr.net/npm/js-base64@2.4.3/base64.min.js
-// @namespace    dolacmeo.free-ss.site
+// @namespace    ss@rohankdd.com
 // @grant        GM_setClipboard
 // ==/UserScript==
 
@@ -77,8 +77,8 @@ function ready_ss() {
 }
 
 init_html();
-setTimeout(function () {
+$table.on('init.dt', function () {
 	ss_table = $table.DataTable();
 	ready_ss();
 	$('.fa-globe').click();
-}, 3000);
+});

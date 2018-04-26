@@ -27,11 +27,9 @@
 		if (window.chrome) {
 			unsafeWindow.location.replace(url);
 			f.parentNode.removeChild(f);
-			setTimeout(function() {
-				GM_openInTab(url);
-			}, 0);
+			setTimeout(GM_openInTab, url, 0);
 		} else */
-		setTimeout(scrollBy(0, bfq.offsetTop-55), 9);
+		setTimeout(scrollBy, 9, 0, bfq.offsetTop-55);
 	} else {
 		f = document.querySelector('param[name=flashvars]');
 		url = f.value.match(/http%3A%2F%2F\w+\.tuifeiapi\.[^&]+/)[0];

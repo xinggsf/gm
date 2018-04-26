@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.79
+// @version          0.80
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
@@ -10,6 +10,7 @@
 // @include          *://film.qq.com/*
 // @include          *://view.inews.qq.com/*
 // @include          *://news.qq.com/*
+// @include          https://www.weiyun.com/video_*
 // @include          *://v.youku.com/v_show/id_*
 // @include          *://*.tudou.com/v/*
 // @include          *://www.bilibili.com/*
@@ -49,7 +50,9 @@ if (top !== self) return;
 if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
-const q = css => document.querySelector(css),
+const w = unsafeWindow,
+noopFn = () => {},
+q = css => document.querySelector(css),
 $$ = (c, cb = e=>e.remove()) => {
 	if (!c.length) return;
 	if (typeof c === 'string')
@@ -270,7 +273,6 @@ app = {
 			if (this.disableSpace) return;
 			v.paused ? v.play() : v.pause();
 			e.preventDefault();
-			e.stopPropagation();
 			break;
 		case 37: //left
 			n = e.shiftKey ? -27 : -5; //快退5秒,shift加速
@@ -289,6 +291,7 @@ app = {
 			n += v.volume;
 			if (0 <= n && n <= 1) v.volume = n;
 			e.preventDefault();
+			e.stopPropagation();
 			break;
 		case 13: //全屏
 			if (e.shiftKey) {
@@ -387,7 +390,7 @@ let router = {
 			}
 		});
 		events.on('canplay', () => {
-			$$('.settings-item.disable, .youku-layer-logo');//去水印。破解1080P？
+			$$('.youku-layer-logo');//去水印。 .settings-item.disable 破解1080P？
 			if (v.src.startsWith('http')) app.getVideos();//初始化vList，旧版用flv.js~地址以blob:开头
 			//修正下一个按钮无效 yk-trigger-layer
 			const btn = q('button.control-next-video');
@@ -409,10 +412,10 @@ let router = {
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-iconfont-fullscreen';
-		events.on('foundMV', () => {
-			window.scrollTo(0, q('#bofqi').parentNode.parentNode.offsetTop);
-			v.setAttribute('autoplay', '');//自动播放
-			doClick(q('i.bilibili-player-iconfont-widescreen.icon-24wideoff')); //开宽屏
+		events.on('canplay', () => {
+			w.scrollTo(0, q('#bofqi').parentNode.parentNode.offsetTop);
+			doClick(q('i[name=play_button]'));//自动播放
+			doClick(q('i[name=widescreen]')); //开宽屏
 			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 			doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
 			// doClick(q('li.bpui-selectmenu-list-row[data-value="64"]'));//720P
@@ -449,7 +452,7 @@ let router = {
 			location.assign('//m.fun.tv/ivplay/?vid='+vid);
 		}
 		mid && setTimeout(() => {
-			vid = unsafeWindow.vplay.videoid;
+			vid = w.vplay.videoid;
 			vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
 		}, 99);
 		return true;
@@ -461,8 +464,7 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
-			let uw = unsafeWindow,
-			useDouyuExt = GM_getValue('useDouyuExt', !1),
+			let useDouyuExt = GM_getValue('useDouyuExt', !1),
 			css = 'i.sign-spec',
 			fnWrap = throttle($$),
 			s = '使用了斗鱼H5播放器扩展  ';
@@ -473,32 +475,23 @@ if (!router[u]) { //直播站点
 			});
 			app.findMV = function() {
 				fnWrap(css, e=>e.parentNode.remove());
-				const p = uw.__player || uw.__playerindex;
+				const p = w.__player || w.__playerindex;
 				if (!p) return;
 				if (path==='/') {//主页
 					if (p.isSwitched) return q('video');
-					p.switchPlayer('h5');
-					p.isSwitched = true;
 				}
 				else if (useDouyuExt || p.isSwitched)
 					return q('#js-room-video video');
-				else {//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
-					p.switchPlayer('h5');
-				}
+				//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
+				p.switchPlayer('h5');
+				p.isSwitched = true;
 			};
 			events.on('canplay', function() {
 				$$(app.adsCSS);
 				$$(css, e=>e.parentNode.remove());
 				if (path==='/') return;
-				const player = v.parentNode.parentNode;// .closest('[class|=app]');
-				//willRemove(`#${player.id}>div:not([class]):not([style])`);
-				willRemove(player.children, e => {
-					if (e.matches('div:not([class]):not([style])')) e.remove();
-				});
-				new MutationObserver(rs => {
-					for (let r of rs) $$(r.addedNodes);
-				})
-				.observe(player, {childList : true});
+				const player = v.parentNode.parentNode;
+				setTimeout($$, 900, `#${player.id}>div:not([class]):not([style]), #dialog-more-video~*`);
 			});
 			document.addEventListener('visibilitychange', ev => {
 				if (!document.hidden) {
@@ -515,7 +508,7 @@ if (!router[u]) { //直播站点
 			localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
-			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container';
+			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container, .room-banner-images';
 			if (path!=='/') events.on('foundMV', () => {
 				let fn, btnClose = q('a.room-chat-expand-btn');
 				if (btnClose) {
@@ -528,22 +521,39 @@ if (!router[u]) { //直播站点
 					app.btnWFS.addEventListener('click', fn);
 					v.closest('.h5player-player-core-container').addEventListener('dblclick', fn);
 				}
-				(throttle($$, 900))(app.adsCSS);
+				setTimeout($$, 900, app.adsCSS);
 			});
 		},
 		yy() {
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 		},
 		huya() {
 			if (underFirefox57) return true;
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
+			events.on('canplay', function() {
+				if (w.TT_ROOM_DATA) setTimeout(() => {
+					$$('.player-chest-login, #player-login-tip-wrap');
+					const $ = w.$, channel = w.TT_ROOM_DATA.channel,
+					$videotype = $('.player-videotype-cur');
+					$(".player-videotype-list li").unbind('click')
+					.click(function(e) {
+						if ($(this).hasClass('on')) return;
+						console.log(this);
+						const rate = $(this).attr("ibitrate");
+						w.vplayer.vcore.reqBitRate(rate, channel);
+						$(this).siblings('.on').removeClass('on');
+						$(this).addClass('on').parent().parent().hide();
+						$videotype.text($(this).text());
+					});
+				}, 900);
+			});
 		},
 		longzhu() {
-			if (!window.chrome) fakeUA(ua_chrome);
-			if (!window.ReadableStream)
+			if (!w.chrome) fakeUA(ua_chrome);
+			if (!w.ReadableStream)
 				injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 			app.fullCSS = '#screen_vk';
 			//app.webfullCSS = '.full-screen-button-outer-box';
@@ -553,8 +563,8 @@ if (!router[u]) { //直播站点
 	if (router[u]) app.isLive = true;
 }
 
-router.baidu = router.weibo = ()=>{};
-router[u] && Object.defineProperty(navigator, 'plugins', {
+router.baidu = router.weibo = noopFn;
+!/bilibili|douyu|panda/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
