@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         智能划词翻译
+// @name         智能划词翻译（优化版）
 // @namespace    https://greasyfork.org/zh-CN/users/150560
 // @version      1.5
 // @description  划词翻译,自动切换谷歌翻译和有道词典

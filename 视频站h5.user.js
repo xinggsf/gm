@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
+// @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
 // @version          0.80
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
@@ -407,6 +407,8 @@ let router = {
 		app.fullCSS = '.control-fullscreen-icon';
 	},
 	bilibili() {
+		if (!window.ReadableStream)
+			injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 		localStorage.bilibililover = 'YESYESYES';
 		localStorage.defaulth5 = 1;
 		app.nextCSS = '.bilibili-player-video-btn-next';
@@ -414,11 +416,11 @@ let router = {
 		app.fullCSS = '.bilibili-player-iconfont-fullscreen';
 		events.on('canplay', () => {
 			w.scrollTo(0, q('#bofqi').parentNode.parentNode.offsetTop);
-			doClick(q('i[name=play_button]'));//自动播放
 			doClick(q('i[name=widescreen]')); //开宽屏
 			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 			doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
 			// doClick(q('li.bpui-selectmenu-list-row[data-value="64"]'));//720P
+			doClick(q('i[name=play_button]'));//自动播放
 		});
 	},
 	sina() {
@@ -525,12 +527,12 @@ if (!router[u]) { //直播站点
 			});
 		},
 		yy() {
-			if (!w.chrome) fakeUA(ua_chrome);
+			if (!window.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 		},
 		huya() {
 			if (underFirefox57) return true;
-			if (!w.chrome) fakeUA(ua_chrome);
+			if (!window.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			events.on('canplay', function() {
@@ -552,8 +554,8 @@ if (!router[u]) { //直播站点
 			});
 		},
 		longzhu() {
-			if (!w.chrome) fakeUA(ua_chrome);
-			if (!w.ReadableStream)
+			if (!window.chrome) fakeUA(ua_chrome);
+			if (!window.ReadableStream)
 				injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 			app.fullCSS = '#screen_vk';
 			//app.webfullCSS = '.full-screen-button-outer-box';
