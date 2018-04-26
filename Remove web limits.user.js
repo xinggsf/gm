@@ -5,9 +5,41 @@
 // @homepageURL       https://github.com/xinggsf/gm/
 // @supportURL        https://github.com/Cat7373/remove-web-limits/issues/
 // @author            Cat73  xinggsf
-// @version           1.5.1
+// @version           1.5.2
 // @license           LGPLv3
-// @include           http*
+// @include           *://b.faloo.com/*
+// @include           *://bbs.coocaa.com/*
+// @include           *://book.hjsm.tom.com/*
+// @include           *://book.zhulang.com/*
+// @include           *://book.zongheng.com/*
+// @include           *://book.hjsm.tom.com/*
+// @include           *://chokstick.com/*
+// @include           *://chuangshi.qq.com/*
+// @include           *://yunqi.qq.com/*
+// @include           *://city.udn.com/*
+// @include           *://cutelisa55.pixnet.net/*
+// @include           *://huayu.baidu.com/*
+// @include           *://imac.hk/*
+// @include           https://life.tw/*
+// @include           *://luxmuscles.com/*
+// @include           *://read.qidian.com/*
+// @include           *://www.15yan.com/*
+// @include           *://www.17k.com/*
+// @include           *://www.18183.com/*
+// @include           *://www.360doc.com/*
+// @include           *://www.eyu.com/*
+// @include           *://www.hongshu.com/*
+// @include           *://www.coco01.com/*
+// @include           *://news.missevan.com/*
+// @include           *://www.hongxiu.com/*
+// @include           *://www.imooc.com/*
+// @include           *://www.readnovel.com/*
+// @include           *://www.tadu.com/*
+// @include           *://www.jjwxc.net/*
+// @include           *://www.xxsy.net/*
+// @include           *://www.z3z4.com/*
+// @include           *://www.zhihu.com/*
+// @include           *://yuedu.163.com/*
 // @grant             GM_addStyle
 // @run-at            document-start
 // @updateUrl    https://raw.githubusercontent.com/xinggsf/gm/master/Remove%20web%20limits.user.js
@@ -16,31 +48,22 @@
 "use strict";
 // 域名规则列表
 let rules = {
-	white_rule: {
+	white: {
 		name: "white",
 		hook_eventNames: "",
 		unhook_eventNames: ""
 	},
-	default_rule: {
+	plus: {
 		name: "default",
 		hook_eventNames: "contextmenu|select|selectstart|copy|cut|dragstart",
 		unhook_eventNames: "mousedown|mouseup|keydown|keyup",
 		dom0: true,
 		hook_addEventListener: true,
 		hook_preventDefault: true,
-		hook_set_returnValue: true,
 		add_css: true
 	}
 };
-// 不作处理的域名列表
-let white_list = [
-	'.youtube.com',
-	'.wikipedia.org',
-	'mail.qq.com',
-	'translate.google.'
-];
 
-let hasReturnValue = 'returnValue' in Event.prototype;
 let returnTrue = e => true;
 // 要处理的 event 列表
 let hook_eventNames, unhook_eventNames, eventNames;
@@ -59,7 +82,7 @@ function addEventListener(type, func, useCapture) {
 	} else if (unhook_eventNames.includes(type)) {
 		let funcsName = storageName + type + (useCapture ? 't' : 'f');
 
-		if (this[funcsName] === undefined) {
+		if (this[funcsName] === void 0) {
 			this[funcsName] = [];
 			_addEventListener.apply(this, [type, useCapture ? unhook_t : unhook_f, useCapture]);
 		}
@@ -72,8 +95,8 @@ function addEventListener(type, func, useCapture) {
 
 // 清理或还原DOM节点的onxxx属性
 function clearLoop() {
-	let e, type, prop,
-	c = [document,document.body, ...document.getElementsByTagName('div')];
+	let type, prop,
+	c = [document,document.body, ...document.getElementsByTagName('div')],
 	// https://life.tw/?app=view&no=746862
 	e = document.querySelector('iframe[src="about:blank"]');
 	if (e && e.clientWidth>99 && e.clientHeight>11){
@@ -106,21 +129,17 @@ function unhook_f(e) {
 }
 function unhook(e, self, funcsName) {
 	for (let func of self[funcsName]) func(e);
-	if (hasReturnValue) e.returnValue = true;
 	return true;
 }
 function onxxx(e) {
 	let name = storageName + 'on' + e.type;
 	(this[name])(e);
-	if (hasReturnValue) e.returnValue = true;
 	return true;
 }
 
 // 获取目标域名应该使用的规则
 function getRule(host) {
-	if (white_list.some(k => host.includes(k)))
-		return rules.white_rule;
-	return rules.default_rule;
+	return rules.plus;
 }
 
 function init() {
@@ -152,21 +171,9 @@ function init() {
 		};
 	}
 
-	// Hook set returnValue
-	if (rule.hook_set_returnValue && hasReturnValue) {
-		Object.defineProperty(Event.prototype, 'returnValue', {
-			set() {
-				if (this.returnValue !== true && eventNames.includes(this.type)) {
-					this.returnValue = true;
-				}
-			}
-		});
-	}
-
 	console.log('url: ' + location.href, '\nstorageName：' + storageName, 'rule: ' + rule.name);
 	if (rule.add_css) GM_addStyle(
 		`html, * {
-			-ms-user-select:text !important;
 			-webkit-user-select:text !important;
 			-moz-user-select:text !important;
 			user-select:text !important;

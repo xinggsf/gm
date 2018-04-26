@@ -67,7 +67,7 @@ checkDom = () => {
 mo = new MutationObserver(checkDom);
 setTimeout(() => {
 	checkDom();
-	mo.observe(document.body || document.documentElement, {
+	mo.observe(document.documentElement, {
 		childList: true, subtree: true
 	});
 }, 99);
