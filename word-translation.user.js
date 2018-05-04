@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         智能划词翻译（优化版）
+// @name         智能划词翻译
 // @namespace    https://greasyfork.org/zh-CN/users/150560
 // @version      1.5
 // @description  划词翻译,自动切换谷歌翻译和有道词典
@@ -114,7 +114,7 @@ function countOfWord(str) {
 }
 
 function isChina(str) {
-	return /^[\u4E00-\u9FA5,\uFF00-\uFF20,\u3000-\u301C]/.test(str);
+	return /^[\u4E00-\u9FA5\uFF00-\uFF20\u3000-\u301C]/.test(str);
 }
 // ajax 跨域访问公共方法
 function ajax(url, text, target, element, method, data, headers) {
@@ -153,15 +153,15 @@ function youdao(rst, text, element) {
 
 		const { trs, ukphone, usphone, phone } = word;
 		var phoneStyle = 'color:#9E9E9E!important;';
-		if (!!ukphone && ukphone.length != 0) {
+		if (!!ukphone && ukphone.length > 0) {
 			html += '<span style="' + phoneStyle + '">英[' + ukphone + '] </span>';
 		}
-		if (!!usphone && usphone.length != 0) {
+		if (!!usphone && usphone.length > 0) {
 			html += '<span style="' + phoneStyle + '">美[' + usphone + '] </span>';
 		}
-		if (html.length != 0) {
+		if (html.length > 0) {
 			html += '<br />';
-		} else if (!!phone && phone.length != 0) {
+		} else if (!!phone && phone.length > 0) {
 			html += '<span style="' + phoneStyle + '">[' + phone + '] </span><br />';
 		}
 		trs.forEach(element => {

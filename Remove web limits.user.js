@@ -19,6 +19,8 @@
 // @include           *://city.udn.com/*
 // @include           *://cutelisa55.pixnet.net/*
 // @include           *://huayu.baidu.com/*
+// @include           *://yd.baidu.com/*
+// @include           *://yuedu.baidu.com/*
 // @include           *://imac.hk/*
 // @include           https://life.tw/*
 // @include           *://luxmuscles.com/*
@@ -38,7 +40,6 @@
 // @include           *://www.jjwxc.net/*
 // @include           *://www.xxsy.net/*
 // @include           *://www.z3z4.com/*
-// @include           *://www.zhihu.com/*
 // @include           *://yuedu.163.com/*
 // @grant             GM_addStyle
 // @run-at            document-start

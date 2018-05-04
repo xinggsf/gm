@@ -17,9 +17,10 @@ if (top == self) {
 	let baseHost = '??',
 	urlWhiteList = [],
 	getUrlHost = function(url) {
-		var a = document.createElement('a');
-		a.href = url;
-		return a.host;
+		// var a = document.createElement('a');
+		// a.href = url;
+		// return a.host;
+		return (new URL(url)).hostname;
 	},
 	getBaseDomain = function (host) {//取主域名
 		let a = host.split('.'),

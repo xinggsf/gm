@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name             è§†é¢‘ç«™å¯ç”¨html5æ’­æ”¾å™¨
-// @description      ä¸‰å¤§åŠŸèƒ½ ã€‚å¯ç”¨html5æ’­æ”¾å™¨ï¼›ä¸‡èƒ½ç½‘é¡µå…¨å±ï¼›æ·»åŠ å¿«æ·é”®ï¼šå¿«è¿›ã€å¿«é€€ã€æš‚åœ/æ’­æ”¾ã€éŸ³é‡ã€ä¸‹ä¸€é›†ã€åˆ‡æ¢(ç½‘é¡µ)å…¨å±ã€ä¸Šä¸‹å¸§ã€æ’­æ”¾é€Ÿåº¦ã€‚æ”¯æŒè§†é¢‘ç«™ç‚¹ï¼šä¼˜.åœŸã€QQã€Bç«™ã€æ–°æµªã€å¾®åšã€ç½‘æ˜“è§†é¢‘[å¨±ä¹ã€äº‘è¯¾å ‚ã€æ–°é—»]ã€æœç‹ã€ä¹è§†ã€é£è¡Œã€ç™¾åº¦äº‘è§†é¢‘ç­‰ï¼›ç›´æ’­ï¼šæ–—é±¼ã€ç†ŠçŒ«ã€YYã€è™ç‰™ã€é¾™ç ã€‚å¯è‡ªå®šä¹‰ç«™ç‚¹
-// @version          0.80
+// @name             ÊÓÆµÕ¾ÆôÓÃhtml5²¥·ÅÆ÷
+// @description      Èı´ó¹¦ÄÜ ¡£ÆôÓÃhtml5²¥·ÅÆ÷£»ÍòÄÜÍøÒ³È«ÆÁ£»Ìí¼Ó¿ì½İ¼ü£º¿ì½ø¡¢¿ìÍË¡¢ÔİÍ£/²¥·Å¡¢ÒôÁ¿¡¢ÏÂÒ»¼¯¡¢ÇĞ»»(ÍøÒ³)È«ÆÁ¡¢ÉÏÏÂÖ¡¡¢²¥·ÅËÙ¶È¡£Ö§³ÖÊÓÆµÕ¾µã£ºÓÅ.ÍÁ¡¢QQ¡¢BÕ¾¡¢ĞÂÀË¡¢Î¢²©¡¢ÍøÒ×ÊÓÆµ[ÓéÀÖ¡¢ÔÆ¿ÎÌÃ¡¢ĞÂÎÅ]¡¢ËÑºü¡¢ÀÖÊÓ¡¢·çĞĞ¡¢°Ù¶ÈÔÆÊÓÆµµÈ£»Ö±²¥£º¶·Óã¡¢ĞÜÃ¨¡¢YY¡¢»¢ÑÀ¡¢ÁúÖé¡£¿É×Ô¶¨ÒåÕ¾µã
+// @version          0.81
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
@@ -43,10 +43,9 @@
 // @grant            GM_getValue
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
-// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/è§†é¢‘ç«™h5.user.js
+// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/ÊÓÆµÕ¾h5.user.js
 // ==/UserScript==
 'use strict';
-if (top !== self) return;
 if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
@@ -80,7 +79,7 @@ injectJS = s => {
 	else js.textContent = s;
 	document.head.appendChild(js);
 },
-throttle = function(fn, delay = 100){ //å‡½æ•°èŠ‚æµ
+throttle = function(fn, delay = 100){ //º¯Êı½ÚÁ÷
 	let timer = null, me = this;
 	return function(...args) {
 		timer && clearTimeout(timer);
@@ -90,7 +89,7 @@ throttle = function(fn, delay = 100){ //å‡½æ•°èŠ‚æµ
 		}, delay);
 	};
 },
-willRemove = throttle($$),//å¤šå¤„åŒæ—¶è°ƒç”¨æ—¶é¡»é˜²æ­¢å®šæ—¶å™¨å†²çª
+willRemove = throttle($$),//¶à´¦Í¬Ê±µ÷ÓÃÊ±Ğë·ÀÖ¹¶¨Ê±Æ÷³åÍ»
 doClick = e => {
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 },
@@ -143,7 +142,7 @@ class FullScreen {
 	}
 }
 
-//ä¸‡èƒ½ç½‘é¡µå…¨å±,ä»£ç å‚è€ƒäº†ï¼šhttps://github.com/gooyie/ykh5p
+//ÍòÄÜÍøÒ³È«ÆÁ,´úÂë²Î¿¼ÁË£ºhttps://github.com/gooyie/ykh5p
 class FullPage {
 	constructor(video) {
 		this._video = video;
@@ -228,8 +227,8 @@ class FullPage {
 let v, _fp, _fs;
 
 const { host, pathname: path } = location,
-u = getMainDomain(host),//ä¸»åŸŸå
-//å®¹å™¨ï¼Œç™»è®°äº‹ä»¶å¤„ç†æ–¹æ³•ä¸­çš„å›è°ƒ
+u = getMainDomain(host),//Ö÷ÓòÃû
+//ÈİÆ÷£¬µÇ¼ÇÊÂ¼ş´¦Àí·½·¨ÖĞµÄ»Øµ÷
 events = {
 	on(name, fn) {
 		this[name] = fn;
@@ -252,13 +251,13 @@ app = {
 		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ? doClick(btn) : doClick(btn.nextSibling);
 	},
 	onCanplay(ev) {
-		console.log('è„šæœ¬[å¯ç”¨html5æ’­æ”¾å™¨]ï¼Œäº‹ä»¶loadeddata');
+		console.log('½Å±¾[ÆôÓÃhtml5²¥·ÅÆ÷]£¬ÊÂ¼şloadeddata');
 		//if (ev.target.readyState > 2)
 		events.canplay && events.canplay();
 		ev.target.removeEventListener('loadeddata', this.onCanplay);
 	},
 	hotKey(e) {
-		//åˆ¤æ–­ctrl,alt,shiftä¸‰é”®çŠ¶æ€ï¼Œé˜²æ­¢æµè§ˆå™¨å¿«æ·é”®è¢«å ç”¨
+		//ÅĞ¶Ïctrl,alt,shiftÈı¼ü×´Ì¬£¬·ÀÖ¹ä¯ÀÀÆ÷¿ì½İ¼ü±»Õ¼ÓÃ
 		if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA/.test(e.target.nodeName))
 			return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode))
@@ -275,25 +274,25 @@ app = {
 			e.preventDefault();
 			break;
 		case 37: //left
-			n = e.shiftKey ? -27 : -5; //å¿«é€€5ç§’,shiftåŠ é€Ÿ
+			n = e.shiftKey ? -27 : -5; //¿ìÍË5Ãë,shift¼ÓËÙ
 		case 39: //right
-			n = n || (e.shiftKey ? 27 : 5); //å¿«è¿›5ç§’,shiftåŠ é€Ÿ
+			n = n || (e.shiftKey ? 27 : 5); //¿ì½ø5Ãë,shift¼ÓËÙ
 			v.currentTime += n;
 			break;
-		case 78: // N ä¸‹ä¸€é¦–
+		case 78: // N ÏÂÒ»Ê×
 			doClick(this.btnNext);
 			break;
-		//case 80: // P ä¸Šä¸€é¦–
-		case 38: //åŠ éŸ³é‡
+		//case 80: // P ÉÏÒ»Ê×
+		case 38: //¼ÓÒôÁ¿
 			n = 0.1;
-		case 40: //é™éŸ³é‡
+		case 40: //½µÒôÁ¿
 			n = n || -0.1;
 			n += v.volume;
 			if (0 <= n && n <= 1) v.volume = n;
 			e.preventDefault();
 			e.stopPropagation();
 			break;
-		case 13: //å…¨å±
+		case 13: //È«ÆÁ
 			if (e.shiftKey) {
 				_fp ? _fp.toggle() : this.fullPage();
 			} else {
@@ -307,19 +306,19 @@ app = {
 				_fp ? _fp.toggle() : this.fullPage();
 			}
 			break;
-		case 67: //æŒ‰é”®Cï¼šåŠ é€Ÿæ’­æ”¾ +0.1
+		case 67: //°´¼üC£º¼ÓËÙ²¥·Å +0.1
 			n = 0.1;
-		case 88: //æŒ‰é”®Xï¼šå‡é€Ÿæ’­æ”¾ -0.1
+		case 88: //°´¼üX£º¼õËÙ²¥·Å -0.1
 			n = n || -0.1;
 			n += v.playbackRate;
 			if (0 < n && n <= 16) v.playbackRate = n;
 			break;
-		case 90: //æŒ‰é”®Zï¼šæ­£å¸¸é€Ÿåº¦æ’­æ”¾
+		case 90: //°´¼üZ£ºÕı³£ËÙ¶È²¥·Å
 			v.playbackRate = 1;
 			break;
-		case 70: //æŒ‰é”®Fï¼šä¸‹ä¸€å¸§
+		case 70: //°´¼üF£ºÏÂÒ»Ö¡
 			n = 0.03;
-		case 68: //æŒ‰é”®Dï¼šä¸Šä¸€å¸§
+		case 68: //°´¼üD£ºÉÏÒ»Ö¡
 			n = n || -0.03;
 			if (!v.paused) v.pause();
 			v.currentTime += n;
@@ -383,23 +382,24 @@ let router = {
 	},
 	youku() {
 		events.on('foundMV', () => {
-			//ä½¿ç”¨äº†ä¼˜é…·æ’­æ”¾å™¨YAPfYæ‰©å±•
+			//Ê¹ÓÃÁËÓÅ¿á²¥·ÅÆ÷YAPfYÀ©Õ¹
 			if (!app.btnFS) {
 				app.webfullCSS = '.ABP-Web-FullScreen';
 				app.fullCSS = '.ABP-FullScreen';
 			}
 		});
 		events.on('canplay', () => {
-			$$('.youku-layer-logo');//å»æ°´å°ã€‚ .settings-item.disable ç ´è§£1080Pï¼Ÿ
-			if (v.src.startsWith('http')) app.getVideos();//åˆå§‹åŒ–vListï¼Œæ—§ç‰ˆç”¨flv.js~åœ°å€ä»¥blob:å¼€å¤´
-			//ä¿®æ­£ä¸‹ä¸€ä¸ªæŒ‰é’®æ— æ•ˆ yk-trigger-layer
+			$$('.youku-layer-logo, .settings-item.disable');//È¥Ë®Ó¡¡£  ÆÆ½â1080P
+			w.$('.quality-dashboard.larger').append('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
+			if (v.src.startsWith('http')) app.getVideos();//³õÊ¼»¯vList£¬¾É°æÓÃflv.js~µØÖ·ÒÔblob:¿ªÍ·
+			//ĞŞÕıÏÂÒ»¸ö°´Å¥ÎŞĞ§ yk-trigger-layer
 			const btn = q('button.control-next-video');
 			if (btn && btn.offsetWidth>1) {
 				let e = q('.program.current');
 				e = e && e.closest('.item') || q('.item.current');
 				e = e.nextSibling;
 				if (!e) return;
-				e = e.querySelector('a');//ä¸‹ä¸€ä¸ªè§†é¢‘é“¾æ¥
+				e = e.querySelector('a');//ÏÂÒ»¸öÊÓÆµÁ´½Ó
 				btn.addEventListener('click', ev => e.click());
 				app.btnNext = e;
 			}
@@ -414,14 +414,20 @@ let router = {
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-iconfont-fullscreen';
-		events.on('canplay', () => {
+		const _setPlayer = () => {
 			w.scrollTo(0, q('#bofqi').parentNode.parentNode.offsetTop);
-			doClick(q('i[name=widescreen]')); //å¼€å®½å±
-			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //å…³å¾ªç¯æ’­æ”¾
-			doClick(q('i[name=ctlbar_danmuku_close]'));//å…³å¼¹å¹•
-			// doClick(q('li.bpui-selectmenu-list-row[data-value="64"]'));//720P
-			doClick(q('i[name=play_button]'));//è‡ªåŠ¨æ’­æ”¾
-		});
+			doClick(q('i.bilibili-player-iconfont-widescreen.icon-24wideoff')); //¿ª¿íÆÁ
+			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //¹ØÑ­»·²¥·Å
+			doClick(q('i[name=ctlbar_danmuku_close]'));//¹Øµ¯Ä»
+			// doClick(q('li.bpui-selectmenu-list-row[data-value="64"]'));//720P£º64  1080P£º80
+			setTimeout(doClick, 1500, q('i[name=play_button]'));//×Ô¶¯²¥·Å
+		};
+		const fn = history.pushState;
+		history.pushState = function() {
+			fn.apply(this, arguments);
+			setTimeout(_setPlayer, 500);
+		};
+		events.on('canplay', _setPlayer);
 	},
 	sina() {
 		fakeUA(ua_ipad2);
@@ -439,7 +445,7 @@ let router = {
 	},
 	fun() {
 		if (host.startsWith('m.')) {
-			if (!path.includes('play')) return true;//éæ’­æ”¾é¡µï¼Œä¸æ‰§è¡Œinit()
+			if (!path.includes('play')) return true;//·Ç²¥·ÅÒ³£¬²»Ö´ĞĞinit()
 			/^\/[mv]/.test(path) && location.assign(path.replace('/', '/i') + location.search);
 			app.nextCSS = 'a.btn.next-btn';
 			app.fullCSS = 'a.btn.full-btn';
@@ -448,7 +454,7 @@ let router = {
 		}
 		let vid = r1(/\bv-(\d+)/, path);
 		let mid = r1(/\bg-(\d+)/, path);
-		//å‰§é›†path: /implay/ï¼Œå•è§†é¢‘path: /ivplay/
+		//¾ç¼¯path: /implay/£¬µ¥ÊÓÆµpath: /ivplay/
 		if (vid) {
 			mid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
 			location.assign('//m.fun.tv/ivplay/?vid='+vid);
@@ -463,14 +469,14 @@ let router = {
 router.lesports = router.le;
 router['163'] = router.sina;
 
-if (!router[u]) { //ç›´æ’­ç«™ç‚¹
+if (!router[u]) { //Ö±²¥Õ¾µã
 	router = {
 		douyu() {
 			let useDouyuExt = GM_getValue('useDouyuExt', !1),
 			css = 'i.sign-spec',
 			fnWrap = throttle($$),
-			s = 'ä½¿ç”¨äº†æ–—é±¼H5æ’­æ”¾å™¨æ‰©å±•  ';
-			s += useDouyuExt ? 'âˆš' : 'ï¼Ÿ';
+			s = 'Ê¹ÓÃÁË¶·ÓãH5²¥·ÅÆ÷À©Õ¹  ';
+			s += useDouyuExt ? '¡Ì' : '£¿';
 			GM_registerMenuCommand(s, () => {
 				GM_setValue('useDouyuExt', !useDouyuExt);
 				location.reload();
@@ -479,12 +485,12 @@ if (!router[u]) { //ç›´æ’­ç«™ç‚¹
 				fnWrap(css, e=>e.parentNode.remove());
 				const p = w.__player || w.__playerindex;
 				if (!p) return;
-				if (path==='/') {//ä¸»é¡µ
+				if (path==='/') {//Ö÷Ò³
 					if (p.isSwitched) return q('video');
 				}
 				else if (useDouyuExt || p.isSwitched)
 					return q('#js-room-video video');
-				//æœ‰ç›´æ’­çš„é¡µé¢ !lastIndexOf('/') é“¾åˆ¤æ–­è¿ç®—ç¬¦: $ROOM?.room_id
+				//ÓĞÖ±²¥µÄÒ³Ãæ !lastIndexOf('/') Á´ÅĞ¶ÏÔËËã·û: $ROOM?.room_id
 				p.switchPlayer('h5');
 				p.isSwitched = true;
 			};
@@ -493,7 +499,9 @@ if (!router[u]) { //ç›´æ’­ç«™ç‚¹
 				$$(css, e=>e.parentNode.remove());
 				if (path==='/') return;
 				const player = v.parentNode.parentNode;
-				setTimeout($$, 900, `#${player.id}>div:not([class]):not([style]), #dialog-more-video~*`);
+				s = `#${player.id}>div:not([class]):not([style]), #dialog-more-video~*`;
+				setTimeout($$, 300, s);
+				setTimeout($$, 3900, s);
 			});
 			document.addEventListener('visibilitychange', ev => {
 				if (!document.hidden) {
@@ -501,8 +509,8 @@ if (!router[u]) { //ç›´æ’­ç«™ç‚¹
 					$$(css, e=>e.parentNode.remove());
 				}
 			});
-			app.webfullCSS = useDouyuExt ? 'a.danmu-fullpage' : 'div[title="ç½‘é¡µå…¨å±"]';
-			app.fullCSS = useDouyuExt ? 'a.danmu-fullscreen': 'div[title="çª—å£å…¨å±"]';
+			app.webfullCSS = useDouyuExt ? 'a.danmu-fullpage' : 'div[title="ÍøÒ³È«ÆÁ"]';
+			app.fullCSS = useDouyuExt ? 'a.danmu-fullscreen': 'div[title="´°¿ÚÈ«ÆÁ"]';
 			// .watermark-4231db, .animation_container-005ab7 +div
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
@@ -514,7 +522,7 @@ if (!router[u]) { //ç›´æ’­ç«™ç‚¹
 			if (path!=='/') events.on('foundMV', () => {
 				let fn, btnClose = q('a.room-chat-expand-btn');
 				if (btnClose) {
-					//è¿™é‡Œç”¨throttleä»£æ›¿setTimeout
+					//ÕâÀïÓÃthrottle´úÌæsetTimeout
 					fn = throttle(ev => btnClose.click(), 9);
 					// fn = async ev => {
 						// await sleep(9);
