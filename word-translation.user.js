@@ -49,7 +49,7 @@ document.addEventListener('mouseup', function (e) {
 		outTimer = setTimeout(() => {
 			icon.style.display = 'none';
 			outTimer = null;
-		}, 900);
+		}, 1900);
 	} else if (!text) {
 		icon.style.display = 'none';
 		translateTip.containerDestroy(); // 销毁翻译内容面板
