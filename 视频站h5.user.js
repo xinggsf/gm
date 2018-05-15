@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.82
+// @version          0.83
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
@@ -409,8 +409,17 @@ let router = {
 	bilibili() {
 		if (!window.ReadableStream)
 			injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
-		//defquality 选择清晰度，720P：64  1080P：80   宽屏 iswidescreen
-		localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
+		let x = localStorage.bilibili_player_settings;
+		if (x) {
+			x = JSON.parse(x);
+			x.video_status.highquality = true;
+			x.video_status.iswidescreen = true;
+			x.video_status.widescreensave = true;
+			x.setting_config.defquality = '80';
+			localStorage.bilibili_player_settings = JSON.stringify(x);
+		} else
+			//defquality 选择清晰度，720P：64  1080P：80   宽屏 iswidescreen
+			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-iconfont-fullscreen';
@@ -559,7 +568,11 @@ if (!router[u]) { //直播站点
 			app.fullCSS = '.player-fullscreen-btn';
 			events.on('canplay', function() {
 				if (w.TT_ROOM_DATA) setTimeout(() => {
-					$$('.player-chest-login, #player-login-tip-wrap');
+					if (!q('.player-videotype-list li')) {
+						this.canplay();
+						return;
+					}
+					$$('#player-login-tip-wrap,#player-subscribe-wap');
 					const $ = w.$, channel = w.TT_ROOM_DATA.channel,
 					$videotype = $('.player-videotype-cur');
 					$(".player-videotype-list li").unbind('click')
@@ -572,7 +585,7 @@ if (!router[u]) { //直播站点
 						$(this).addClass('on').parent().parent().hide();
 						$videotype.text($(this).text());
 					});
-				}, 900);
+				}, 500);
 			});
 		},
 		longzhu() {
