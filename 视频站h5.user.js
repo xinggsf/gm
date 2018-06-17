@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.83
+// @version          0.85
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
@@ -407,8 +407,6 @@ let router = {
 		app.fullCSS = '.control-fullscreen-icon';
 	},
 	bilibili() {
-		if (!window.ReadableStream)
-			injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 		let x = localStorage.bilibili_player_settings;
 		if (x) {
 			x = JSON.parse(x);
@@ -429,7 +427,7 @@ let router = {
 				setTimeout(_setPlayer, 300);
 				return;
 			}
-			w.scrollTo(0, v.closest('#bofqi').parentNode.parentNode.offsetTop);
+			w.scrollTo(0, v.closest('.player-wrapper,#bangumi_player').offsetTop);
 			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 			// doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
 			// 以下8行，自动播放
@@ -495,24 +493,14 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
-			let useDouyuExt = GM_getValue('useDouyuExt', !1),
-			css = 'i.sign-spec',
-			fnWrap = throttle($$),
-			s = '使用了斗鱼H5播放器扩展  ';
-			s += useDouyuExt ? '√' : '？';
-			GM_registerMenuCommand(s, () => {
-				GM_setValue('useDouyuExt', !useDouyuExt);
-				location.reload();
-			});
+			const css = 'i.sign-spec',
+			fnWrap = throttle($$);
 			app.findMV = function() {
 				fnWrap(css, e=>e.parentNode.remove());
 				const p = w.__player || w.__playerindex;
 				if (!p) return;
-				if (path==='/') {//主页
-					if (p.isSwitched) return q('video');
-				}
-				else if (useDouyuExt || p.isSwitched)
-					return q('#js-room-video video');
+				if (p.isSwitched)
+					return path==='/' ? q('video') : q('#js-room-video video');
 				//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
 				p.switchPlayer('h5');
 				p.isSwitched = true;
@@ -521,7 +509,7 @@ if (!router[u]) { //直播站点
 				$$(app.adsCSS);
 				$$(css, e=>e.parentNode.remove());
 				if (path==='/') return;
-				const player = v.parentNode.parentNode;
+				const player = v.parentNode.parentNode,
 				s = `#${player.id}>div:not([class]):not([style]), #dialog-more-video~*`;
 				setTimeout($$, 300, s);
 				setTimeout($$, 3900, s);
@@ -532,8 +520,8 @@ if (!router[u]) { //直播站点
 					$$(css, e=>e.parentNode.remove());
 				}
 			});
-			app.webfullCSS = useDouyuExt ? 'a.danmu-fullpage' : 'div[title="网页全屏"]';
-			app.fullCSS = useDouyuExt ? 'a.danmu-fullscreen': 'div[title="窗口全屏"]';
+			app.webfullCSS = 'div[title="网页全屏"]';
+			app.fullCSS = 'div[title="窗口全屏"]';
 			// .watermark-4231db, .animation_container-005ab7 +div
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
@@ -542,18 +530,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
 			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container, .room-banner-images';
-			if (path!=='/') events.on('foundMV', () => {
-				let fn, btnClose = q('a.room-chat-expand-btn');
-				if (btnClose) {
-					//这里用throttle代替setTimeout
-					fn = throttle(ev => btnClose.click(), 9);
-					// fn = async ev => {
-						// await sleep(9);
-						// btnClose.click();
-					// };
-					app.btnWFS.addEventListener('click', fn);
-					v.closest('.h5player-player-core-container').addEventListener('dblclick', fn);
-				}
+			if (path!=='/') events.on('canplay', () => {
 				setTimeout($$, 900, app.adsCSS);
 			});
 		},
@@ -567,31 +544,28 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			events.on('canplay', function() {
-				if (w.TT_ROOM_DATA) setTimeout(() => {
-					if (!q('.player-videotype-list li')) {
-						this.canplay();
-						return;
-					}
+				if (!w.TT_ROOM_DATA) return;
+				const ti = setInterval(() => {
+					const $ = w.$, items = $(".player-videotype-list li");
+					if (!items.length) return;
+					clearInterval(ti);
 					$$('#player-login-tip-wrap,#player-subscribe-wap');
-					const $ = w.$, channel = w.TT_ROOM_DATA.channel,
-					$videotype = $('.player-videotype-cur');
-					$(".player-videotype-list li").unbind('click')
+					if (items.length == 1) return;
+					items.unbind('click')
 					.click(function(e) {
 						if ($(this).hasClass('on')) return;
-						console.log(this);
+						//console.log(this);
 						const rate = $(this).attr("ibitrate");
-						w.vplayer.vcore.reqBitRate(rate, channel);
+						w.vplayer.vcore.reqBitRate(rate, w.TT_ROOM_DATA.channel);
 						$(this).siblings('.on').removeClass('on');
 						$(this).addClass('on').parent().parent().hide();
-						$videotype.text($(this).text());
+						$('.player-videotype-cur').text($(this).text());
 					});
 				}, 500);
 			});
 		},
 		longzhu() {
 			if (!window.chrome) fakeUA(ua_chrome);
-			if (!window.ReadableStream)
-				injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 			app.fullCSS = '#screen_vk';
 			//app.webfullCSS = '.full-screen-button-outer-box';
 		}
@@ -601,6 +575,8 @@ if (!router[u]) { //直播站点
 }
 
 router.baidu = router.weibo = noopFn;
+if (!window.ReadableStream)
+	injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 !/bilibili|douyu|panda/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };

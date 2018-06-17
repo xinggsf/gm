@@ -5,7 +5,7 @@
 // @homepageURL       https://github.com/xinggsf/gm/
 // @supportURL        https://github.com/Cat7373/remove-web-limits/issues/
 // @author            Cat73  xinggsf
-// @version           1.5.2
+// @version           1.5.3
 // @license           LGPLv3
 // @include           *://b.faloo.com/*
 // @include           *://bbs.coocaa.com/*
@@ -19,6 +19,7 @@
 // @include           *://city.udn.com/*
 // @include           *://cutelisa55.pixnet.net/*
 // @include           *://huayu.baidu.com/*
+// @include           *://tiyu.baidu.com/*
 // @include           *://yd.baidu.com/*
 // @include           *://yuedu.baidu.com/*
 // @include           *://imac.hk/*

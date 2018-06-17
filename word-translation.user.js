@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         智能划词翻译
 // @namespace    https://greasyfork.org/zh-CN/users/150560
-// @version      1.5
+// @version      1.5.1
 // @description  划词翻译,自动切换谷歌翻译和有道词典
 // @author       田雨菲  xinggsf
 // @include      *
@@ -12,7 +12,7 @@
 
 'use strict';
 
-var youdaoUrl = 'http://dict.youdao.com/jsonapi?xmlVersion=5.1&dicts={"count":99,"dicts":[["ec"]]}&jsonversion=2&q=';
+var youdaoUrl = 'http://dict.youdao.com/jsonapi?xmlVersion=5.1&jsonversion=2&q=';
 var googleUrl = 'https://translate.google.cn/translate_a/single?client=gtx&dt=t&dt=bd&dj=1&source=input&hl=zh-CN&sl=auto&tl=';
 var icon = document.createElement('span');
 icon.innerHTML = `<svg style="margin:4px !important;" "width="24" height="24" viewBox="0 0 768 768">
