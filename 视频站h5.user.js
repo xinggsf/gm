@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.85
+// @version          0.85.1
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
@@ -427,7 +427,7 @@ let router = {
 				setTimeout(_setPlayer, 300);
 				return;
 			}
-			w.scrollTo(0, v.closest('.player-wrapper,#bangumi_player').offsetTop);
+			w.scrollTo(0, v.closest('.player-box,#bangumi_player').offsetTop);
 			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 			// doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
 			// 以下8行，自动播放
