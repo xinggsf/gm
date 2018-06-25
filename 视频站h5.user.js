@@ -45,7 +45,6 @@
 // @grant            GM_getValue
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
-// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
 'use strict';
 if (window.chrome)
@@ -498,7 +497,8 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
-			const css = 'i.sign-spec',
+			if (navigator.userAgent.includes('Edge')){fakeUA(ua_chrome)};
+            const css = 'i.sign-spec',
 			fnWrap = throttle($$);
 			app.findMV = function() {
 				fnWrap(css, e=>e.parentNode.remove());
@@ -531,6 +531,7 @@ if (!router[u]) { //直播站点
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
 		panda() {
+            if (navigator.userAgent.includes('Edge')){fakeUA(ua_chrome)};
 			localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
@@ -540,12 +541,12 @@ if (!router[u]) { //直播站点
 			});
 		},
 		yy() {
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 		},
 		huya() {
 			if (underFirefox57) return true;
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';
@@ -571,7 +572,7 @@ if (!router[u]) { //直播站点
 			});
 		},
 		longzhu() {
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '#screen_vk';
 			//app.webfullCSS = '.full-screen-button-outer-box';
 		}
@@ -581,7 +582,7 @@ if (!router[u]) { //直播站点
 }
 
 router.baidu = router.weibo = noopFn;
-if (!window.ReadableStream)
+if (!w.ReadableStream)
 	injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 !/bilibili|douyu|panda/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
