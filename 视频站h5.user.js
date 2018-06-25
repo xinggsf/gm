@@ -1,17 +1,19 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.85
+// @version          0.86
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
+// @include          https://y.qq.com/*/mv/v/*
 // @include          *://film.qq.com/*
 // @include          *://view.inews.qq.com/*
 // @include          *://news.qq.com/*
 // @include          https://www.weiyun.com/video_*
 // @include          *://v.youku.com/v_show/id_*
+// include          https://vku.youku.com/live/*
 // @include          *://*.tudou.com/v/*
 // @include          *://www.bilibili.com/*
 // @include          *://v.163.com/*.html*
@@ -49,7 +51,7 @@
 if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
-const w = unsafeWindow,
+const w = navigator.userAgent.includes('Edge') ? window : unsafeWindow,
 noopFn = () => {},
 q = css => document.querySelector(css),
 $$ = (c, cb = e=>e.remove()) => {
@@ -325,19 +327,19 @@ app = {
 		}
 	},
 	checkUI() {
-		if (!this.webfullCSS) {
-			_fp = _fp || new FullPage(v);
-		} else if (!this.btnWFS) {
-			this.btnWFS = q(this.webfullCSS);
+		if (this.webfullCSS) this.btnWFS = q(this.webfullCSS);
+		if (this.btnWFS)
 			this.fullPage = () => this._convertView(this.btnWFS);
-		}
+		else
+			_fp = _fp || new FullPage(v);
+
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
-		if (!this.fullCSS) {
+
+		if (this.fullCSS) this.btnFS = q(this.fullCSS);
+		if (!this.btnFS)
 			_fs = _fs ||  new FullScreen(v);
-		} else if (!this.btnFS) {
-			this.btnFS = q(this.fullCSS);
+		else
 			this.fullScreen = () => this._convertView(this.btnFS);
-		}
 	},
 	bindEvent() {
 		this.onCanplay = this.onCanplay.bind(this);
@@ -381,30 +383,34 @@ let router = {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
-		events.on('foundMV', () => {
-			//使用了优酷播放器YAPfY扩展
-			if (!app.btnFS) {
-				app.webfullCSS = '.ABP-Web-FullScreen';
-				app.fullCSS = '.ABP-FullScreen';
-			}
-		});
-		events.on('canplay', () => {
-			$$('.youku-layer-logo');//去水印。  破解1080P
-			w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
-			if (v.src.startsWith('http')) app.getVideos();//初始化vList，旧版用flv.js~地址以blob:开头
-			//修正下一个按钮无效 yk-trigger-layer
-			const btn = q('button.control-next-video');
-			if (btn && btn.offsetWidth>1) {
-				let e = q('.program.current');
-				e = e && e.closest('.item') || q('.item.current');
-				e = e.nextSibling;
-				if (!e) return;
-				e = e.querySelector('a');//下一个视频链接
-				btn.addEventListener('click', ev => e.click());
-				app.btnNext = e;
-			}
-		});
-		app.fullCSS = '.control-fullscreen-icon';
+		if (!host.startsWith('vku.'))// app.fullCSS = 'spvdiv.spv_icon_full';
+		//else
+		{
+			events.on('foundMV', () => {
+				//使用了优酷播放器YAPfY扩展
+				if (!app.btnFS) {
+					app.webfullCSS = '.ABP-Web-FullScreen';
+					app.fullCSS = '.ABP-FullScreen';
+				}
+			});
+			events.on('canplay', () => {
+				$$('.youku-layer-logo');//去水印。  破解1080P
+				w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
+				if (v.src.startsWith('http')) app.getVideos();
+				//修正下一个按钮无效 yk-trigger-layer
+				const btn = q('button.control-next-video');
+				if (btn && btn.offsetWidth>1) {
+					let e = q('.program.current');
+					e = e && e.closest('.item') || q('.item.current');
+					e = e.nextSibling;
+					if (!e) return;
+					e = e.querySelector('a');//下一个视频链接
+					btn.addEventListener('click', ev => e.click());
+					app.btnNext = e;
+				}
+			});
+			app.fullCSS = '.control-fullscreen-icon';
+		}
 	},
 	bilibili() {
 		let x = localStorage.bilibili_player_settings;
@@ -427,18 +433,17 @@ let router = {
 				setTimeout(_setPlayer, 300);
 				return;
 			}
-			w.scrollTo(0, v.closest('.player-wrapper,#bangumi_player').offsetTop);
 			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 			// doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
 			// 以下8行，自动播放
-			if (v.readyState === 4)
-				doClick(q('i[name=play_button]'));
-			else {
-				v.addEventListener('canplaythrough', ev => {
-					v.paused && doClick(q('i[name=play_button]'));
-				});
-			}
+			if (v.readyState === 4) v.play();
+			else v.oncanplaythrough = ev => {
+				v.play();
+			};
 			v.setAttribute('autoplay', '');
+			x = v.closest('.player-box,#bangumi_player');
+			x = x && x.offsetTop || 300;
+			w.scrollTo(0, x);
 		};
 		const fn = history.pushState;
 		history.pushState = function() {
@@ -543,23 +548,24 @@ if (!router[u]) { //直播站点
 			if (!window.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
+			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';
+
 			events.on('canplay', function() {
 				if (!w.TT_ROOM_DATA) return;
 				const ti = setInterval(() => {
-					const $ = w.$, items = $(".player-videotype-list li");
-					if (!items.length) return;
+					if (!q("li[ibitrate='500']")) return;
 					clearInterval(ti);
-					$$('#player-login-tip-wrap,#player-subscribe-wap');
-					if (items.length == 1) return;
-					items.unbind('click')
+					$$('#player-login-tip-wrap');
+					const $ = w.$;
+					$(".player-videotype-list li").unbind('click')
 					.click(function(e) {
-						if ($(this).hasClass('on')) return;
-						//console.log(this);
-						const rate = $(this).attr("ibitrate");
+						const li = $(this);
+						if (li.hasClass('on')) return;
+						const rate = li.attr("ibitrate");
 						w.vplayer.vcore.reqBitRate(rate, w.TT_ROOM_DATA.channel);
-						$(this).siblings('.on').removeClass('on');
-						$(this).addClass('on').parent().parent().hide();
-						$('.player-videotype-cur').text($(this).text());
+						li.siblings('.on').removeClass('on');
+						li.addClass('on').parent().parent().hide();
+						$('.player-videotype-cur').text(li.text());
 					});
 				}, 500);
 			});
