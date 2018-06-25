@@ -45,6 +45,7 @@
 // @grant            GM_getValue
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
+// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/youtube-subtitle.user.js
 // ==/UserScript==
 'use strict';
 if (window.chrome)
