@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.86
+// @version          0.87
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
@@ -38,6 +38,7 @@
 // @include          https://www.douyu.com/*
 // @include          https://www.panda.tv/*
 // @include          *://star.longzhu.com/*
+// @include          *://www.zhanqi.tv/*
 // @grant            unsafeWindow
 // @grant            GM_addStyle
 // @grant            GM_registerMenuCommand
@@ -51,7 +52,8 @@
 if (window.chrome)
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
-const w = navigator.userAgent.includes('Edge') ? window : unsafeWindow,
+const isEdge = navigator.userAgent.includes('Edge'),
+w = isEdge ? window : unsafeWindow,
 noopFn = () => {},
 q = css => document.querySelector(css),
 $$ = (c, cb = e=>e.remove()) => {
@@ -207,7 +209,7 @@ class FullPage {
 	}
 
 	static isFull(video) {
-		return window.innerWidth -video.clientWidth < 5 && window.innerHeight - video.clientHeight < 5;
+		return w.innerWidth -video.clientWidth < 5 && w.innerHeight - video.clientHeight < 5;
 	}
 
 	toggle() {
@@ -327,19 +329,20 @@ app = {
 		}
 	},
 	checkUI() {
-		if (this.webfullCSS) this.btnWFS = q(this.webfullCSS);
+		if (this.webfullCSS && !this.btnWFS) this.btnWFS = q(this.webfullCSS);
 		if (this.btnWFS)
 			this.fullPage = () => this._convertView(this.btnWFS);
 		else
 			_fp = _fp || new FullPage(v);
 
-		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
 
-		if (this.fullCSS) this.btnFS = q(this.fullCSS);
+		if (this.fullCSS && !this.btnFS) this.btnFS = q(this.fullCSS);
 		if (!this.btnFS)
 			_fs = _fs ||  new FullScreen(v);
 		else
 			this.fullScreen = () => this._convertView(this.btnFS);
+
+		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
 	},
 	bindEvent() {
 		this.onCanplay = this.onCanplay.bind(this);
@@ -384,7 +387,6 @@ let router = {
 	},
 	youku() {
 		if (!host.startsWith('vku.'))// app.fullCSS = 'spvdiv.spv_icon_full';
-		//else
 		{
 			events.on('foundMV', () => {
 				//使用了优酷播放器YAPfY扩展
@@ -435,12 +437,12 @@ let router = {
 			}
 			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
 			// doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
-			// 以下8行，自动播放
+			// 以下4行，自动播放
 			if (v.readyState === 4) v.play();
 			else v.oncanplaythrough = ev => {
 				v.play();
 			};
-			v.setAttribute('autoplay', '');
+
 			x = v.closest('.player-box,#bangumi_player');
 			x = x && x.offsetTop || 300;
 			w.scrollTo(0, x);
@@ -498,6 +500,7 @@ router['163'] = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
+			if (isEdge) fakeUA(ua_chrome);
 			const css = 'i.sign-spec',
 			fnWrap = throttle($$);
 			app.findMV = function() {
@@ -531,6 +534,7 @@ if (!router[u]) { //直播站点
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
 		panda() {
+			if (isEdge) fakeUA(ua_chrome);
 			localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
@@ -540,12 +544,12 @@ if (!router[u]) { //直播站点
 			});
 		},
 		yy() {
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 		},
 		huya() {
 			if (underFirefox57) return true;
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';
@@ -571,9 +575,11 @@ if (!router[u]) { //直播站点
 			});
 		},
 		longzhu() {
-			if (!window.chrome) fakeUA(ua_chrome);
+			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '#screen_vk';
-			//app.webfullCSS = '.full-screen-button-outer-box';
+		},
+		zhanqi() {
+			app.fullCSS = '.video-fullscreen';
 		}
 	};
 
@@ -581,9 +587,9 @@ if (!router[u]) { //直播站点
 }
 
 router.baidu = router.weibo = noopFn;
-if (!window.ReadableStream)
+if (!w.ReadableStream)
 	injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
-!/bilibili|douyu|panda/.test(u) && Object.defineProperty(navigator, 'plugins', {
+!/bilibili|douyu|panda|zhanqi/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
