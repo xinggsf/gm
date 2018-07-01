@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.87
+// @version          0.88
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://pan.baidu.com/*
 // @include          *://yun.baidu.com/*
@@ -34,7 +34,9 @@
 // @include          *://www.fun.tv/vplay/*
 // @include          *://m.fun.tv/*
 // @include          *://www.yy.com/*
+// @include          *://v.huya.com/play/*
 // @include          *://www.huya.com/*
+// @include          https://v.douyu.com/show/*
 // @include          https://www.douyu.com/*
 // @include          https://www.panda.tv/*
 // @include          *://star.longzhu.com/*
@@ -186,12 +188,12 @@ class FullPage {
 		e = video,
 		p = e.parentNode;
 		if (p === d) return e;
-		const w = p.clientWidth,
+		const wid = p.clientWidth,
 		h = p.clientHeight;
 		do {
 			e = p;
 			p = e.parentNode;
-		} while (p !== d && p.clientWidth - w < 5 && p.clientHeight - h < 5);
+		} while (p !== d && p.clientWidth - wid < 5 && p.clientHeight - h < 5);
 		return e;
 	}
 
@@ -209,7 +211,7 @@ class FullPage {
 	}
 
 	static isFull(video) {
-		return w.innerWidth -video.clientWidth < 5 && w.innerHeight - video.clientHeight < 5;
+		return window.innerWidth -video.clientWidth < 5 && window.innerHeight - video.clientHeight < 5;
 	}
 
 	toggle() {
@@ -262,12 +264,9 @@ app = {
 	},
 	hotKey(e) {
 		//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
-		if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA/.test(e.target.nodeName))
-			return;
-		if (e.shiftKey && ![13,37,39].includes(e.keyCode))
-			return;
-		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode))
-			return;
+		if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA/.test(e.target.nodeName)) return;
+		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
+		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode)) return;
 		this.getVideos();
 		this.checkUI();
 		let n;
@@ -330,17 +329,20 @@ app = {
 	},
 	checkUI() {
 		if (this.webfullCSS && !this.btnWFS) this.btnWFS = q(this.webfullCSS);
-		if (this.btnWFS)
+		if (this.btnWFS) {
 			this.fullPage = () => this._convertView(this.btnWFS);
-		else
+			if (_fp) _fp = null;
+		} else {
 			_fp = _fp || new FullPage(v);
-
+		}
 
 		if (this.fullCSS && !this.btnFS) this.btnFS = q(this.fullCSS);
-		if (!this.btnFS)
+		if (!this.btnFS) {
 			_fs = _fs ||  new FullScreen(v);
-		else
+		} else {
 			this.fullScreen = () => this._convertView(this.btnFS);
+			if (_fs) _fs = null;
+		}
 
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
 	},
@@ -445,14 +447,14 @@ let router = {
 
 			x = v.closest('.player-box,#bangumi_player');
 			x = x && x.offsetTop || 300;
-			w.scrollTo(0, x);
+			window.scrollTo(0, x);
 		};
 		const fn = history.pushState;
 		history.pushState = function() {
 			fn.apply(this, arguments);
 			setTimeout(_setPlayer, 500);
 		};
-		w.addEventListener('popstate', ev => {
+		window.addEventListener('popstate', ev => {
 			setTimeout(_setPlayer, 500);
 		});
 		events.on('canplay', _setPlayer);
@@ -496,20 +498,20 @@ let router = {
 };
 router.lesports = router.le;
 router['163'] = router.sina;
+router.baidu = router.weibo = noopFn;
 
 if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
 			const css = 'i.sign-spec',
-			fnWrap = throttle($$);
+			fnWrap = throttle($$),
+			inRoom = /^\/(t\/)?\w+$/.test(path); //w.$ROOM && w.$ROOM.room_id
 			app.findMV = function() {
 				fnWrap(css, e=>e.parentNode.remove());
 				const p = w.__player || w.__playerindex;
 				if (!p) return;
-				if (p.isSwitched)
-					return path==='/' ? q('video') : q('#js-room-video video');
-				//有直播的页面 !lastIndexOf('/') 链判断运算符: $ROOM?.room_id
+				if (p.isSwitched) return inRoom ? q('#js-room-video video') : q('video');
 				p.switchPlayer('h5');
 				p.isSwitched = true;
 			};
@@ -528,8 +530,8 @@ if (!router[u]) { //直播站点
 					$$(css, e=>e.parentNode.remove());
 				}
 			});
-			app.webfullCSS = 'div[title="网页全屏"]';
-			app.fullCSS = 'div[title="窗口全屏"]';
+			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
+			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
 			// .watermark-4231db, .animation_container-005ab7 +div
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
 		},
@@ -576,17 +578,17 @@ if (!router[u]) { //直播站点
 		},
 		longzhu() {
 			if (!w.chrome) fakeUA(ua_chrome);
-			app.fullCSS = '#screen_vk';
+			app.fullCSS = 'a.ya-screen-btn';
 		},
 		zhanqi() {
+			if (isEdge) fakeUA(ua_chrome);
 			app.fullCSS = '.video-fullscreen';
 		}
 	};
 
-	if (router[u]) app.isLive = true;
+	app.isLive = router[u] && !host.startsWith('v.');
 }
 
-router.baidu = router.weibo = noopFn;
 if (!w.ReadableStream)
 	injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
 !/bilibili|douyu|panda|zhanqi/.test(u) && Object.defineProperty(navigator, 'plugins', {
