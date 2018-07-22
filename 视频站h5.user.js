@@ -1,10 +1,8 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.88
+// @version          0.89
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
-// @include          *://pan.baidu.com/*
-// @include          *://yun.baidu.com/*
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
 // @include          https://y.qq.com/*/mv/v/*
@@ -12,10 +10,18 @@
 // @include          *://view.inews.qq.com/*
 // @include          *://news.qq.com/*
 // @include          https://www.weiyun.com/video_*
+// @include          *://www.youku.com/
 // @include          *://v.youku.com/v_show/id_*
 // include          https://vku.youku.com/live/*
 // @include          *://*.tudou.com/v/*
 // @include          *://www.bilibili.com/*
+// @include          *://*.le.com/*.html*
+// @include          *://*.lesports.com/*.html*
+// @include          https://tv.sohu.com/*
+// @include          https://film.sohu.com/album/*
+// @include          *://www.fun.tv/vplay/*
+// @include          *://m.fun.tv/*
+
 // @include          *://v.163.com/*.html*
 // @include          *://ent.163.com/*.html*
 // @include          *://news.163.com/*.html*
@@ -26,13 +32,17 @@
 // @include          *://video.sina.cn/*
 // @include          *://weibo.com/*
 // @include          *://*.weibo.com/*
-// @include          *://*.le.com/*.html*
-// @include          *://*.lesports.com/*.html*
-// @include          *://tv.sohu.com/*.shtml*
-// @include          *://*.tv.sohu.com/*.shtml*
-// @include          *://film.sohu.com/album/*
-// @include          *://www.fun.tv/vplay/*
-// @include          *://m.fun.tv/*
+// @include          *://pan.baidu.com/*
+// @include          *://yun.baidu.com/*
+// @include          *://v.yinyuetai.com/video/h5/*
+// @include          *://v.yinyuetai.com/playlist/h5/*
+// @include          *://www.365yg.com/*
+// include          *://v.ifeng.com/video_*
+// @include          *://www.icourse163.org/learn/*
+
+// @include          https://www.youtube.com/watch?v=*
+// @include          https://www.ted.com/talks/*
+
 // @include          *://www.yy.com/*
 // @include          *://v.huya.com/play/*
 // @include          *://www.huya.com/*
@@ -144,7 +154,7 @@ class FullScreen {
 	}
 
 	toggle() {
-		FullScreen.isFull() ? this.exit() : this.enter();
+		this.isFull() ? this.exit() : this.enter();
 	}
 }
 
@@ -172,18 +182,7 @@ class FullPage {
 		`);
 	}
 
-	_checkContainer() {
-		const e = this._video;
-		if (!this._container || this._container === e)
-			this._container = FullPage.getPlayerContainer(e);
-	}
-
-	get container() {
-		this._checkContainer();
-		return this._container;
-	}
-
-	static getPlayerContainer(video) {
+	getPlayerContainer(video) {
 		let d = document.body,
 		e = video,
 		p = e.parentNode;
@@ -195,6 +194,17 @@ class FullPage {
 			p = e.parentNode;
 		} while (p !== d && p.clientWidth - wid < 5 && p.clientHeight - h < 5);
 		return e;
+	}
+
+	_checkContainer() {
+		const e = this._video;
+		if (!this._container || this._container === e)
+			this._container = this.getPlayerContainer(e);
+	}
+
+	get container() {
+		this._checkContainer();
+		return this._container;
 	}
 
 	fixView() {
@@ -388,8 +398,7 @@ let router = {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
-		if (!host.startsWith('vku.'))// app.fullCSS = 'spvdiv.spv_icon_full';
-		{
+		if (!host.startsWith('vku.')) {
 			events.on('foundMV', () => {
 				//使用了优酷播放器YAPfY扩展
 				if (!app.btnFS) {
@@ -505,16 +514,15 @@ if (!router[u]) { //直播站点
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
 			const css = 'i.sign-spec',
-			fnWrap = throttle($$),
-			inRoom = /^\/(t\/)?\w+$/.test(path); //w.$ROOM && w.$ROOM.room_id
-			app.findMV = function() {
-				fnWrap(css, e=>e.parentNode.remove());
-				const p = w.__player || w.__playerindex;
+			inRoom = /^\/(t\/)?\w+$/.test(path); //w.$ROOM?.room_id
+			if (inRoom) app.findMV = () => q('#js-room-video video');
+			else if (host.startsWith('v.')) app.findMV = () => {
+				const p = w.__player;
 				if (!p) return;
-				if (p.isSwitched) return inRoom ? q('#js-room-video video') : q('video');
+				if (p.isH5) return q('video');
 				p.switchPlayer('h5');
-				p.isSwitched = true;
-			};
+				p.isH5 = 1;
+			}
 			events.on('canplay', function() {
 				$$(app.adsCSS);
 				$$(css, e=>e.parentNode.remove());
@@ -548,20 +556,21 @@ if (!router[u]) { //直播站点
 		yy() {
 			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
+			app.webfullCSS = '.liveplayerToolbar-cinema';
 		},
 		huya() {
 			if (underFirefox57) return true;
 			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
-			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';
+			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';//清爽界面,#J_spbg,.room-core-r
 
 			events.on('canplay', function() {
+				setTimeout($$, 900, app.adsCSS);
 				if (!w.TT_ROOM_DATA) return;
 				const ti = setInterval(() => {
 					if (!q("li[ibitrate='500']")) return;
 					clearInterval(ti);
-					$$('#player-login-tip-wrap');
 					const $ = w.$;
 					$(".player-videotype-list li").unbind('click')
 					.click(function(e) {
@@ -591,7 +600,7 @@ if (!router[u]) { //直播站点
 
 if (!w.ReadableStream)
 	injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
-!/bilibili|douyu|panda|zhanqi/.test(u) && Object.defineProperty(navigator, 'plugins', {
+!/panda|zhanqi/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
