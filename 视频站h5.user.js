@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.89
+// @version          0.90
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -53,9 +53,6 @@
 // @include          *://www.zhanqi.tv/*
 // @grant            unsafeWindow
 // @grant            GM_addStyle
-// @grant            GM_registerMenuCommand
-// @grant            GM_setValue
-// @grant            GM_getValue
 // @run-at           document-start
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
@@ -125,7 +122,6 @@ getMainDomain = host => {
 	if (['com','tv','net','org','gov','edu'].includes(a[i])) i--;
 	return a[i];
 },
-ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 ua_chrome = 'Mozilla/5.0 (Windows NT 10.0; WOW64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9',
 ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
 
@@ -478,9 +474,8 @@ let router = {
 		app.fullCSS = 'span.hv_ico_screen';
 	},
 	sohu() {
-		fakeUA(ua_samsung);
 		app.nextCSS = 'li.on[data-vid]+li a';
-		app.fullCSS = 'div.x-fs-btn';
+		app.fullCSS = '.x-fullscreen-btn';
 	},
 	fun() {
 		if (host.startsWith('m.')) {
