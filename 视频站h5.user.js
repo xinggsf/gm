@@ -397,7 +397,7 @@ let router = {
 	youtube() {
 		app.fullCSS = '.ytp-fullscreen-button';
 		app.playCSS = '.ytp-play-button';
-		app.nextCSS = '.ytp-next-button',
+		app.nextCSS = '.ytp-next-button';
 	},
 	ted() {
 		app.fullCSS = 'button[title="Enter Fullscreen"]';
@@ -617,8 +617,10 @@ if (!router[u]) { //直播站点
 	app.isLive = router[u] && !host.startsWith('v.');
 }
 
-if (!w.ReadableStream)
-	injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
+setTimeout(()=>{
+	if (!window.ReadableStream)
+		injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
+}, 19);
 !/panda|zhanqi|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
