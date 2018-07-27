@@ -23,7 +23,7 @@ class Subtitle{
 		}
 	}
 
-	startup() {
+	start() {
 		const t = setInterval(()=>{
 			if (this.checkVar()) {
 				clearInterval(t);
@@ -42,7 +42,7 @@ class Subtitle{
 			}
 		}, 300);
 	}
-
+	// 检查YT变量
 	checkVar() {
 		let p = unsafeWindow.ytplayer;
 		if (p && p.config && p.config.args) {
@@ -90,7 +90,64 @@ class Subtitle{
 		return chinese_subtitle_url;
 	}
 
-	fetchSubtitle() {
+	downloadSubtitle() {
+		var url = get_chinese_subtitle_url(from_language_code);
+		fetch(url)
+		.then(r=> r.text())
+		.then(r=>{
+			const xml = new DOMParser().parseFromString(r, 'text/xml');
+			var p, c = xml.getElementsByTagName('p');
+			var a = ['WEBVTT'],
+			start_time, start, end_time, end, content;
+			// 保存结果的字符串
+			for (var i = 0, l = c.length; i < l; i++) {
+				p = c[i];
+				content = p.textContent;
+				start = p.getAttribute('t');
+				start_time = this.process_time(start);
+				end = ~~start + ~~p.getAttribute('d');
+				if (!end) end = start + 3000;
+				end_time = process_time(end);
+				// ==== 开始处理数据 ====
+				// 标准srt时间轴: 00:00:01,850 --> 00:00:02,720
+				a.push(`\n\n${start_time} --> ${end_time}\n`);
+				// 加字幕内容
+				a.push(content);
+			}
+			var url = URL.createObjectURL(new Blob(a), {'type': 'text/vtt'});
+			var title = get_file_name(language_name_1c7);
+			downloadFile(title, result);
+			// 下载
 
+		}).catch(()=>{
+			alert("Error: No response from server.");
+		});
+
+	}
+	// 处理时间. 比如 start="671.33"  start="37.64"  start="12" start="23.029"
+	// 处理成 srt 时间, 比如 00:00:00,090    00:00:08,460    00:10:29,350
+	processTime(t) {
+		//var [s, ms] = t.toFixed(3).split('.');
+		var ms, s, m, h;
+		if ('string' != typeof t) {
+			ms = t % 1000;
+			s = t / 1000 | 0;
+		} else {
+			ms = t.slice(-3);
+			s = t.slice(0, -3) | 0;
+		}
+
+		h = m = 0;
+		if (s >= 60) {
+			m = s / 60 | 0;
+			s %= 60;
+			h = m / 60 | 0;
+			m %= 60;
+		}
+
+		if (h < 10) h = '0' + h;
+		if (m < 10) m = '0' + m;
+		if (s < 10) s = '0' + s;
+		return `${h}:${m}:${s}.${ms}`;
 	}
 }

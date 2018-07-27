@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.90
+// @version          0.91
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -17,10 +17,13 @@
 // @include          *://www.bilibili.com/*
 // @include          *://*.le.com/*.html*
 // @include          *://*.lesports.com/*.html*
-// @include          https://tv.sohu.com/*
+// @include          https://tv.sohu.com/v/*
+// @include          https://tv.sohu.com/201*
+// @include          https://m.tv.sohu.com/*
 // @include          https://film.sohu.com/album/*
 // @include          *://www.fun.tv/vplay/*
 // @include          *://m.fun.tv/*
+// @include          http://video.mtime.com/*
 
 // @include          *://v.163.com/*.html*
 // @include          *://ent.163.com/*.html*
@@ -37,7 +40,7 @@
 // @include          *://v.yinyuetai.com/video/h5/*
 // @include          *://v.yinyuetai.com/playlist/h5/*
 // @include          *://www.365yg.com/*
-// include          *://v.ifeng.com/video_*
+// @include          *://v.ifeng.com/video_*
 // @include          *://www.icourse163.org/learn/*
 
 // @include          https://www.youtube.com/watch?v=*
@@ -104,6 +107,7 @@ throttle = function(fn, delay = 100){ //函数节流
 },
 willRemove = throttle($$),//多处同时调用时须防止定时器冲突
 doClick = e => {
+	if (typeof e === 'string') e = q(e);
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 },
 underFirefox57 = (() => {
@@ -122,6 +126,7 @@ getMainDomain = host => {
 	if (['com','tv','net','org','gov','edu'].includes(a[i])) i--;
 	return a[i];
 },
+ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 ua_chrome = 'Mozilla/5.0 (Windows NT 10.0; WOW64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9',
 ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
 
@@ -150,7 +155,7 @@ class FullScreen {
 	}
 
 	toggle() {
-		this.isFull() ? this.exit() : this.enter();
+		FullScreen.isFull() ? this.exit() : this.enter();
 	}
 }
 
@@ -279,7 +284,8 @@ app = {
 		switch (e.keyCode) {
 		case 32: //space
 			if (this.disableSpace) return;
-			v.paused ? v.play() : v.pause();
+			if (this.btnPlay) this.play();
+			else v.paused ? v.play() : v.pause();
 			e.preventDefault();
 			break;
 		case 37: //left
@@ -351,6 +357,11 @@ app = {
 		}
 
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
+
+		if (this.btnPlay)
+			this.play = () => this._convertView(this.btnPlay);
+		else if (this.playCSS)
+			this.btnPlay = q(this.playCSS);
 	},
 	bindEvent() {
 		this.onCanplay = this.onCanplay.bind(this);
@@ -383,6 +394,15 @@ app = {
 };
 
 let router = {
+	youtube() {
+		app.fullCSS = '.ytp-fullscreen-button';
+		app.playCSS = '.ytp-play-button';
+		app.nextCSS = '.ytp-next-button',
+	},
+	ted() {
+		app.fullCSS = 'button[title="Enter Fullscreen"]';
+		app.playCSS = 'button[title="play video"]';
+	},
 	qq() {
 		Object.assign(app, {
 			disableSpace: true,
@@ -442,8 +462,8 @@ let router = {
 				setTimeout(_setPlayer, 300);
 				return;
 			}
-			doClick(q('i.bilibili-player-iconfont-repeat.icon-24repeaton')); //关循环播放
-			// doClick(q('i[name=ctlbar_danmuku_close]'));//关弹幕
+			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
+			// doClick('i[name=ctlbar_danmuku_close]');//关弹幕
 			// 以下4行，自动播放
 			if (v.readyState === 4) v.play();
 			else v.oncanplaythrough = ev => {
@@ -474,8 +494,10 @@ let router = {
 		app.fullCSS = 'span.hv_ico_screen';
 	},
 	sohu() {
+		if (!path.endsWith('html')) return true;
+		//fakeUA(ua_samsung);
 		app.nextCSS = 'li.on[data-vid]+li a';
-		app.fullCSS = '.x-fullscreen-btn';
+		app.fullCSS = '.x-fullscreen-btn';//x-fs-btn
 	},
 	fun() {
 		if (host.startsWith('m.')) {
@@ -501,7 +523,7 @@ let router = {
 	}
 };
 router.lesports = router.le;
-router['163'] = router.sina;
+router['163'] = router.mtime = router.sina;
 router.baidu = router.weibo = noopFn;
 
 if (!router[u]) { //直播站点
@@ -558,10 +580,12 @@ if (!router[u]) { //直播站点
 			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
+			app.playCSS = '#player-btn';
 			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';//清爽界面,#J_spbg,.room-core-r
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
+
 				if (!w.TT_ROOM_DATA) return;
 				const ti = setInterval(() => {
 					if (!q("li[ibitrate='500']")) return;
@@ -595,7 +619,7 @@ if (!router[u]) { //直播站点
 
 if (!w.ReadableStream)
 	injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
-!/panda|zhanqi/.test(u) && Object.defineProperty(navigator, 'plugins', {
+!/panda|zhanqi|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
