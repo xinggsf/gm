@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.91
+// @version          0.92
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -24,6 +24,8 @@
 // @include          *://www.fun.tv/vplay/*
 // @include          *://m.fun.tv/*
 // @include          http://video.mtime.com/*
+// @include          *://www.miaopai.com/show/*
+// @include          *://www.miaopai.com/u/*
 
 // @include          *://v.163.com/*.html*
 // @include          *://ent.163.com/*.html*
@@ -57,11 +59,13 @@
 // @grant            unsafeWindow
 // @grant            GM_addStyle
 // @run-at           document-start
+// @require    https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js
+// @require    https://raw.githubusercontent.com/w3c/IntersectionObserver/master/polyfill/intersection-observer.js
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
 'use strict';
-if (window.chrome)
+if (!NodeList.prototype[Symbol.iterator])
 	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
 const isEdge = navigator.userAgent.includes('Edge'),
@@ -161,9 +165,11 @@ class FullScreen {
 
 //万能网页全屏,代码参考了：https://github.com/gooyie/ykh5p
 class FullPage {
-	constructor(video) {
+	constructor(video, isFixView) {
 		this._video = video;
-		console.log(video);
+		this._isFixView = isFixView;
+		this._isFull = !1;
+		this._rects = new Map();
 		this._checkContainer();
 		GM_addStyle(`
 			.z-top {
@@ -192,8 +198,13 @@ class FullPage {
 		h = p.clientHeight;
 		do {
 			e = p;
+			this._rects.set(e, {
+				width: e.clientWidth + 'px',
+				height: e.clientHeight + 'px'
+			});
 			p = e.parentNode;
 		} while (p !== d && p.clientWidth - wid < 5 && p.clientHeight - h < 5);
+		this._rects.delete(e);
 		return e;
 	}
 
@@ -209,15 +220,13 @@ class FullPage {
 	}
 
 	fixView() {
-		let e = this._video, c = this._container;
-		if (e === c) return;
-		if (e.clientWidth < c.clientWidth || e.clientHeight < c.clientHeight) {
-			let a = [];
-			while (e !== c) {
-				a.push(e);
-				e = e.parentNode;
-			}
-			while (e = a.pop()) e.style.width = e.style.height = '100%';
+		if (!this._isFixView && !this._isFull) return;
+		if (this._video === this._container) return;
+		for(let [e, v] of this._rects) if (this._isFull)
+			e.style.width = e.style.height = '100%';
+		else {
+			e.style.width = v.width;
+			e.style.height = v.height;
 		}
 	}
 
@@ -226,9 +235,8 @@ class FullPage {
 	}
 
 	toggle() {
-		const d = document.body,
-		state = FullPage.isFull(this.container);
-		d.style.overflow = state ? '' : 'hidden';
+		const d = document.body;
+		d.style.overflow = this._isFull ? '' : 'hidden';
 		this.container.classList.toggle('webfullscreen');
 
 		let p = this.container.parentNode;
@@ -236,8 +244,9 @@ class FullPage {
 			p.classList.toggle('z-top');
 			p = p.parentNode;
 		}
+		this._isFull = !this._isFull;
 
-		!state && setTimeout(this.fixView.bind(this), 9);
+		setTimeout(this.fixView.bind(this), 9);
 	}
 }
 
@@ -254,6 +263,7 @@ events = {
 app = {
 	isLive: !1,
 	vList: null,
+	isFixFPView: !1,
 	getVideos() {
 		this.vList = this.vList || document.getElementsByTagName('video');
 		if (v.offsetWidth>1) return;
@@ -295,7 +305,7 @@ app = {
 			v.currentTime += n;
 			break;
 		case 78: // N 下一首
-			doClick(this.btnNext);
+			this.btnNext && getStyle(this.btnNext, 'display') !== 'none' && doClick(this.btnNext);
 			break;
 		//case 80: // P 上一首
 		case 38: //加音量
@@ -345,12 +355,12 @@ app = {
 			this.fullPage = () => this._convertView(this.btnWFS);
 			if (_fp) _fp = null;
 		} else {
-			_fp = _fp || new FullPage(v);
+			_fp = _fp || new FullPage(v, this.isFixFPView);
 		}
 
 		if (this.fullCSS && !this.btnFS) this.btnFS = q(this.fullCSS);
 		if (!this.btnFS) {
-			_fs = _fs ||  new FullScreen(v);
+			_fs = _fs || new FullScreen(v);
 		} else {
 			this.fullScreen = () => this._convertView(this.btnFS);
 			if (_fs) _fs = null;
@@ -363,12 +373,58 @@ app = {
 		else if (this.playCSS)
 			this.btnPlay = q(this.playCSS);
 	},
+	onGrowVList() {
+		if (this.vList.length > this.vCount) {
+			if (this.viewObserver) {
+				for (let e of this.vList) if(!this.vSet.has(e)) {
+					this.viewObserver.observe(e);
+				}
+				this.vSet = new WeakSet(this.vList);
+				console.log('add observer\n', this.vList);
+			} else {
+				const r = this.vList[0].getBoundingClientRect();
+				const r2 = this.vList[1].getBoundingClientRect();
+				if (r2.x == r.x && r2.y > r.y) {
+					const config = {
+						rootMargin: '0px',
+						threshold: 0.8
+					};
+
+					this.viewObserver = new IntersectionObserver(this.onIntersection.bind(this), config);
+					for (let e of this.vList) this.viewObserver.observe(e);
+					this.vSet = new WeakSet(this.vList);
+				}
+			}
+			this.vCount = this.vList.length;
+		} else {
+			setTimeout(this.onGrowVList.bind(this), 300);
+		}
+	},
+	onIntersection(entries) {
+		for (let entry of entries) {
+			if (entry.isIntersecting && v != entry.target) {//intersectionRatio
+				v = entry.target;
+				console.log(v, entry);
+				if (this.vList.length > this.vCount) this.onGrowVList();
+				//this.viewObserver.unobserve(entry.target);
+				_fs = _fp = null;
+				_fs = new FullScreen(v);
+				_fp = new FullPage(v, this.isFixFPView);
+				events.switchMV && events.switchMV();
+			}
+		}
+	},
 	bindEvent() {
 		this.onCanplay = this.onCanplay.bind(this);
 		v.addEventListener('loadeddata', this.onCanplay);
 		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
 		events.foundMV && events.foundMV();
+
+		this.vCount = 1;
+		// Intersection Observer
+		this.getVideos();
+		setTimeout(this.onGrowVList.bind(this), 199);
 	},
 	findMV() {
 		return q('video');
@@ -425,20 +481,9 @@ let router = {
 			events.on('canplay', () => {
 				$$('.youku-layer-logo');//去水印。  破解1080P
 				w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
-				if (v.src.startsWith('http')) app.getVideos();
-				//修正下一个按钮无效 yk-trigger-layer
-				const btn = q('button.control-next-video');
-				if (btn && btn.offsetWidth>1) {
-					let e = q('.program.current');
-					e = e && e.closest('.item') || q('.item.current');
-					e = e.nextSibling;
-					if (!e) return;
-					e = e.querySelector('a');//下一个视频链接
-					btn.addEventListener('click', ev => e.click());
-					app.btnNext = e;
-				}
 			});
 			app.fullCSS = '.control-fullscreen-icon';
+			app.nextCSS = '.control-next-video';
 		}
 	},
 	bilibili() {
@@ -487,6 +532,12 @@ let router = {
 	sina() {
 		fakeUA(ua_ipad2);
 	},
+	weibo() {
+		app.isFixFPView = true;
+		/* events.on('switchMV', function() {
+			app.btnFS = v.closest('li').querySelector('.hv-icon-max');
+		}); */
+	},
 	le() {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
 		app.nextCSS = 'div.hv_ico_next';
@@ -524,7 +575,7 @@ let router = {
 };
 router.lesports = router.le;
 router['163'] = router.mtime = router.sina;
-router.baidu = router.weibo = noopFn;
+router.baidu = noopFn;
 
 if (!router[u]) { //直播站点
 	router = {
@@ -566,9 +617,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
 			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container, .room-banner-images';
-			if (path!=='/') events.on('canplay', () => {
-				setTimeout($$, 900, app.adsCSS);
-			});
+			setTimeout($$, 1900, app.adsCSS);
 		},
 		yy() {
 			if (!w.chrome) fakeUA(ua_chrome);
@@ -581,7 +630,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';//清爽界面,#J_spbg,.room-core-r
+			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income,#J_spbg,.room-core-r';//清爽界面
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
@@ -617,10 +666,6 @@ if (!router[u]) { //直播站点
 	app.isLive = router[u] && !host.startsWith('v.');
 }
 
-setTimeout(()=>{
-	if (!window.ReadableStream)
-		injectJS('https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js');
-}, 19);
 !/panda|zhanqi|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };

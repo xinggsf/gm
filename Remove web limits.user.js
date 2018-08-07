@@ -5,8 +5,11 @@
 // @homepageURL       https://github.com/xinggsf/gm/
 // @supportURL        https://github.com/Cat7373/remove-web-limits/issues/
 // @author            Cat73  xinggsf
-// @version           1.5.3
+// @version           1.5.5
 // @license           LGPLv3
+// @include           https://www.zhihu.com/*
+// @include           https://www.bilibili.com/read/*
+
 // @include           *://b.faloo.com/*
 // @include           *://bbs.coocaa.com/*
 // @include           *://book.hjsm.tom.com/*
@@ -49,12 +52,7 @@
 
 "use strict";
 // 域名规则列表
-let rules = {
-	white: {
-		name: "white",
-		hook_eventNames: "",
-		unhook_eventNames: ""
-	},
+const rules = {
 	plus: {
 		name: "default",
 		hook_eventNames: "contextmenu|select|selectstart|copy|cut|dragstart",
@@ -66,32 +64,26 @@ let rules = {
 	}
 };
 
-let returnTrue = e => true;
+const returnTrue = e => true;
+// 获取目标域名应该使用的规则
+const getRule = (host) => {
+	return rules.plus;
+}
+const dontHook = e => !!e.closest('form');
+// 储存被 Hook 的函数
+const EventTarget_addEventListener = EventTarget.prototype.addEventListener;
+const document_addEventListener = document.addEventListener;
+const Event_preventDefault = Event.prototype.preventDefault;
 // 要处理的 event 列表
 let hook_eventNames, unhook_eventNames, eventNames;
-// 获取随机字符串
-let storageName = '_X'+ Math.random().toString(36).slice(2,9);
-// 储存被 Hook 的函数
-let EventTarget_addEventListener = EventTarget.prototype.addEventListener;
-let document_addEventListener = document.addEventListener;
-let Event_preventDefault = Event.prototype.preventDefault;
 
 // Hook addEventListener proc
 function addEventListener(type, func, useCapture) {
 	let _addEventListener = this === document ? document_addEventListener : EventTarget_addEventListener;
-	if (hook_eventNames.includes(type)) {
-		_addEventListener.apply(this, [type, returnTrue, useCapture]);
-	} else if (unhook_eventNames.includes(type)) {
-		let funcsName = storageName + type + (useCapture ? 't' : 'f');
-
-		if (this[funcsName] === void 0) {
-			this[funcsName] = [];
-			_addEventListener.apply(this, [type, useCapture ? unhook_t : unhook_f, useCapture]);
-		}
-
-		this[funcsName].push(func);
-	} else {
+	if (!hook_eventNames.includes(type)) {
 		_addEventListener.apply(this, arguments);
+	} else {
+		_addEventListener.apply(this, [type, returnTrue, useCapture]);
 	}
 }
 
@@ -111,37 +103,9 @@ function clearLoop() {
 		e = e.wrappedJSObject || e;
 		for (type of eventNames) {
 			prop = 'on' + type;
-			if (e[prop] !== null && e[prop] !== onxxx) {
-				if (unhook_eventNames.includes(type)) {
-					e[storageName + prop] = e[prop];
-					e[prop] = onxxx;
-				} else {
-					e[prop] = null;
-				}
-			}
+			e[prop] = null;
 		}
 	}
-}
-
-function unhook_t(e) {
-	return unhook(e, this, storageName + e.type + 't');
-}
-function unhook_f(e) {
-	return unhook(e, this, storageName + e.type + 'f');
-}
-function unhook(e, self, funcsName) {
-	for (let func of self[funcsName]) func(e);
-	return true;
-}
-function onxxx(e) {
-	let name = storageName + 'on' + e.type;
-	(this[name])(e);
-	return true;
-}
-
-// 获取目标域名应该使用的规则
-function getRule(host) {
-	return rules.plus;
 }
 
 function init() {
@@ -167,13 +131,12 @@ function init() {
 
 	if (rule.hook_preventDefault) {
 		Event.prototype.preventDefault = function () {
-			if (!eventNames.includes(this.type)) {
+			if (dontHook(this.target) || !eventNames.includes(this.type)) {
 				Event_preventDefault.apply(this, arguments);
 			}
 		};
 	}
 
-	console.log('url: ' + location.href, '\nstorageName：' + storageName, 'rule: ' + rule.name);
 	if (rule.add_css) GM_addStyle(
 		`html, * {
 			-webkit-user-select:text !important;
