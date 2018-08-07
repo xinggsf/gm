@@ -59,8 +59,8 @@
 // @grant            unsafeWindow
 // @grant            GM_addStyle
 // @run-at           document-start
-// @require    https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js
-// @require    https://raw.githubusercontent.com/w3c/IntersectionObserver/master/polyfill/intersection-observer.js
+// require    https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js
+// require    https://raw.githubusercontent.com/w3c/IntersectionObserver/master/polyfill/intersection-observer.js
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
