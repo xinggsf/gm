@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.92
+// @version          0.93
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -19,13 +19,11 @@
 // @include          *://*.lesports.com/*.html*
 // @include          https://tv.sohu.com/v/*
 // @include          https://tv.sohu.com/201*
-// @include          https://m.tv.sohu.com/*
 // @include          https://film.sohu.com/album/*
 // @include          *://www.fun.tv/vplay/*
 // @include          *://m.fun.tv/*
 // @include          http://video.mtime.com/*
-// @include          *://www.miaopai.com/show/*
-// @include          *://www.miaopai.com/u/*
+// @include          *://www.miaopai.com/*
 
 // @include          *://v.163.com/*.html*
 // @include          *://ent.163.com/*.html*
@@ -197,11 +195,11 @@ class FullPage {
 		const wid = p.clientWidth,
 		h = p.clientHeight;
 		do {
-			e = p;
 			this._rects.set(e, {
 				width: e.clientWidth + 'px',
 				height: e.clientHeight + 'px'
 			});
+			e = p;
 			p = e.parentNode;
 		} while (p !== d && p.clientWidth - wid < 5 && p.clientHeight - h < 5);
 		this._rects.delete(e);
@@ -263,6 +261,7 @@ events = {
 app = {
 	isLive: !1,
 	vList: null,
+	multipleV: !1,
 	isFixFPView: !1,
 	getVideos() {
 		this.vList = this.vList || document.getElementsByTagName('video');
@@ -368,49 +367,53 @@ app = {
 
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
 
+		if (this.playCSS && !this.btnPlay)
+			this.btnPlay = q(this.playCSS);
 		if (this.btnPlay)
 			this.play = () => this._convertView(this.btnPlay);
-		else if (this.playCSS)
-			this.btnPlay = q(this.playCSS);
+	},
+	viewVisibility(e) {
+		const r = v.getBoundingClientRect();
+		//原视频不在可见范围了
+		return !(r.bottom < 9 || r.y > w.innerHeight-r.height*0.2);
+	},
+	switchMV(e) {
+		v = e;
+		//_fs = _fp = null;
+		_fs = new FullScreen(v);
+		_fp = new FullPage(v, this.isFixFPView);
+		events.switchMV && events.switchMV();
 	},
 	onGrowVList() {
 		if (this.vList.length > this.vCount) {
+			const inView = this.viewVisibility(v);
+			if (!inView) for (let e of this.vList) if (v != e && this.viewVisibility(e)) {
+				this.switchMV(e);
+				break;
+			}
+
 			if (this.viewObserver) {
-				for (let e of this.vList) if(!this.vSet.has(e)) {
+				for (let e of this.vList) if (!this.vSet.has(e)) {
 					this.viewObserver.observe(e);
 				}
-				this.vSet = new WeakSet(this.vList);
-				console.log('add observer\n', this.vList);
 			} else {
-				const r = this.vList[0].getBoundingClientRect();
-				const r2 = this.vList[1].getBoundingClientRect();
-				if (r2.x == r.x && r2.y > r.y) {
-					const config = {
-						rootMargin: '0px',
-						threshold: 0.8
-					};
-
-					this.viewObserver = new IntersectionObserver(this.onIntersection.bind(this), config);
-					for (let e of this.vList) this.viewObserver.observe(e);
-					this.vSet = new WeakSet(this.vList);
-				}
+				const config = {
+					rootMargin: '0px',
+					threshold: 0.9
+				};
+				this.viewObserver = new IntersectionObserver(this.onIntersection.bind(this), config);
+				for (let e of this.vList) this.viewObserver.observe(e);
 			}
+			this.vSet = new WeakSet(this.vList);
 			this.vCount = this.vList.length;
-		} else {
-			setTimeout(this.onGrowVList.bind(this), 300);
 		}
 	},
 	onIntersection(entries) {
 		for (let entry of entries) {
 			if (entry.isIntersecting && v != entry.target) {//intersectionRatio
-				v = entry.target;
-				console.log(v, entry);
-				if (this.vList.length > this.vCount) this.onGrowVList();
-				//this.viewObserver.unobserve(entry.target);
-				_fs = _fp = null;
-				_fs = new FullScreen(v);
-				_fp = new FullPage(v, this.isFixFPView);
-				events.switchMV && events.switchMV();
+				this.switchMV(entry.target);
+				//console.log(v, entry);
+				break;
 			}
 		}
 	},
@@ -422,9 +425,11 @@ app = {
 		events.foundMV && events.foundMV();
 
 		this.vCount = 1;
-		// Intersection Observer
 		this.getVideos();
-		setTimeout(this.onGrowVList.bind(this), 199);
+		if (this.multipleV) {
+			new MutationObserver(this.onGrowVList.bind(this))
+			.observe(document.body, {childList : true, subtree : true});
+		}
 	},
 	findMV() {
 		return q('video');
@@ -498,9 +503,10 @@ let router = {
 		} else
 			//defquality 选择清晰度，720P：64  1080P：80   宽屏 iswidescreen
 			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
+		const newType = path.startsWith('/video/');//false为bangumi
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
-		app.fullCSS = '.bilibili-player-iconfont-fullscreen';
+		app.fullCSS = newType ? '.bilibili-player-video-btn-fullscreen' : '.bilibili-player-iconfont-fullscreen';
 		const _setPlayer = () => {
 			v = q('#bofqi video[src]');
 			if (!v) {
@@ -515,9 +521,11 @@ let router = {
 				v.play();
 			};
 
-			x = v.closest('.player-box,#bangumi_player');
-			x = x && x.offsetTop || 300;
-			window.scrollTo(0, x);
+			if (!newType) {
+				x = v.closest('#bangumi_player');
+				x = x && x.offsetTop || 300;
+				window.scrollTo(0, x);
+			}
 		};
 		const fn = history.pushState;
 		history.pushState = function() {
@@ -534,9 +542,10 @@ let router = {
 	},
 	weibo() {
 		app.isFixFPView = true;
-		/* events.on('switchMV', function() {
-			app.btnFS = v.closest('li').querySelector('.hv-icon-max');
-		}); */
+		app.multipleV = path.startsWith('/u/');//path.lastIndexOf('/') == 0;
+	},
+	miaopai() {
+		app.multipleV = path.startsWith('/u/');
 	},
 	le() {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
@@ -630,7 +639,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income,#J_spbg,.room-core-r';//清爽界面
+			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';//清爽界面,#J_spbg,.room-core-r
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
