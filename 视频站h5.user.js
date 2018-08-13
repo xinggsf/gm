@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.93
+// @version          0.94
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -16,13 +16,12 @@
 // @include          *://*.tudou.com/v/*
 // @include          *://www.bilibili.com/*
 // @include          *://*.le.com/*.html*
-// @include          *://*.lesports.com/*.html*
 // @include          https://tv.sohu.com/v/*
 // @include          https://tv.sohu.com/201*
 // @include          https://film.sohu.com/album/*
 // @include          *://www.fun.tv/vplay/*
 // @include          *://m.fun.tv/*
-// @include          http://video.mtime.com/*
+// @include          http://*.mtime.com/*
 // @include          *://www.miaopai.com/*
 
 // @include          *://v.163.com/*.html*
@@ -57,6 +56,10 @@
 // @grant            unsafeWindow
 // @grant            GM_addStyle
 // @run-at           document-start
+// @require      https://greasyfork.org/scripts/29319-web-streams-polyfill/code/web-streams-polyfill.js?version=191261
+// @require      https://greasyfork.org/scripts/29306-fetch-readablestream/code/fetch-readablestream.js?version=191832
+// @require      https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.4/adapter.min.js
+
 // require    https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js
 // require    https://raw.githubusercontent.com/w3c/IntersectionObserver/master/polyfill/intersection-observer.js
 // @namespace  https://greasyfork.org/users/7036
@@ -163,10 +166,11 @@ class FullScreen {
 
 //万能网页全屏,代码参考了：https://github.com/gooyie/ykh5p
 class FullPage {
-	constructor(video, isFixView) {
+	constructor(video, isFixView, cbOnSwitch) {
 		this._video = video;
 		this._isFixView = isFixView;
 		this._isFull = !1;
+		this.onSwitch = cbOnSwitch;
 		this._rects = new Map();
 		this._checkContainer();
 		GM_addStyle(`
@@ -233,6 +237,7 @@ class FullPage {
 	}
 
 	toggle() {
+		if (!this._isFull) this.onSwitch(true);
 		const d = document.body;
 		d.style.overflow = this._isFull ? '' : 'hidden';
 		this.container.classList.toggle('webfullscreen');
@@ -245,6 +250,7 @@ class FullPage {
 		this._isFull = !this._isFull;
 
 		setTimeout(this.fixView.bind(this), 9);
+		if (!this._isFull) setTimeout(this.onSwitch, 199, !1);
 	}
 }
 
@@ -260,11 +266,9 @@ events = {
 },
 app = {
 	isLive: !1,
-	vList: null,
 	multipleV: !1,
 	isFixFPView: !1,
 	getVideos() {
-		this.vList = this.vList || document.getElementsByTagName('video');
 		if (v.offsetWidth>1) return;
 		for (let e of this.vList) if (e.offsetWidth>1) {
 			e.playbackRate = v.playbackRate;
@@ -354,7 +358,7 @@ app = {
 			this.fullPage = () => this._convertView(this.btnWFS);
 			if (_fp) _fp = null;
 		} else {
-			_fp = _fp || new FullPage(v, this.isFixFPView);
+			_fp = _fp || new FullPage(v, this.isFixFPView, this.switchFP.bind(this));
 		}
 
 		if (this.fullCSS && !this.btnFS) this.btnFS = q(this.fullCSS);
@@ -367,31 +371,19 @@ app = {
 
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
 
-		if (this.playCSS && !this.btnPlay)
-			this.btnPlay = q(this.playCSS);
-		if (this.btnPlay)
-			this.play = () => this._convertView(this.btnPlay);
+		if (this.playCSS && !this.btnPlay) this.btnPlay = q(this.playCSS);
+		if (this.btnPlay) this.play = () => this._convertView(this.btnPlay);
 	},
-	viewVisibility(e) {
-		const r = v.getBoundingClientRect();
-		//原视频不在可见范围了
-		return !(r.bottom < 9 || r.y > w.innerHeight-r.height*0.2);
-	},
-	switchMV(e) {
-		v = e;
-		//_fs = _fp = null;
-		_fs = new FullScreen(v);
-		_fp = new FullPage(v, this.isFixFPView);
-		events.switchMV && events.switchMV();
+	switchFP(toFull) {
+		if (!this.viewObserver) return;
+		if (toFull) {
+			for (let e of this.vSet) this.viewObserver.unobserve(e);
+		} else {
+			for (let e of this.vList) this.viewObserver.observe(e);
+		}
 	},
 	onGrowVList() {
 		if (this.vList.length > this.vCount) {
-			const inView = this.viewVisibility(v);
-			if (!inView) for (let e of this.vList) if (v != e && this.viewVisibility(e)) {
-				this.switchMV(e);
-				break;
-			}
-
 			if (this.viewObserver) {
 				for (let e of this.vList) if (!this.vSet.has(e)) {
 					this.viewObserver.observe(e);
@@ -404,15 +396,19 @@ app = {
 				this.viewObserver = new IntersectionObserver(this.onIntersection.bind(this), config);
 				for (let e of this.vList) this.viewObserver.observe(e);
 			}
-			this.vSet = new WeakSet(this.vList);
+			this.vSet = new Set(this.vList);
 			this.vCount = this.vList.length;
 		}
 	},
 	onIntersection(entries) {
 		for (let entry of entries) {
 			if (entry.isIntersecting && v != entry.target) {//intersectionRatio
-				this.switchMV(entry.target);
-				//console.log(v, entry);
+				v = entry.target;
+				//_fs = _fp = null;
+				_fs = new FullScreen(v);
+				_fp = new FullPage(v, this.isFixFPView, this.switchFP.bind(this));
+				events.switchMV && events.switchMV();
+				console.log(v, entry);
 				break;
 			}
 		}
@@ -425,17 +421,17 @@ app = {
 		events.foundMV && events.foundMV();
 
 		this.vCount = 1;
-		this.getVideos();
 		if (this.multipleV) {
 			new MutationObserver(this.onGrowVList.bind(this))
 			.observe(document.body, {childList : true, subtree : true});
 		}
 	},
 	findMV() {
-		return q('video');
+		return this.vList[0];
 	},
 	init() {
 		document.addEventListener('DOMContentLoaded', () => {
+			this.vList = document.getElementsByTagName('video');
 			if (v = this.findMV()) this.bindEvent();
 			else {
 				this.observer = new MutationObserver(records => {
@@ -582,7 +578,6 @@ let router = {
 		return true;
 	}
 };
-router.lesports = router.le;
 router['163'] = router.mtime = router.sina;
 router.baidu = noopFn;
 
@@ -592,15 +587,17 @@ if (!router[u]) { //直播站点
 			if (isEdge) fakeUA(ua_chrome);
 			const css = 'i.sign-spec',
 			inRoom = /^\/(t\/)?\w+$/.test(path); //w.$ROOM?.room_id
-			if (inRoom) app.findMV = () => q('#js-room-video video');
-			else if (host.startsWith('v.')) app.findMV = () => {
+			if (inRoom) app.findMV = function(){
+				return [].find.call(this.vList, e=>e.matches('#js-room-video video'));
+			};
+			else if (host.startsWith('v.')) app.findMV = function(){
 				const p = w.__player;
 				if (!p) return;
-				if (p.isH5) return q('video');
+				if (p.isH5) return this.vList[0];
 				p.switchPlayer('h5');
 				p.isH5 = 1;
-			}
-			events.on('canplay', function() {
+			};
+			inRoom && events.on('canplay', function() {
 				$$(app.adsCSS);
 				$$(css, e=>e.parentNode.remove());
 				if (path==='/') return;
