@@ -467,7 +467,9 @@ let router = {
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
 		});
-		events.on('canplay', app.getVideos);
+		setInterval(()=>{
+			localStorage.clear();
+		}, 300);
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
