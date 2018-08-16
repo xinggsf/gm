@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.94
+// @version          0.95
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -15,7 +15,7 @@
 // include          https://vku.youku.com/live/*
 // @include          *://*.tudou.com/v/*
 // @include          *://www.bilibili.com/*
-// @include          *://*.le.com/*.html*
+// @include          *://www.le.com/ptv/vplay/*
 // @include          https://tv.sohu.com/v/*
 // @include          https://tv.sohu.com/201*
 // @include          https://film.sohu.com/album/*
@@ -59,9 +59,6 @@
 // @require      https://greasyfork.org/scripts/29319-web-streams-polyfill/code/web-streams-polyfill.js?version=191261
 // @require      https://greasyfork.org/scripts/29306-fetch-readablestream/code/fetch-readablestream.js?version=191832
 // @require      https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.4/adapter.min.js
-
-// require    https://raw.githubusercontent.com/creatorrr/web-streams-polyfill/master/dist/polyfill.min.js
-// require    https://raw.githubusercontent.com/w3c/IntersectionObserver/master/polyfill/intersection-observer.js
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
@@ -266,8 +263,9 @@ events = {
 },
 app = {
 	isLive: !1,
-	multipleV: !1,
-	isFixFPView: !1,
+	disableSpace: !1,
+	multipleV: !1, //单页面多视频
+	isFixFPView: !1, //退出网页全屏时是否修正DOM视图
 	getVideos() {
 		if (v.offsetWidth>1) return;
 		for (let e of this.vList) if (e.offsetWidth>1) {
@@ -297,6 +295,7 @@ app = {
 		switch (e.keyCode) {
 		case 32: //space
 			if (this.disableSpace) return;
+			//if (u=='youtube' && e.target.matches('.html5-video-player')) return;
 			if (this.btnPlay) this.play();
 			else v.paused ? v.play() : v.pause();
 			e.preventDefault();
@@ -453,7 +452,8 @@ app = {
 let router = {
 	youtube() {
 		app.fullCSS = '.ytp-fullscreen-button';
-		app.playCSS = '.ytp-play-button';
+		//app.playCSS = '.ytp-play-button';
+		app.disableSpace = true;
 		app.nextCSS = '.ytp-next-button';
 	},
 	ted() {
