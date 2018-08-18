@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.95
+// @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
+// @version          0.96
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -58,9 +58,8 @@
 // @run-at           document-start
 // @require      https://greasyfork.org/scripts/29319-web-streams-polyfill/code/web-streams-polyfill.js?version=191261
 // @require      https://greasyfork.org/scripts/29306-fetch-readablestream/code/fetch-readablestream.js?version=191832
-// @require      https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/3.3.4/adapter.min.js
-// @namespace  https://greasyfork.org/users/7036
-// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
+// @namespace    https://greasyfork.org/users/7036
+// @updateURL    https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
 'use strict';
 if (!NodeList.prototype[Symbol.iterator])
@@ -112,10 +111,7 @@ doClick = e => {
 	if (typeof e === 'string') e = q(e);
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 },
-underFirefox57 = (() => {
-	const x = r1(/Firefox\/(\d+)/, navigator.userAgent);
-	return x && x < 57;
-})(),
+firefoxVer = r1(/Firefox\/(\d+)/, navigator.userAgent),
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
@@ -295,7 +291,6 @@ app = {
 		switch (e.keyCode) {
 		case 32: //space
 			if (this.disableSpace) return;
-			//if (u=='youtube' && e.target.matches('.html5-video-player')) return;
 			if (this.btnPlay) this.play();
 			else v.paused ? v.play() : v.pause();
 			e.preventDefault();
@@ -428,31 +423,31 @@ app = {
 	findMV() {
 		return this.vList[0];
 	},
+	onLoad() {
+		this.vList = document.getElementsByTagName('video');
+		if (v = this.findMV()) this.bindEvent();
+		else {
+			this.observer = new MutationObserver(records => {
+				if (v = this.findMV()) {
+					this.observer.disconnect();
+					delete this.observer;
+					this.bindEvent(v);
+				}
+				if (this.adsCSS) willRemove(this.adsCSS);
+				if (events.observe && events.observe()) delete events.observe;
+			});
+			this.observer.observe(document.body, {childList : true, subtree : true});
+		}
+		events.DOMReady && events.DOMReady();
+	},
 	init() {
-		document.addEventListener('DOMContentLoaded', () => {
-			this.vList = document.getElementsByTagName('video');
-			if (v = this.findMV()) this.bindEvent();
-			else {
-				this.observer = new MutationObserver(records => {
-					if (v = this.findMV()) {
-						this.observer.disconnect();
-						delete this.observer;
-						this.bindEvent(v);
-					}
-					if (this.adsCSS) willRemove(this.adsCSS);
-					if (events.observe && events.observe()) delete events.observe;
-				});
-				this.observer.observe(document.body, {childList : true, subtree : true});
-			}
-			events.DOMReady && events.DOMReady();
-		});
+		document.addEventListener('DOMContentLoaded', this.onLoad.bind(this));
 	}
 };
 
 let router = {
 	youtube() {
 		app.fullCSS = '.ytp-fullscreen-button';
-		//app.playCSS = '.ytp-play-button';
 		app.disableSpace = true;
 		app.nextCSS = '.ytp-next-button';
 	},
@@ -469,7 +464,7 @@ let router = {
 		});
 		setInterval(()=>{
 			localStorage.clear();
-		}, 300);
+		}, 900);
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
@@ -490,27 +485,29 @@ let router = {
 		}
 	},
 	bilibili() {
-		let x = localStorage.bilibili_player_settings;
+		let newPlayer, x = localStorage.bilibili_player_settings;
 		if (x) {
 			x = JSON.parse(x);
 			x.video_status.highquality = true;
 			x.video_status.iswidescreen = true;
-			x.video_status.widescreensave = true;
-			x.setting_config.defquality = '80';
+			//x.setting_config.defquality = '80';
 			localStorage.bilibili_player_settings = JSON.stringify(x);
 		} else
-			//defquality 选择清晰度，720P：64  1080P：80   宽屏 iswidescreen
+			//defquality 选择清晰度，720P：64  1080P：80
 			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
-		const newType = path.startsWith('/video/');//false为bangumi
 		app.nextCSS = '.bilibili-player-video-btn-next';
-		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
-		app.fullCSS = newType ? '.bilibili-player-video-btn-fullscreen' : '.bilibili-player-iconfont-fullscreen';
+		events.on('foundMV', () => {
+			newPlayer = !!q('#entryOld');
+			app.webfullCSS = newPlayer ? '.bilibili-player-video-web-fullscreen': 'i[name="web_fullscreen"]';
+			app.fullCSS = newPlayer ? '.bilibili-player-video-btn-fullscreen' : 'i[name="browser_fullscreen"]';
+		});
 		const _setPlayer = () => {
 			v = q('#bofqi video[src]');
 			if (!v) {
 				setTimeout(_setPlayer, 300);
 				return;
 			}
+			app.btnNext = app.btnWFS = app.btnFS = null;
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
 			// doClick('i[name=ctlbar_danmuku_close]');//关弹幕
 			// 以下4行，自动播放
@@ -519,11 +516,7 @@ let router = {
 				v.play();
 			};
 
-			if (!newType) {
-				x = v.closest('#bangumi_player');
-				x = x && x.offsetTop || 300;
-				window.scrollTo(0, x);
-			}
+			!newPlayer && v.scrollIntoView();
 		};
 		const fn = history.pushState;
 		history.pushState = function() {
@@ -633,7 +626,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.liveplayerToolbar-cinema';
 		},
 		huya() {
-			if (underFirefox57) return true;
+			if (firefoxVer && firefoxVer < 57) return true;
 			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
