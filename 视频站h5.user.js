@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.96
+// @version          0.97
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -287,6 +287,7 @@ app = {
 		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode)) return;
 		this.getVideos();
 		this.checkUI();
+		if (events.keydown && events.keydown(e)) return;
 		let n;
 		switch (e.keyCode) {
 		case 32: //space
@@ -462,9 +463,7 @@ let router = {
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
 		});
-		setInterval(()=>{
-			localStorage.clear();
-		}, 900);
+		localStorage.clear();
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
@@ -533,10 +532,30 @@ let router = {
 	},
 	weibo() {
 		app.isFixFPView = true;
-		app.multipleV = path.startsWith('/u/');//path.lastIndexOf('/') == 0;
+		app.multipleV = path.startsWith('/u/');
 	},
 	miaopai() {
 		app.multipleV = path.startsWith('/u/');
+	},
+	baidu() {
+		if (path.startsWith('/play/')) events.on('keydown', e => {
+			let n, api = w.videojs.getPlayers("video-player").html5player.tech_;
+			switch (e.keyCode) {
+			case 67: //按键C：加速播放 +0.1
+				n = 0.1;
+			case 88: //按键X：减速播放 -0.1
+				n = n || -0.1;
+				n += v.playbackRate;
+				if (0 < n && n <= 16) api.setPlaybackRate(n);
+				break;
+			case 90: //按键Z：正常速度播放
+				api.setPlaybackRate(1);
+				break;
+			default:
+				return !1;
+			}
+			return true;
+		});
 	},
 	le() {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
@@ -574,7 +593,6 @@ let router = {
 	}
 };
 router['163'] = router.mtime = router.sina;
-router.baidu = noopFn;
 
 if (!router[u]) { //直播站点
 	router = {
