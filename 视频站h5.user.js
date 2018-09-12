@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.97
+// @version          0.98
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -599,32 +599,27 @@ if (!router[u]) { //直播站点
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
 			const css = 'i.sign-spec',
-			inRoom = /^\/(t\/)?\w+$/.test(path); //w.$ROOM?.room_id
-			if (inRoom) app.findMV = function(){
-				return [].find.call(this.vList, e=>e.matches('#js-room-video video'));
-			};
-			else if (host.startsWith('v.')) app.findMV = function(){
-				const p = w.__player;
-				if (!p) return;
-				if (p.isH5) return this.vList[0];
-				p.switchPlayer('h5');
-				p.isH5 = 1;
-			};
-			inRoom && events.on('canplay', function() {
+			inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
+			cleanAds = () => {
 				$$(app.adsCSS);
 				$$(css, e=>e.parentNode.remove());
-				if (path==='/') return;
-				const player = v.parentNode.parentNode,
-				s = `#${player.id}>div:not([class]):not([style]), #dialog-more-video~*`;
+				if (path==='/' || !v) return;
+				let s = v.parentNode.parentNode;
+				s = `#${s.id}>div:not([class]):not([style]), #dialog-more-video~*`;
 				setTimeout($$, 300, s);
-				setTimeout($$, 3900, s);
-			});
-			document.addEventListener('visibilitychange', ev => {
-				if (!document.hidden) {
-					$$(app.adsCSS);
-					$$(css, e=>e.parentNode.remove());
-				}
-			});
+				setTimeout($$, 1900, s);
+			},
+			swapH5 = e => {
+				const p = w.__player;
+				if (p && !v) p.switchPlayer('h5');
+			};
+			app.findMV = function() {
+				const i = this.vList.length -1;
+				if (i >= 0 && this.vList[i].matches('[src^=blob]')) return this.vList[i];
+			};
+			w.addEventListener('load', swapH5);
+			events.on('canplay', cleanAds);
+			document.addEventListener('visibilitychange', cleanAds);
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
 			// .watermark-4231db, .animation_container-005ab7 +div
@@ -632,7 +627,6 @@ if (!router[u]) { //直播站点
 		},
 		panda() {
 			if (isEdge) fakeUA(ua_chrome);
-			localStorage.setItem('panda.tv/user/player', '{"useH5player": true}');
 			app.webfullCSS = '.h5player-control-bar-fullscreen';
 			app.fullCSS = '.h5player-control-bar-allfullscreen';
 			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container, .room-banner-images';
