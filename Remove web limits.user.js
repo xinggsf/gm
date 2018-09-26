@@ -68,7 +68,7 @@ const returnTrue = e => true;
 // 获取目标域名应该使用的规则
 const getRule = (host) => {
 	return rules.plus;
-}
+};
 const dontHook = e => !!e.closest('form');
 // 储存被 Hook 的函数
 const EventTarget_addEventListener = EventTarget.prototype.addEventListener;

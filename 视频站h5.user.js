@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
-// @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易视频[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可自定义站点
-// @version          0.99
+// @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可增加自定义站点
+// @version          1.0.0
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -29,6 +29,8 @@
 // @include          *://news.163.com/*.html*
 // @include          *://news.163.com/special/*
 // @include          *://study.163.com/course/*.htm?courseId=*
+// @include          *://www.icourse163.org/learn/*
+
 // @include          *://news.sina.com.cn/*
 // @include          *://video.sina.com.cn/*
 // @include          *://video.sina.cn/*
@@ -40,7 +42,6 @@
 // @include          *://v.yinyuetai.com/playlist/h5/*
 // @include          *://www.365yg.com/*
 // @include          *://v.ifeng.com/video_*
-// @include          *://www.icourse163.org/learn/*
 
 // @include          https://www.youtube.com/watch?v=*
 // @include          https://www.ted.com/talks/*
@@ -159,11 +160,11 @@ class FullScreen {
 
 //万能网页全屏,代码参考了：https://github.com/gooyie/ykh5p
 class FullPage {
-	constructor(video, isFixView, cbOnSwitch) {
+	constructor(video, isFixView, onSwitch) {
 		this._video = video;
 		this._isFixView = isFixView;
 		this._isFull = !1;
-		this.onSwitch = cbOnSwitch;
+		this._onSwitch = onSwitch;
 		this._rects = new Map();
 		this._checkContainer();
 		GM_addStyle(`
@@ -230,7 +231,8 @@ class FullPage {
 	}
 
 	toggle() {
-		if (!this._isFull) this.onSwitch(true);
+		const cb = this._onSwitch;
+		if (!this._isFull && cb) cb(true);
 		const d = document.body;
 		d.style.overflow = this._isFull ? '' : 'hidden';
 		this.container.classList.toggle('webfullscreen');
@@ -243,7 +245,7 @@ class FullPage {
 		this._isFull = !this._isFull;
 
 		setTimeout(this.fixView.bind(this), 9);
-		if (!this._isFull) setTimeout(this.onSwitch, 199, !1);
+		if (!this._isFull && cb) setTimeout(cb, 199, !1);
 	}
 }
 
@@ -273,12 +275,6 @@ app = {
 	},
 	_convertView(btn) {
 		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ? doClick(btn) : doClick(btn.nextSibling);
-	},
-	onCanplay(ev) {
-		console.log('脚本[启用html5播放器]，事件loadeddata');
-		//if (ev.target.readyState > 2)
-		events.canplay && events.canplay();
-		ev.target.removeEventListener('loadeddata', this.onCanplay);
 	},
 	hotKey(e) {
 		//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
@@ -353,7 +349,7 @@ app = {
 			this.fullPage = () => this._convertView(this.btnWFS);
 			if (_fp) _fp = null;
 		} else {
-			_fp = _fp || new FullPage(v, this.isFixFPView, this.switchFP.bind(this));
+			_fp = _fp || new FullPage(v, this.isFixFPView, this.switchFP);
 		}
 
 		if (this.fullCSS && !this.btnFS) this.btnFS = q(this.fullCSS);
@@ -370,7 +366,7 @@ app = {
 		if (this.btnPlay) this.play = () => this._convertView(this.btnPlay);
 	},
 	switchFP(toFull) {
-		if (!this.viewObserver) return;
+		//if (!this.viewObserver) return;
 		if (toFull) {
 			for (let e of this.vSet) this.viewObserver.unobserve(e);
 		} else {
@@ -399,18 +395,21 @@ app = {
 		for (let entry of entries) {
 			if (entry.isIntersecting && v != entry.target) {//intersectionRatio
 				v = entry.target;
-				//_fs = _fp = null;
 				_fs = new FullScreen(v);
-				_fp = new FullPage(v, this.isFixFPView, this.switchFP.bind(this));
+				_fp = new FullPage(v, this.isFixFPView, this.switchFP);
 				events.switchMV && events.switchMV();
-				console.log(v, entry);
 				break;
 			}
 		}
 	},
 	bindEvent() {
-		this.onCanplay = this.onCanplay.bind(this);
-		v.addEventListener('loadeddata', this.onCanplay);
+		const fn = ev => {
+			console.log('脚本[启用html5播放器]，事件loadeddata');
+			//if (ev.target.readyState > 2)
+			events.canplay && events.canplay();
+			ev.target.removeEventListener('loadeddata', fn);
+		};
+		v.addEventListener('loadeddata', fn);
 		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
 		events.foundMV && events.foundMV();
@@ -418,31 +417,31 @@ app = {
 		this.vCount = 1;
 		if (this.multipleV) {
 			new MutationObserver(this.onGrowVList.bind(this))
-			.observe(document.body, {childList : true, subtree : true});
+				.observe(document.body, {childList : true, subtree : true});
 		}
 	},
 	findMV() {
 		return this.vList[0];
 	},
-	onLoad() {
-		this.vList = document.getElementsByTagName('video');
-		if (v = this.findMV()) this.bindEvent();
-		else {
-			this.observer = new MutationObserver(records => {
-				if (v = this.findMV()) {
-					this.observer.disconnect();
-					delete this.observer;
-					this.bindEvent(v);
-				}
-				if (this.adsCSS) willRemove(this.adsCSS);
-				if (events.observe && events.observe()) delete events.observe;
-			});
-			this.observer.observe(document.body, {childList : true, subtree : true});
-		}
-		events.DOMReady && events.DOMReady();
-	},
 	init() {
-		document.addEventListener('DOMContentLoaded', this.onLoad.bind(this));
+		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
+		document.addEventListener('DOMContentLoaded', e => {
+			this.vList = document.getElementsByTagName('video');
+			if (v = this.findMV()) this.bindEvent();
+			else {
+				this.observer = new MutationObserver(records => {
+					if (v = this.findMV()) {
+						this.observer.disconnect();
+						delete this.observer;
+						this.bindEvent();
+					}
+					if (this.adsCSS) willRemove(this.adsCSS);
+					if (events.observe && events.observe()) delete events.observe;
+				});
+				this.observer.observe(document.body, {childList : true, subtree : true});
+			}
+			events.DOMReady && events.DOMReady();
+		});
 	}
 };
 
@@ -592,7 +591,6 @@ let router = {
 		return true;
 	}
 };
-//if (host !== 'study.163.com') router['163'] =
 router.mtime = router.sina;
 
 if (!router[u]) { //直播站点
@@ -605,9 +603,10 @@ if (!router[u]) { //直播站点
 				$$(app.adsCSS);
 				$$(css, e=>e.parentNode.remove());
 				if (path==='/' || !v) return;
-				let s = v.parentNode.parentNode;
+				let s = v.closest('[id][class|=app]');
+				if (!s) return;
 				s = `#${s.id}>div:not([class]):not([style]), #dialog-more-video~*`;
-				setTimeout($$, 300, s);
+				$$(s);
 				setTimeout($$, 1900, s);
 			},
 			swapH5 = e => {
@@ -623,8 +622,7 @@ if (!router[u]) { //直播站点
 			document.addEventListener('visibilitychange', cleanAds);
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			// .watermark-4231db, .animation_container-005ab7 +div
-			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, .pop-zoom-container,#js-chat-notice';
+			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, #js-chat-notice';
 		},
 		panda() {
 			if (isEdge) fakeUA(ua_chrome);
@@ -644,11 +642,10 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-login-tip-wrap,#player-subscribe-wap,#wrap-income';//清爽界面,#J_spbg,.room-core-r
+			app.adsCSS = '#player-subscribe-wap,#wrap-income';//清爽界面,#player-login-tip-wrap,#J_spbg,.room-core-r
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
-
 				if (!w.TT_ROOM_DATA) return;
 				const ti = setInterval(() => {
 					if (!q("li[ibitrate='500']")) return;
@@ -680,7 +677,7 @@ if (!router[u]) { //直播站点
 	app.isLive = router[u] && !host.startsWith('v.');
 }
 
-!/panda|zhanqi|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
+!/zhanqi|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
