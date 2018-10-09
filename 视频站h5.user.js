@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可增加自定义站点
-// @version          1.0.0
+// @version          1.1.0
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -72,8 +72,7 @@ noopFn = () => {},
 q = css => document.querySelector(css),
 $$ = (c, cb = e=>e.remove()) => {
 	if (!c.length) return;
-	if (typeof c === 'string')
-		c = document.querySelectorAll(c);
+	if (typeof c === 'string') c = document.querySelectorAll(c);
 	if (cb) for (let e of c) {
 		if (e && cb(e)===false) break;
 	}
@@ -405,10 +404,10 @@ app = {
 	bindEvent() {
 		const fn = ev => {
 			console.log('脚本[启用html5播放器]，事件loadeddata');
-			//if (ev.target.readyState > 2)
 			events.canplay && events.canplay();
-			ev.target.removeEventListener('loadeddata', fn);
+			v.removeEventListener('loadeddata', fn);
 		};
+		// if (v.readyState > 2) fn(); else
 		v.addEventListener('loadeddata', fn);
 		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
@@ -462,7 +461,14 @@ let router = {
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
 		});
-		setInterval(() => localStorage.clear(), 500);
+		const fn = () => {
+			for (let i = localStorage.length -1; i >= 0; i--) {
+				const s = localStorage.key(i);
+				!/^ten_|^txp-/.test(s) && localStorage.removeItem(s);
+			}
+		};
+		events.on('DOMReady', fn);
+		document.addEventListener('visibilitychange', ev => !document.hidden && fn());
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
@@ -597,29 +603,24 @@ if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
-			const css = 'i.sign-spec',
-			inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
+			const inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
 			cleanAds = () => {
 				$$(app.adsCSS);
-				$$(css, e=>e.parentNode.remove());
-				if (path==='/' || !v) return;
-				let s = v.closest('[id][class|=app]');
-				if (!s) return;
-				s = `#${s.id}>div:not([class]):not([style]), #dialog-more-video~*`;
-				$$(s);
-				setTimeout($$, 1900, s);
+				$$('i.sign-spec', e=>e.parentNode.remove());
+				inRoom && v && setTimeout($$, 900, `#douyu_room_normal_flash_proxy_box>div>div:not([class]):not([style])`);
 			},
 			swapH5 = e => {
 				const p = w.__player;
-				if (p && !v) p.switchPlayer('h5');
+				p && !v && p.switchPlayer('h5');
 			};
 			app.findMV = function() {
-				const i = this.vList.length -1;
-				if (i >= 0 && this.vList[i].matches('[src^=blob]')) return this.vList[i];
+				for (let e of this.vList)
+					if (e.matches('[src^=blob]')) return e;
 			};
 			w.addEventListener('load', swapH5);
+			setTimeout(swapH5, 1500);
+			document.addEventListener('visibilitychange', ev => document.hidden && cleanAds());
 			events.on('canplay', cleanAds);
-			document.addEventListener('visibilitychange', cleanAds);
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, #js-chat-notice';
