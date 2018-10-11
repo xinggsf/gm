@@ -420,16 +420,16 @@ app = {
 		}
 	},
 	findMV() {
-		return this.vList[0];
+		return v = this.vList[0];
 	},
 	init() {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
 		document.addEventListener('DOMContentLoaded', e => {
 			this.vList = document.getElementsByTagName('video');
-			if (v = this.findMV()) this.bindEvent();
+			if (this.findMV()) this.bindEvent();
 			else {
 				this.observer = new MutationObserver(records => {
-					if (v = this.findMV()) {
+					if (v || this.findMV()) {
 						this.observer.disconnect();
 						delete this.observer;
 						this.bindEvent();
@@ -613,14 +613,13 @@ if (!router[u]) { //直播站点
 				const p = w.__player;
 				p && !v && p.switchPlayer('h5');
 			};
-			app.findMV = function() {
-				for (let e of this.vList)
-					if (e.matches('[src^=blob]')) return e;
-			};
 			w.addEventListener('load', swapH5);
 			setTimeout(swapH5, 1500);
-			document.addEventListener('visibilitychange', ev => document.hidden && cleanAds());
 			events.on('canplay', cleanAds);
+			events.on('observe', function() {
+				for (let e of app.vList)
+					if (e.matches('[src^=blob]')) return v = e;
+			});
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
 			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, #js-chat-notice';
