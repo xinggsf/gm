@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可增加自定义站点
-// @version          1.1.1
+// @version          1.1.2
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -69,6 +69,7 @@ if (!NodeList.prototype[Symbol.iterator])
 const isEdge = navigator.userAgent.includes('Edge'),
 w = isEdge ? window : unsafeWindow,
 noopFn = () => {},
+observeOpt = {childList : true, subtree : true},
 q = css => document.querySelector(css),
 $$ = (c, cb = e=>e.remove()) => {
 	if (!c.length) return;
@@ -416,11 +417,12 @@ app = {
 		this.vCount = 1;
 		if (this.multipleV) {
 			new MutationObserver(this.onGrowVList.bind(this))
-				.observe(document.body, {childList : true, subtree : true});
+				.observe(document.body, observeOpt);
 		}
 	},
 	findMV() {
-		return v = this.vList[0];
+		if (!this.cssMV) return (v = this.vList[0]);
+		for (let e of this.vList) if (e.matches(this.cssMV)) return (v = e);
 	},
 	init() {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
@@ -437,7 +439,7 @@ app = {
 					if (this.adsCSS) willRemove(this.adsCSS);
 					if (events.observe && events.observe()) delete events.observe;
 				});
-				this.observer.observe(document.body, {childList : true, subtree : true});
+				this.observer.observe(document.body, observeOpt);
 			}
 			events.DOMReady && events.DOMReady();
 		});
@@ -610,25 +612,29 @@ if (!router[u]) { //直播站点
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
 			const inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
-			cleanAds = () => {
+			cleanAds = throttle($$, 500),
+			mo = new MutationObserver(rs => {
+				if (!rs[0].addedNodes.length || rs[0].target.nodeName == 'UL') return;
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
-				inRoom && v && setTimeout($$, 900, `#douyu_room_normal_flash_proxy_box>div>div:not([class]):not([style])`);
-			},
+				inRoom && v && cleanAds(`div[data-dysign],#dialog-more-video~*,#douyu_room_normal_flash_proxy_box>div>div:not([class]):not([style])`);
+			}),
 			swapH5 = e => {
 				const p = w.__player;
-				p && !v && p.switchPlayer('h5');
+				!v && p && !p.isSwitch && p.switchPlayer('h5');
 			};
-			w.addEventListener('load', swapH5);
-			setTimeout(swapH5, 1500); //防止某个资源请求卡住，导致onload事件得不到激发
-			events.on('canplay', cleanAds);
-			events.on('observe', function() {
-				for (let e of app.vList)
-					if (e.matches('[src^=blob]')) return v = e;
+			events.on('foundMV', function() {
+				mo.observe(document.body, observeOpt);
 			});
+			events.on('canplay', () => {
+				setTimeout(()=> mo.disconnect(), 9000);
+			});
+			w.addEventListener('load', swapH5);
+			setTimeout(swapH5, 1500); //防止某个资源请求卡住，导致onload事件不能激发
+			app.cssMV = '[src^=blob]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '.box-19fed6, [class|=recommendAD], [class|=room-ad], #js-recommand>div:nth-of-type(2)~*, #dialog-more-video~*, .no-login, #js-chat-notice';
+			app.adsCSS = '.no-login,#js-chat-notice,#js-recommand>div:nth-of-type(2)~*';
 		},
 		panda() {
 			if (isEdge) fakeUA(ua_chrome);
