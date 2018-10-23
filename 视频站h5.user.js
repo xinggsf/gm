@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name             视频站启用html5播放器
 // @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可增加自定义站点
-// @version          1.1.2
+// @version          1.2.0
 // @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include          *://v.qq.com/*
 // @include          *://v.sports.qq.com/*
@@ -71,9 +71,10 @@ w = isEdge ? window : unsafeWindow,
 noopFn = () => {},
 observeOpt = {childList : true, subtree : true},
 q = css => document.querySelector(css),
-$$ = (c, cb = e=>e.remove()) => {
+delElem = e => e.remove(),
+$$ = (c, cb = delElem, doc = document) => {
 	if (!c.length) return;
-	if (typeof c === 'string') c = document.querySelectorAll(c);
+	if (typeof c === 'string') c = doc.querySelectorAll(c);
 	if (cb) for (let e of c) {
 		if (e && cb(e)===false) break;
 	}
@@ -404,12 +405,12 @@ app = {
 	},
 	bindEvent() {
 		const fn = ev => {
-			console.log('脚本[启用html5播放器]，事件loadeddata');
+			console.log('脚本[启用html5播放器]，事件canplaythrough');
 			events.canplay && events.canplay();
-			v.removeEventListener('loadeddata', fn);
+			v.removeEventListener('canplaythrough', fn);
 		};
-		// if (v.readyState > 2) fn(); else
-		v.addEventListener('loadeddata', fn);
+		if (v.readyState > 2) fn(); else
+		v.addEventListener('canplaythrough', fn);
 		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
 		events.foundMV && events.foundMV();
@@ -455,6 +456,44 @@ let router = {
 	ted() {
 		app.fullCSS = 'button[title="Enter Fullscreen"]';
 		app.playCSS = 'button[title="play video"]';
+		const getHDSource = async () => {
+			const pn = r1(/^(\/talks\/\w+)/, location.pathname);
+			const resp = await fetch(`https://www.ted.com${pn}/metadata.json`);
+			const data = await resp.json();
+			return data.talks[0].downloads.nativeDownloads.high;
+		},
+		check = async (rs) => {
+			if (!v.src || v.src.startsWith('http')) return;
+			$$(app.vList, e => { e.src = ''}); // 取消多余的媒体资源请求
+			try {
+				/*
+				const {id: id, className: cls, innerHTML: tracks} = v;
+				v.parentNode.innerHTML = `<video id="${id}" class="${cls}" src="${url}">${tracks}</video>`;
+
+				const fn = ev => {
+					v.paused ? v.play() : v.pause();
+				};
+				const btn = q('button[aria-label="play video"]');
+				if (btn) {
+					btn.style.opacity = 0;
+					btn.addEventListener('click', fn);
+				}
+				app.btnPlay = app.btnPlay || q(app.playCSS);
+				app.btnPlay && app.btnPlay.addEventListener('click', fn); */
+				const url = await getHDSource();
+				v.src = url;
+			}
+			catch(ex) {
+				console.log(ex);
+			}
+		};
+		events.on('foundMV',() => {
+			new MutationObserver(check).observe(v, {
+				attributes: true,
+				attributeFilter: ['src']
+			});
+			check();
+		});
 	},
 	qq() {
 		Object.assign(app, {
@@ -508,6 +547,7 @@ let router = {
 			//defquality 选择清晰度，720P：64  1080P：80
 			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
 		app.nextCSS = '.bilibili-player-video-btn-next';
+		app.playCSS = 'button[title="play video"]';
 		events.on('foundMV', () => {
 			newPlayer = !!q('#entryOld');
 			app.webfullCSS = newPlayer ? '.bilibili-player-video-web-fullscreen': 'i[name="web_fullscreen"]';
@@ -538,7 +578,9 @@ let router = {
 		window.addEventListener('popstate', ev => {
 			setTimeout(_setPlayer, 500);
 		});
-		events.on('canplay', _setPlayer);
+		events.on('canplay', () => {
+			setTimeout(_setPlayer, 300);
+		});
 	},
 	sina() {
 		fakeUA(ua_ipad2);
@@ -611,30 +653,46 @@ if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
-			const inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
-			cleanAds = throttle($$, 500),
-			mo = new MutationObserver(rs => {
-				if (!rs[0].addedNodes.length || rs[0].target.nodeName == 'UL') return;
+			let h5El, //播放器窗口
+			inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
+			cleanAds = throttle((c) => {
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
-				inRoom && v && cleanAds(`div[data-dysign],#dialog-more-video~*,#douyu_room_normal_flash_proxy_box>div>div:not([class]):not([style])`);
+				inRoom && $$('.layout-Player~*,#dialog-more-video~*');
+			}, 300),
+			doMV_Ads = throttle(() => {
+				$$(h5El.children, e => {
+					!e.hidden && e.matches('div:not([class]):not([style])') && (e.hidden = true);
+				});
+			}, 300),
+			mo = new MutationObserver(rs => {
+				const container = rs[0].target;
+				if (!rs[0].addedNodes.length || !container || container.nodeName == 'UL') return;
+				inRoom && doMV_Ads();
+				cleanAds(container);
 			}),
-			swapH5 = e => {
+			onPlay = async () => {
+				v.removeEventListener('play', onPlay);
+				await sleep(9900);
+				mo.disconnect();
+			},
+			swapH5 = async () => {
+				await sleep(190);
 				const p = w.__player;
 				!v && p && !p.isSwitch && p.switchPlayer('h5');
 			};
 			events.on('foundMV', function() {
 				mo.observe(document.body, observeOpt);
+				v.addEventListener('play', onPlay);
+				h5El = v.parentNode.parentNode; // #__h5player
 			});
-			events.on('canplay', () => {
-				setTimeout(()=> mo.disconnect(), 9000);
-			});
+
 			w.addEventListener('load', swapH5);
 			setTimeout(swapH5, 1500); //防止某个资源请求卡住，导致onload事件不能激发
-			app.cssMV = '[src^=blob]';
+			app.cssMV = inRoom ? 'div[id^=__h5player] video' : '.video-box video';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '.no-login,#js-chat-notice,#js-recommand>div:nth-of-type(2)~*';
+			app.adsCSS = '#js-recommand>div:nth-of-type(2)~*,div[data-dysign],a[href*="wan.douyu.com"]';
 		},
 		panda() {
 			if (isEdge) fakeUA(ua_chrome);
@@ -654,7 +712,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income';//清爽界面,#player-login-tip-wrap,#J_spbg,.room-core-r
+			app.adsCSS = '#player-subscribe-wap,#wrap-income';//清爽界面,#player-login-tip-wrap,.room-footer,#J_spbg,.room-core-r,.room-hd-r
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
