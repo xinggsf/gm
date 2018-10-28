@@ -1,66 +1,70 @@
 // ==UserScript==
-// @name             视频站启用html5播放器
-// @description      三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可增加自定义站点
-// @version          1.2.0
-// @homepage         http://bbs.kafan.cn/thread-2093014-1-1.html
-// @include          *://v.qq.com/*
-// @include          *://v.sports.qq.com/*
-// @include          https://y.qq.com/*/mv/v/*
-// @include          *://film.qq.com/*
-// @include          *://view.inews.qq.com/*
-// @include          *://news.qq.com/*
-// @include          https://www.weiyun.com/video_*
-// @include          *://www.youku.com/
-// @include          *://v.youku.com/v_show/id_*
-// include          https://vku.youku.com/live/*
-// @include          *://*.tudou.com/v/*
-// @include          *://www.bilibili.com/*
-// @include          *://www.le.com/ptv/vplay/*
-// @include          https://tv.sohu.com/v/*
-// @include          https://tv.sohu.com/201*
-// @include          https://film.sohu.com/album/*
-// @include          *://www.fun.tv/vplay/*
-// @include          *://m.fun.tv/*
-// @include          http://*.mtime.com/*
-// @include          *://www.miaopai.com/*
+// @name       视频站启用html5播放器
+// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可增加自定义站点
+// @version    1.2.1
+// @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
+// @include    *://v.qq.com/*
+// @include    *://v.sports.qq.com/*
+// @include    https://y.qq.com/*/mv/v/*
+// @include    *://film.qq.com/*
+// @include    *://view.inews.qq.com/*
+// @include    *://news.qq.com/*
+// @include    https://www.weiyun.com/video_*
+// @include    *://www.youku.com/
+// @include    *://v.youku.com/v_show/id_*
+// include    https://vku.youku.com/live/*
+// @include    *://*.tudou.com/v/*
+// @include    *://www.bilibili.com/*
+// @include    https://tv.sohu.com/v/*
+// @include    https://tv.sohu.com/201*
+// @include    https://film.sohu.com/album/*
+// @include    https://www.mgtv.com/*
+// @include    *://www.fun.tv/vplay/*
+// @include    *://m.fun.tv/*
+// @include    http://*.mtime.com/*
+// @include    *://www.miaopai.com/*
+// @include    *://www.le.com/ptv/vplay/*
 
-// @include          *://v.163.com/*.html*
-// @include          *://ent.163.com/*.html*
-// @include          *://news.163.com/*.html*
-// @include          *://news.163.com/special/*
-// @include          *://study.163.com/course/*.htm?courseId=*
-// @include          *://www.icourse163.org/learn/*
+// @include    *://v.163.com/*.html*
+// @include    *://ent.163.com/*.html*
+// @include    *://news.163.com/*.html*
+// @include    *://news.163.com/special/*
+// @include    *://study.163.com/course/*.htm?courseId=*
+// @include    *://www.icourse163.org/learn/*
 
-// @include          *://news.sina.com.cn/*
-// @include          *://video.sina.com.cn/*
-// @include          *://video.sina.cn/*
-// @include          *://weibo.com/*
-// @include          *://*.weibo.com/*
-// @include          *://pan.baidu.com/*
-// @include          *://yun.baidu.com/*
-// @include          *://v.yinyuetai.com/video/h5/*
-// @include          *://v.yinyuetai.com/playlist/h5/*
-// @include          *://www.365yg.com/*
-// @include          *://v.ifeng.com/video_*
+// @include    *://news.sina.com.cn/*
+// @include    *://video.sina.com.cn/*
+// @include    *://video.sina.cn/*
+// @include    *://weibo.com/*
+// @include    *://*.weibo.com/*
+// @include    *://pan.baidu.com/*
+// @include    *://yun.baidu.com/*
+// @include    *://v.yinyuetai.com/video/h5/*
+// @include    *://v.yinyuetai.com/playlist/h5/*
+// @include    *://www.365yg.com/*
+// @include    *://v.ifeng.com/video_*
 
-// @include          https://www.youtube.com/watch?v=*
-// @include          https://www.ted.com/talks/*
+// @include    https://www.youtube.com/watch?v=*
+// @include    https://www.ted.com/talks/*
 
-// @include          *://www.yy.com/*
-// @include          *://v.huya.com/play/*
-// @include          *://www.huya.com/*
-// @include          https://v.douyu.com/show/*
-// @include          https://www.douyu.com/*
-// @include          https://www.panda.tv/*
-// @include          *://star.longzhu.com/*
-// @include          *://www.zhanqi.tv/*
-// @grant            unsafeWindow
-// @grant            GM_addStyle
-// @run-at           document-start
-// @require      https://greasyfork.org/scripts/29319-web-streams-polyfill/code/web-streams-polyfill.js?version=191261
-// @require      https://greasyfork.org/scripts/29306-fetch-readablestream/code/fetch-readablestream.js?version=191832
-// @namespace    https://greasyfork.org/users/7036
-// @updateURL    https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
+// @include    *://www.yy.com/*
+// @include    *://v.huya.com/play/*
+// @include    *://www.huya.com/*
+// @include    https://v.douyu.com/show/*
+// @include    https://www.douyu.com/*
+// @include    https://www.panda.tv/*
+// @include    *://star.longzhu.com/*
+// @include    *://www.zhanqi.tv/*
+// @grant      unsafeWindow
+// @grant      GM_addStyle
+// @grant      GM_registerMenuCommand
+// @grant      GM_setValue
+// @grant      GM_getValue
+// @run-at     document-start
+// @require    https://greasyfork.org/scripts/29319-web-streams-polyfill/code/web-streams-polyfill.js?version=191261
+// @require    https://greasyfork.org/scripts/29306-fetch-readablestream/code/fetch-readablestream.js?version=191832
+// @namespace  https://greasyfork.org/users/7036
+// @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
 'use strict';
 if (!NodeList.prototype[Symbol.iterator])
@@ -79,6 +83,10 @@ $$ = (c, cb = delElem, doc = document) => {
 		if (e && cb(e)===false) break;
 	}
 	return c;
+},
+gmFuncOfCheckMenu = function(name, val) {
+	GM_setValue(name, val);
+	w.location.reload();
 },
 r1 = (regp, s) => regp.test(s) && RegExp.$1,
 sleep = ms => new Promise(resolve => {
@@ -456,6 +464,11 @@ let router = {
 	ted() {
 		app.fullCSS = 'button[title="Enter Fullscreen"]';
 		app.playCSS = 'button[title="play video"]';
+		const opt = GM_getValue('ted_forceHD', true);
+		let title = 'TED强制高清';
+		if (opt) title += '    √';
+		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'ted_forceHD', !opt));
+
 		const getHDSource = async () => {
 			const pn = r1(/^(\/talks\/\w+)/, location.pathname);
 			const resp = await fetch(`https://www.ted.com${pn}/metadata.json`);
@@ -466,33 +479,16 @@ let router = {
 			if (!v.src || v.src.startsWith('http')) return;
 			$$(app.vList, e => { e.src = ''}); // 取消多余的媒体资源请求
 			try {
-				/*
-				const {id: id, className: cls, innerHTML: tracks} = v;
-				v.parentNode.innerHTML = `<video id="${id}" class="${cls}" src="${url}">${tracks}</video>`;
-
-				const fn = ev => {
-					v.paused ? v.play() : v.pause();
-				};
-				const btn = q('button[aria-label="play video"]');
-				if (btn) {
-					btn.style.opacity = 0;
-					btn.addEventListener('click', fn);
-				}
-				app.btnPlay = app.btnPlay || q(app.playCSS);
-				app.btnPlay && app.btnPlay.addEventListener('click', fn); */
-				const url = await getHDSource();
-				v.src = url;
-			}
-			catch(ex) {
+				v.src = await getHDSource();
+			} catch(ex) {
 				console.log(ex);
 			}
 		};
 		events.on('foundMV',() => {
-			new MutationObserver(check).observe(v, {
+			if (opt) new MutationObserver(check).observe(v, {
 				attributes: true,
 				attributeFilter: ['src']
 			});
-			check();
 		});
 	},
 	qq() {
@@ -536,6 +532,15 @@ let router = {
 		}
 	},
 	bilibili() {
+		const autoPlay = GM_getValue('bili_autoPlay', true);
+		let title = '自动播放';
+		if (autoPlay) title += '    √';
+		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_autoPlay', !autoPlay));
+		const danmu = GM_getValue('bili_danmu', true);
+		title = '弹幕';
+		if (danmu) title += '    √';
+		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
+
 		let newPlayer, x = localStorage.bilibili_player_settings;
 		if (x) {
 			x = JSON.parse(x);
@@ -561,12 +566,13 @@ let router = {
 			}
 			app.btnNext = app.btnWFS = app.btnFS = null;
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
-			// doClick('i[name=ctlbar_danmuku_close]');//关弹幕
-			// 以下4行，自动播放
-			if (v.readyState === 4) v.play();
-			else v.oncanplaythrough = ev => {
-				v.play();
-			};
+			const css = newPlayer ? '.bilibili-player-video-danmaku-switch input' : 'i[name=ctlbar_danmuku_close]';
+			!danmu && setTimeout(doClick, 90, css);//关弹幕
+
+			if (autoPlay) {
+				if (v.readyState === 4) v.play();
+				else v.oncanplaythrough = ev => { v.play() };
+			}
 
 			!newPlayer && v.scrollIntoView();
 		};
@@ -575,12 +581,9 @@ let router = {
 			fn.apply(this, arguments);
 			setTimeout(_setPlayer, 500);
 		};
-		window.addEventListener('popstate', ev => {
-			setTimeout(_setPlayer, 500);
-		});
-		events.on('canplay', () => {
-			setTimeout(_setPlayer, 300);
-		});
+		const doLater = () => { setTimeout(_setPlayer, 500) };
+		w.addEventListener('popstate', doLater);
+		events.on('canplay', doLater);
 	},
 	sina() {
 		fakeUA(ua_ipad2);
@@ -611,6 +614,13 @@ let router = {
 			}
 			return true;
 		});
+	},
+	mgtv() {
+		//app.playCSS = '.control-item.btn-play';
+		app.disableSpace = true;
+		app.nextCSS = 'mango-control-playnext-btn';
+		app.webfullCSS = 'mango-webscreen';
+		app.fullCSS = 'mango-screen';
 	},
 	le() {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
@@ -712,7 +722,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income';//清爽界面,#player-login-tip-wrap,.room-footer,#J_spbg,.room-core-r,.room-hd-r
+			app.adsCSS = '#player-subscribe-wap,#wrap-income,.room-footer,#J_spbg,.room-core-r,.room-hd-r';//清爽界面,#player-login-tip-wrap
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
