@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
-// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠。可增加自定义站点
-// @version    1.2.1
+// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @version    1.2.2
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -42,7 +42,7 @@
 // @include    *://v.yinyuetai.com/video/h5/*
 // @include    *://v.yinyuetai.com/playlist/h5/*
 // @include    *://www.365yg.com/*
-// @include    *://v.ifeng.com/video_*
+// @include    *://v.ifeng.com*/video_*
 
 // @include    https://www.youtube.com/watch?v=*
 // @include    https://www.ted.com/talks/*
@@ -54,7 +54,7 @@
 // @include    https://www.douyu.com/*
 // @include    https://www.panda.tv/*
 // @include    *://star.longzhu.com/*
-// @include    *://www.zhanqi.tv/*
+// @include    https://www.zhanqi.tv/*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -287,7 +287,7 @@ app = {
 	},
 	hotKey(e) {
 		//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
-		if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA/.test(e.target.nodeName)) return;
+		if (e.ctrlKey || e.altKey || /INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
 		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode)) return;
 		this.getVideos();
@@ -307,12 +307,11 @@ app = {
 			n = n || (e.shiftKey ? 27 : 5); //快进5秒,shift加速
 			v.currentTime += n;
 			break;
+		//case 80: // P 上一首
 		case 78: // N 下一首
 			this.btnNext && getStyle(this.btnNext, 'display') !== 'none' && doClick(this.btnNext);
 			break;
-		//case 80: // P 上一首
-		case 38: //加音量
-			n = 0.1;
+		case 38: n = 0.1; //加音量
 		case 40: //降音量
 			n = n || -0.1;
 			n += v.volume;
@@ -334,8 +333,7 @@ app = {
 				_fp ? _fp.toggle() : this.fullPage();
 			}
 			break;
-		case 67: //按键C：加速播放 +0.1
-			n = 0.1;
+		case 67: n = 0.1; //按键C：加速播放 +0.1
 		case 88: //按键X：减速播放 -0.1
 			n = n || -0.1;
 			n += v.playbackRate;
@@ -344,8 +342,7 @@ app = {
 		case 90: //按键Z：正常速度播放
 			v.playbackRate = 1;
 			break;
-		case 70: //按键F：下一帧
-			n = 0.03;
+		case 70: n = 0.03; //按键F：下一帧
 		case 68: //按键D：上一帧
 			n = n || -0.03;
 			if (!v.paused) v.pause();
@@ -413,7 +410,7 @@ app = {
 	},
 	bindEvent() {
 		const fn = ev => {
-			console.log('脚本[启用html5播放器]，事件canplaythrough');
+			console.log('脚本[启用html5播放器]，事件canplaythrough\n', v);
 			events.canplay && events.canplay();
 			v.removeEventListener('canplaythrough', fn);
 		};
@@ -481,7 +478,7 @@ let router = {
 			try {
 				v.src = await getHDSource();
 			} catch(ex) {
-				console.log(ex);
+				console.error(ex);
 			}
 		};
 		events.on('foundMV',() => {
@@ -546,7 +543,6 @@ let router = {
 			x = JSON.parse(x);
 			x.video_status.highquality = true;
 			x.video_status.iswidescreen = true;
-			//x.setting_config.defquality = '80';
 			localStorage.bilibili_player_settings = JSON.stringify(x);
 		} else
 			//defquality 选择清晰度，720P：64  1080P：80
@@ -609,14 +605,12 @@ let router = {
 			case 90: //按键Z：正常速度播放
 				api.setPlaybackRate(1);
 				break;
-			default:
-				return !1;
+			default: return !1;
 			}
 			return true;
 		});
 	},
 	mgtv() {
-		//app.playCSS = '.control-item.btn-play';
 		app.disableSpace = true;
 		app.nextCSS = 'mango-control-playnext-btn';
 		app.webfullCSS = 'mango-webscreen';
@@ -663,8 +657,7 @@ if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
-			let h5El, //播放器窗口
-			inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
+			let h5El, inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
 			cleanAds = throttle((c) => {
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
@@ -694,7 +687,7 @@ if (!router[u]) { //直播站点
 			events.on('foundMV', function() {
 				mo.observe(document.body, observeOpt);
 				v.addEventListener('play', onPlay);
-				h5El = v.parentNode.parentNode; // #__h5player
+				h5El = v.parentNode.parentNode;
 			});
 
 			w.addEventListener('load', swapH5);
@@ -722,7 +715,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income,.room-footer,#J_spbg,.room-core-r,.room-hd-r';//清爽界面,#player-login-tip-wrap
+			app.adsCSS = '#player-subscribe-wap,#wrap-income';//清爽界面,#player-login-tip-wrap,.room-footer,#J_spbg,.room-core-r,.room-hd-r
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
