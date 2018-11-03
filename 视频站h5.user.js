@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.2.2
+// @version    1.2.3
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -55,6 +55,7 @@
 // @include    https://www.panda.tv/*
 // @include    *://star.longzhu.com/*
 // @include    https://www.zhanqi.tv/*
+// @noframes
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -301,8 +302,7 @@ app = {
 			else v.paused ? v.play() : v.pause();
 			e.preventDefault();
 			break;
-		case 37: //left
-			n = e.shiftKey ? -27 : -5; //快退5秒,shift加速
+		case 37: n = e.shiftKey ? -27 : -5; //left  快退5秒,shift加速
 		case 39: //right
 			n = n || (e.shiftKey ? 27 : 5); //快进5秒,shift加速
 			v.currentTime += n;
@@ -319,7 +319,7 @@ app = {
 			e.preventDefault();
 			e.stopPropagation();
 			break;
-		case 13: //全屏
+		case 13: //回车键。 全屏
 			if (e.shiftKey) {
 				_fp ? _fp.toggle() : this.fullPage();
 			} else {
@@ -595,8 +595,7 @@ let router = {
 		if (path.startsWith('/play/')) events.on('keydown', e => {
 			let n, api = w.videojs.getPlayers("video-player").html5player.tech_;
 			switch (e.keyCode) {
-			case 67: //按键C：加速播放 +0.1
-				n = 0.1;
+			case 67: n = 0.1; //按键C：加速播放 +0.1
 			case 88: //按键X：减速播放 -0.1
 				n = n || -0.1;
 				n += v.playbackRate;
@@ -715,7 +714,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income';//清爽界面,#player-login-tip-wrap,.room-footer,#J_spbg,.room-core-r,.room-hd-r
+			app.adsCSS = '#player-subscribe-wap,#wrap-income,.room-footer,#J_spbg,.room-core-r,.room-hd-r';//清爽界面,#player-login-tip-wrap
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
@@ -743,6 +742,7 @@ if (!router[u]) { //直播站点
 		},
 		zhanqi() {
 			if (isEdge) fakeUA(ua_chrome);
+			localStorage.lastPlayer = 'h5';
 			app.fullCSS = '.video-fullscreen';
 		}
 	};
@@ -750,7 +750,7 @@ if (!router[u]) { //直播站点
 	app.isLive = router[u] && !host.startsWith('v.');
 }
 
-!/zhanqi|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
+!/cntv|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
