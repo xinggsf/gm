@@ -11,6 +11,7 @@
 // @grant            GM_xmlhttpRequest
 // @grant            GM_getResourceText
 // @grant            GM_addStyle
+// @updateURL        https://raw.githubusercontent.com/xinggsf/gm/master/open163.user.js
 // @run-at           document-start
 // ==/UserScript==
 'use strict';

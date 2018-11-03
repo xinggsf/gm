@@ -714,7 +714,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income,.room-footer,#J_spbg,.room-core-r,.room-hd-r';//清爽界面,#player-login-tip-wrap
+			app.adsCSS = '#player-subscribe-wap,#wrap-income';//清爽界面,#player-login-tip-wrap,.room-footer,#J_spbg,.room-core-r,.room-hd-r
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
