@@ -2,7 +2,7 @@
 // @name             CCAV启用html5
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
-// @version          0.0.2
+// @version          0.0.3
 // @include          http://tv.cntv.cn/video/*
 // @include          http://*.cctv.com/*
 // @noframes
@@ -15,7 +15,7 @@
 'use strict';
 
 const xfetch = (url, type = 'json') => {
-	if (url) return new Promise((success, fail) => {
+	return new Promise((success, fail) => {
 		GM_xmlhttpRequest({
 			method: 'GET',
 			url: url,
@@ -33,11 +33,7 @@ class App {
 		try {
 			await this.getVid();
 			const data = await this.fetchSrc();
-			if (!data) return;
-			console.log(data.hls_url);
-			$(() => {
-				this.createH5Player(data.hls_url);
-			});
+			$(this.createH5Player.bind(this, data.hls_url));
 		} catch(ex) {
 			console.error(ex);
 		}
@@ -53,12 +49,12 @@ class App {
 			const s = await resp.text();
 			this.vid = r1(/var guid = "(\w+)"/,s) || r1(/"videoCenterId","(\w+)"/,s);
 		}
+		if (!this.vid) throw new Error('非视频播放页，中止脚本执行');
 	}
 
 	async fetchSrc() {
-		if (!this.vid) return;
 		const resp = await xfetch('http://vdn.apps.cntv.cn/api/getHttpVideoInfo.do?pid=' + this.vid);
-		return JSON.parse(resp.responseText);
+		return resp.response;
 	}
 
 	createH5Player(url) {

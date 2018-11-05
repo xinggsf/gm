@@ -15,8 +15,7 @@
 // include    https://vku.youku.com/live/*
 // @include    *://*.tudou.com/v/*
 // @include    *://www.bilibili.com/*
-// @include    https://tv.sohu.com/v/*
-// @include    https://tv.sohu.com/201*
+// @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
@@ -43,10 +42,10 @@
 // @include    *://v.yinyuetai.com/playlist/h5/*
 // @include    *://www.365yg.com/*
 // @include    *://v.ifeng.com*/video_*
-
+// @GM_info
 // @include    https://www.youtube.com/watch?v=*
 // @include    https://www.ted.com/talks/*
-
+// @noframes
 // @include    *://www.yy.com/*
 // @include    *://v.huya.com/play/*
 // @include    *://www.huya.com/*
@@ -55,7 +54,6 @@
 // @include    https://www.panda.tv/*
 // @include    *://star.longzhu.com/*
 // @include    https://www.zhanqi.tv/*
-// @noframes
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -90,6 +88,7 @@ gmFuncOfCheckMenu = function(name, val) {
 	w.location.reload();
 },
 r1 = (regp, s) => regp.test(s) && RegExp.$1,
+log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#54C;font-size:1.2em'),
 sleep = ms => new Promise(resolve => {
 	setTimeout(resolve, ms);
 }),
@@ -410,7 +409,7 @@ app = {
 	},
 	bindEvent() {
 		const fn = ev => {
-			console.log('脚本[启用html5播放器]，事件canplaythrough\n', v);
+			log('事件canplaythrough\n', v);
 			events.canplay && events.canplay();
 			v.removeEventListener('canplaythrough', fn);
 		};
@@ -690,7 +689,7 @@ if (!router[u]) { //直播站点
 			});
 
 			w.addEventListener('load', swapH5);
-			setTimeout(swapH5, 1500); //防止某个资源请求卡住，导致onload事件不能激发
+			setTimeout(swapH5, 3000); //防止某个资源请求卡住，导致onload事件不能激发
 			app.cssMV = inRoom ? 'div[id^=__h5player] video' : '.video-box video';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
