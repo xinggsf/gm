@@ -12,9 +12,10 @@
 // @include    https://www.weiyun.com/video_*
 // @include    *://www.youku.com/
 // @include    *://v.youku.com/v_show/id_*
-// include    https://vku.youku.com/live/*
+// @include    https://vku.youku.com/live/*
 // @include    *://*.tudou.com/v/*
 // @include    *://www.bilibili.com/*
+// @exclude    http://tv.cctv.com/live/cctv*
 // include    http://v.pptv.com/show/*
 // @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
@@ -288,7 +289,7 @@ app = {
 	},
 	hotKey(e) {
 		//判断ctrl,alt,shift三键状态，防止浏览器快捷键被占用
-		if (e.ctrlKey || e.altKey || e.target.contentEditable ||
+		if (e.ctrlKey || e.altKey || e.target.contentEditable=='true' ||
 			/INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
 		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode)) return;
@@ -513,7 +514,10 @@ let router = {
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
 	},
 	youku() {
-		if (!host.startsWith('vku.')) {
+		if (host.startsWith('vku.')) {
+			app.isLive = true;
+			app.fullCSS = '.live_icon_full';
+		} else {
 			events.on('foundMV', () => {
 				//使用了优酷播放器YAPfY扩展
 				if (!app.btnFS) {
@@ -715,7 +719,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income,.room-footer,#J_spbg,.room-core-r,.room-hd-r';// 清爽界面
+			app.adsCSS = '#player-subscribe-wap,#wrap-income';//,.room-footer,#J_spbg,.room-core-r,.room-hd-r 清爽界面
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
@@ -761,7 +765,7 @@ if (!router[u]) { //直播站点
 	app.isLive = router[u] && !host.startsWith('v.');
 }
 
-!/cntv|sohu/.test(u) && Object.defineProperty(navigator, 'plugins', {
+!/sohu|pptv/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
