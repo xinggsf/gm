@@ -28,6 +28,9 @@ doHls = v => {
 		return true;
 	}
 },
+sleep = ms => new Promise(resolve => {
+	setTimeout(resolve, ms);
+}),
 createPlayer = v => {
 	if (v.src && v.src.includes('.m3u8')) {
 		new Clappr.Player({
@@ -39,6 +42,18 @@ createPlayer = v => {
 		});
 		return true;
 	}
+},
+onReady = async () => {
+	let v = q('video');
+	while (!v) {
+		await sleep(300);
+		v = q('video');
+	}
+	createPlayer(v);
+	let e = q('#landscape_dialog');
+	e && e.remove();
+	e = q('.player.report-rbi-click');
+	e && e.click();
 },
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
@@ -53,12 +68,6 @@ Object.defineProperty(navigator, 'plugins', {
 	}
 });
 fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
-let v, t = setInterval(() => {
-	v = v || q('video');
-	if (!v) return;
-	createPlayer(v) && clearInterval(t);
-	let e = q('#landscape_dialog');
-	e && e.remove();
-	e = q('.player.report-rbi-click');
-	e && e.click();
-}, 300);
+$(() => {
+	onReady();
+});

@@ -1,0 +1,47 @@
+{
+	"request": [],
+	"receiveHeader": [
+		{
+			"enable": true,
+			"name": "le",
+			"ruleType": "modifyReceiveHeader",
+			"matchType": "prefix",
+			"pattern": "http://jdplay.lecloud.com/play.videocache.lecloud.com/",
+			"exclude": "",
+			"isFunction": false,
+			"action": {
+				"name": "access-control-allow-origin",
+				"value": "*"
+			},
+			"group": "未分组"
+		},
+		{
+			"enable": true,
+			"name": "网易公开课",
+			"ruleType": "modifyReceiveHeader",
+			"matchType": "regexp",
+			"pattern": "^https?://(ce)?mov\\.bn\\.netease\\.com/.+\\.mp4$",
+			"exclude": "",
+			"isFunction": false,
+			"action": {
+				"name": "access-control-allow-origin",
+				"value": "*"
+			},
+			"group": "未分组"
+		},
+		{
+			"enable": true,
+			"name": "ccav",
+			"ruleType": "modifyReceiveHeader",
+			"matchType": "prefix",
+			"pattern": "http://asp.cntv.kcdnvip.com/asp/hls/",
+			"exclude": "",
+			"isFunction": false,
+			"action": {
+				"name": "access-control-allow-origin",
+				"value": "*"
+			},
+			"group": "未分组"
+		}
+	]
+}

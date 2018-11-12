@@ -57,7 +57,6 @@ class App {
 		}
 		`+ GM_getResourceText('plrCSS');
 		GM_addStyle(css);
-		this.isFirefox = navigator.userAgent.includes('Firefox');
 	}
 
 	_ping(url) {
@@ -97,7 +96,6 @@ class App {
 	}
 
 	async doSubtitle(url, sub) {
-		if (this.isFirefox) return;
 		try {
 			const resp = await xfetch(url, 'arraybuffer');
 			const dv = new DataView(resp.response);
@@ -118,7 +116,7 @@ class App {
 			sub.url = this.toWEBVTT(txt);
 
 			this.subtitleNum++;
-			this.tracksHtml += `<track kind="subtitles" label="${sub.title}" src="${sub.url}" srclang="${sub.lang}" default>`;
+			this.tracksHtml += `<track kind="subtitles" label="${sub.title}" src="${sub.url}" default srclang="${sub.lang}">`;
 			if (this._tasks.length >0) await Promise.all(this._tasks);
 			this.qualityNum >1 && this.player.on('quality_end', this.setTrack.bind(this));
 			this.setTrack();
@@ -129,7 +127,14 @@ class App {
 	}
 
 	toWEBVTT(txt) {
-		let s = 'WEBVTT\n\n'+ txt.trim().replace(/\n\d+\s+/g,'\n').replace(/,(?=\d{3})/g,'.').replace(/^\d\s+/,'');
+		let s = 'WEBVTT\n\n'+ txt.trim()
+			// .replace(/\{\\([ibu])\}/g, '</$1>')
+			// .replace(/\{\\([ibu])1\}/g, '<$1>')
+			// .replace(/\{([ibu])\}/g, '<$1>')
+			// .replace(/\{\/([ibu])\}/g, '</$1>')
+			.replace(/\n\d+\s+/g,'\n')
+			.replace(/,(?=\d{3})/g,'.')
+			.replace(/^\d\s+/,'');
 		/* let i = 0, r = /^\s*$/, //空行判定
 		a = txt.trim().split('\r'),
 		len = a.length;
@@ -140,7 +145,7 @@ class App {
 			i += 3;
 		} while(len > i);
 		a[0] = 'WEBVTT\n'; */
-		return URL.createObjectURL(new Blob([s]), {'type': 'text/vtt'});
+		return URL.createObjectURL(new Blob([s], {'type': 'text/vtt'}));
 	}
 
 	async fetchVInfo() {
