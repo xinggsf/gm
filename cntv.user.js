@@ -2,9 +2,10 @@
 // @name             CCAV启用html5
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
-// @version          0.0.3
+// @version          0.0.5
 // @include          http://tv.cntv.cn/video/*
 // @include          http://*.cctv.com/*
+// @include          http://tv.cctv.com/live/cctv*
 // @noframes
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
@@ -26,6 +27,9 @@ const xfetch = (url, type = 'json') => {
 		});
 	});
 },
+sleep = ms => new Promise(resolve => {
+	setTimeout(resolve, ms);
+}),
 r1 = (r, s) => r.test(s) && RegExp.$1;
 
 class App {
@@ -72,4 +76,38 @@ class App {
 	}
 }
 
-new App().run();
+class Live {
+	constructor() {
+		Object.defineProperty(navigator, 'userAgent', {
+			value: 'Mozilla/5.0 (iPad; CPU OS 5_0 Mac OS X) Version/5.1 Mobile/9A334 Safari/7534.48.3',
+			writable: false,
+			configurable: false,
+			enumerable: true
+		});
+		$(() => { this.onReady() });
+	}
+
+	async onReady() {
+		const vs = document.getElementsByTagName('video');
+		while(!vs.length) await sleep(300);
+		const src = vs[0].src,
+		c = $(vs[0]).parent().empty(),
+		player = new Clappr.Player({
+			source: src,
+			autoPlay: true,
+			width: '100%',
+			height: '100%',
+			parent: c[0],
+			plugins: [LevelSelector]
+		});
+		$('#fzzx').click(async e => {
+			player.stop();
+			await sleep(300);
+			c.children(':not([data-player])').hide();
+			player.load(vs[0].src, 'application/vnd.apple.mpegurl', true);
+		});
+	}
+}
+
+if (location.pathname.startsWith('/live/cctv')) new Live();
+else new App().run();

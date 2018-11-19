@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.2.5
+// @version    1.2.6
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -12,10 +12,9 @@
 // @include    https://www.weiyun.com/video_*
 // @include    *://www.youku.com/
 // @include    *://v.youku.com/v_show/id_*
-// @include    https://vku.youku.com/live/*
+// @include    *://vku.youku.com/live/*
 // @include    *://*.tudou.com/v/*
 // @include    *://www.bilibili.com/*
-// @exclude    http://tv.cctv.com/live/cctv*
 // include    http://v.pptv.com/show/*
 // @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
@@ -62,8 +61,6 @@
 // @grant      GM_setValue
 // @grant      GM_getValue
 // @run-at     document-start
-// @require    https://greasyfork.org/scripts/29319-web-streams-polyfill/code/web-streams-polyfill.js?version=191261
-// @require    https://greasyfork.org/scripts/29306-fetch-readablestream/code/fetch-readablestream.js?version=191832
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
@@ -136,7 +133,6 @@ getMainDomain = host => {
 	if (['com','tv','net','org','gov','edu'].includes(a[i])) i--;
 	return a[i];
 },
-ua_samsung = 'Mozilla/5.0 (Linux; U; Android 4.0.4; GT-I9300 Build/IMM76D) AppleWebKit/534.30 Version/4.0 Mobile Safari/534.30',
 ua_chrome = 'Mozilla/5.0 (Windows NT 10.0; WOW64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9',
 ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
 
@@ -497,12 +493,7 @@ let router = {
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
 		});
-		const fn = () => {
-			for (let i = localStorage.length -1; i >= 0; i--) {
-				const s = localStorage.key(i);
-				!/^ten_|^txp-/.test(s) && localStorage.removeItem(s);
-			}
-		};
+		const fn = () => localStorage.clear();
 		events.on('DOMReady', fn);
 		const ps = history.pushState;
 		history.pushState = function() {
@@ -515,19 +506,19 @@ let router = {
 	},
 	youku() {
 		if (host.startsWith('vku.')) {
-			app.isLive = true;
+			events.on('canplay', () => {
+				app.isLive = !q('.spv_progress');
+			});
 			app.fullCSS = '.live_icon_full';
 		} else {
 			events.on('foundMV', () => {
-				//使用了优酷播放器YAPfY扩展
-				if (!app.btnFS) {
+				if (!app.btnFS) {//使用了优酷播放器YAPfY扩展
 					app.webfullCSS = '.ABP-Web-FullScreen';
 					app.fullCSS = '.ABP-FullScreen';
+				} else {
+					w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
+					$$('.youku-layer-logo');//去水印。  破解1080P
 				}
-			});
-			events.on('canplay', () => {
-				$$('.youku-layer-logo');//去水印。  破解1080P
-				w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
 			});
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
@@ -549,8 +540,7 @@ let router = {
 			x.video_status.highquality = true;
 			x.video_status.iswidescreen = true;
 			localStorage.bilibili_player_settings = JSON.stringify(x);
-		} else
-			//defquality 选择清晰度，720P：64  1080P：80
+		} else //defquality 选择清晰度，720P：64  1080P：80
 			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.playCSS = 'button[title="play video"]';
@@ -628,7 +618,6 @@ let router = {
 	},
 	sohu() {
 		if (!path.endsWith('html')) return true;
-		//fakeUA(ua_samsung);
 		app.nextCSS = 'li.on[data-vid]+li a';
 		app.fullCSS = '.x-fullscreen-btn';//x-fs-btn
 	},
@@ -695,7 +684,7 @@ if (!router[u]) { //直播站点
 			});
 
 			w.addEventListener('load', swapH5);
-			setTimeout(swapH5, 3000); //防止某个资源请求卡住，导致onload事件不能激发
+			setTimeout(swapH5, 3000);
 			app.cssMV = inRoom ? 'div[id^=__h5player] video' : '.video-box video';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
@@ -719,7 +708,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income';//,.room-footer,#J_spbg,.room-core-r,.room-hd-r 清爽界面
+			app.adsCSS = '#player-subscribe-wap,#wrap-income';// 清爽界面,.room-footer,#J_spbg,.room-core-r,.room-hd-r
 
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
@@ -736,17 +725,12 @@ if (!router[u]) { //直播站点
 					li.addClass('on').parent().parent().hide();
 					$('.player-videotype-cur').text(li.text());
 				};
-				const mo = new MutationObserver(records => {
+				const mo = new MutationObserver(rs => {
 					const el = q('#player-login-tip-wrap');
 					if (!el) return;
 					mo.disconnect();
 					el.remove();
-
 					$(".player-videotype-list li").unbind('click').click(onBitrate);
-					/* $("li.smart_menu_li").click(async (e) => {
-						await sleep(390);
-						$(".player-videotype-list li").unbind('click').click(onBitrate);
-					}); */
 				});
 				mo.observe(v.closest('#player-wrap'), {childList : true});
 			});

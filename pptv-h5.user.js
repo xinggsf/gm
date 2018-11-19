@@ -16,14 +16,14 @@ const q = css => document.querySelector(css),
 sleep = ms => new Promise(resolve => {
 	setTimeout(resolve, ms);
 }),
-createPlayer = v => {
-	if (v.src && v.src.includes('.m3u8')) {
+createPlayer = (src, p) => {
+	if (src.includes('.m3u8')) {
 		new Clappr.Player({
-			source: v.src,
+			source: src,
 			autoPlay: true,
-			parent: v.parentNode,
-			width: v.width || '100%',
-			height: v.height || '100%',
+			parent: p,
+			width: '100%',
+			height: '100%',
 		});
 		return true;
 	}
@@ -35,19 +35,20 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	enumerable: true
 }),
 onReady = async () => {
-	let v, e;
-	do {
-		v = q('video');
-		await sleep(300);
-	} while (!v);
+	await sleep(900);
+	let e, v = q('video');
 	e = q('.p-video-button');
 	console.log(e, v);
 	e && e.click();
-	await sleep(500);
-	createPlayer(v);
+	e = v.closest('#pplive-player');
+
+	while (!v.src) await sleep(300);
+	let s = v.src;
+	e.innerHTML = '';
+	createPlayer(s, e);
+	await sleep(1100);
+	q('#p-error').remove();
 };
 
-fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.4 Version/5.1 Mobile/9A334 Safari/7534.48.3');
-$(() => {
-	onReady();
-});
+fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
+$(() => onReady() );
