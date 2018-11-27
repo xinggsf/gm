@@ -2,7 +2,7 @@
 // @name             龙珠直播启用html5
 // @namespace        xinggsf_longzhu
 // @description      龙珠直播启用html5
-// @version          0.02
+// @version          0.03
 // @include          *://y.longzhu.com/*
 // @include          *://m.longzhu.com/*
 // require          https://cdn.jsdelivr.net/hls.js/latest/hls.min.js
@@ -12,48 +12,21 @@
 // ==/UserScript==
 
 'use strict';
-if (location.host.startsWith('y.'))
-	location.assign(location.href.replace('y', 'm'));
+if (location.host.startsWith('y.')) location.assign(location.href.replace('y', 'm'));
 
-const q = css => document.querySelector(css),
-doHls = v => {
-	if (v.src && v.src.includes('.m3u8') && Hls.isSupported()) {
-		const hls = new Hls(),
-		p = v.cloneNode();
-		v.parentNode.replaceChild(p,v);
-		p.style.display = '';
-		hls.loadSource(p.src);
-		hls.attachMedia(p);
-		hls.on(Hls.Events.MANIFEST_PARSED, () => p.play());
-		return true;
-	}
-},
-sleep = ms => new Promise(resolve => {
-	setTimeout(resolve, ms);
-}),
-createPlayer = v => {
-	if (v.src && v.src.includes('.m3u8')) {
+const createPlayer = v => {
+	const src = v.src;
+	if (src && src.includes('.m3u8')) {
+		const p = $(v).parent().empty();
 		new Clappr.Player({
-			source: v.src,
+			source: src,
 			autoPlay: true,
-			parent: v.parentNode,
-			width: v.width || '100%',
-			height: v.height || '100%',
+			parent: p[0],
+			width: '100%',
+			height: '100%',
 		});
 		return true;
 	}
-},
-onReady = async () => {
-	let v = q('video');
-	while (!v) {
-		await sleep(300);
-		v = q('video');
-	}
-	createPlayer(v);
-	let e = q('#landscape_dialog');
-	e && e.remove();
-	e = q('.player.report-rbi-click');
-	e && e.click();
 },
 fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
@@ -62,12 +35,11 @@ fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	enumerable: true
 });
 
-Object.defineProperty(navigator, 'plugins', {
-	get() {
-		return { length: 0 };
-	}
-});
 fakeUA('Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3');
-$(() => {
-	onReady();
-});
+const vs = document.getElementsByTagName('video'),
+t = setInterval(() => {
+	if (!vs.length || !createPlayer(vs[0])) return;
+	clearInterval(t);
+	$('#landscape_dialog').remove();
+	$('.player.report-rbi-click').click();
+}, 300);

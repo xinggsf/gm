@@ -2,7 +2,7 @@
 // @name             网易公开课启用html5
 // @namespace        xinggsf.163.com
 // @description      网易公开课启用html5
-// @version          0.0.2
+// @version          0.0.3
 // @include          http://open.163.com/movie/20*
 // @include          https://open.163.com/movie/20*
 // @resource plrCSS  https://cdn.jsdelivr.net/npm/dplayer@1.25.0/dist/DPlayer.min.css
@@ -17,19 +17,17 @@
 'use strict';
 
 const r1 = (r, s) => r.test(s) && RegExp.$1,
-xfetch = (url, type = 'json') => {
-	return new Promise((success, fail) => {
-		GM_xmlhttpRequest({
-			method: 'GET',
-			url: url,
-			responseType: type,
-			onload: success,
-			onerror: fail,
-			ontimeout: fail
-		});
+xfetch = (url, type = 'json') => new Promise((success, fail) => {
+	GM_xmlhttpRequest({
+		method: 'GET',
+		url: url,
+		responseType: type,
+		onload: success,
+		onerror: fail,
+		ontimeout: fail
 	});
-},
-log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#54C;font-size:1.2em');
+}),
+log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#74C;font-size:1.2em');
 
 class App {
 	constructor() {
@@ -59,29 +57,13 @@ class App {
 		GM_addStyle(css);
 	}
 
-	_ping(url) {
-		return new Promise((success, fail) => {
-			GM_xmlhttpRequest({
-				method: 'HEAD',
-				url: url,
-				onreadystatechange: r => {
-					if (r.status == 200) success();
-					else if (r.readyState > 2) fail();
-				},
-				onerror: fail,
-				ontimeout: fail
-			});
-		});
-	}
-
 	async ping(url, data) {
-		try {
-			await this._ping(url);
+		const r = await fetch(url, { method: 'HEAD' });
+		if (r.ok) {
 			data.url = url;
 			this.qualityNum++;
-		} catch(ex) {
-			//不存在...
 		}
+		//else if (r.status==404) console.error('资源不存在');
 	}
 
 	async run() {
@@ -103,11 +85,11 @@ class App {
 			// 判断是否为UCS-2，FF FE为小端，FE FF为大端。utf8带BOM: EF BB BF, 无BOM则无前三字节标志
 			if (v1 == 0xFF && v2 == 0xFE) {
 				decoder = new TextDecoder('utf-16le');//utf-16又名UCS-2，火狐不支持名为UCS-2
-				log(sub.title,'字幕编码为',decoder.encoding);
+				log(sub.title +'字幕编码为',decoder.encoding);
 			}
 			else if (v1 == 0xFE && v2 == 0xFF) {
 				decoder = new TextDecoder('utf-16be');
-				log(sub.title,'字幕编码为',decoder.encoding);
+				log(sub.title +'字幕编码为',decoder.encoding);
 			} else {
 				log(sub.title +'字幕编码为utf8。文件头二字节：',v1.toString(16),v2.toString(16));
 				decoder = new TextDecoder();
@@ -159,26 +141,27 @@ class App {
 		this.subtitleSum = v.subList.length;
 		const vUrl = v.repovideourlOrigin || v.repovideourl || v.repovideourlmp4Origin || v.repovideourlmp4;
 		const i = vUrl.lastIndexOf('_')+1;
-		const quality = i && vUrl.slice(i, -4);//清晰度
-		const baseUrl = vUrl.slice(0, i || -4);// r1(/^(.+?_?)([shd]+)?\.mp4$/, vUrl)
-		if (quality) for (let k of this.vList) {
-			if (k.name === quality) {
-				k.url = vUrl;
-				break; //mobile视频一般为最低清晰度
+		if (!i) this.vList[2].url = vUrl;
+		else {
+			const quality = vUrl.slice(i, -4);//清晰度
+			const baseUrl = vUrl.slice(0, i);// r1(/^(.+?_?)([shd]+)?\.mp4$/, vUrl)
+			for (let k of this.vList) {
+				if (k.name === quality) {
+					k.url = vUrl;
+					break; //mobile视频一般为最低清晰度
+				}
+				const s = baseUrl + k.name + '.mp4';
+				this._tasks.push(this.ping(s, k));
 			}
-			const s = baseUrl + k.name + '.mp4';
-			this._tasks.push(this.ping(s, k));
 		}
-		else this.vList[2].url = vUrl;
 		this.qualityNum++;
 		// 处理字幕
 		for (let k of v.subList) {
-			const sub = {
+			this.doSubtitle(k.subUrl, {
 				title: k.subName,
 				lang: k.subName == "英文" ? 'en': 'zh-cn',
 				url: k.subUrl
-			};
-			this.doSubtitle(k.subUrl, sub);
+			});
 		}
 	}
 

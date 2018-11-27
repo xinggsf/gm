@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.2.6
+// @version    1.2.7
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -87,7 +87,7 @@ gmFuncOfCheckMenu = function(name, val) {
 	w.location.reload();
 },
 r1 = (regp, s) => regp.test(s) && RegExp.$1,
-log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#54C;font-size:1.2em'),
+log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#74C;font-size:1.2em'),
 sleep = ms => new Promise(resolve => {
 	setTimeout(resolve, ms);
 }),
@@ -593,7 +593,7 @@ let router = {
 			case 67: n = 0.1; //按键C：加速播放 +0.1
 			case 88: //按键X：减速播放 -0.1
 				n = n || -0.1;
-				n += v.playbackRate;
+				n += api.playbackRate();
 				if (0 < n && n <= 16) api.setPlaybackRate(n);
 				break;
 			case 90: //按键Z：正常速度播放
