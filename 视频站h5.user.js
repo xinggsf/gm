@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.2.7
+// @version    1.2.8
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -42,7 +42,7 @@
 // @include    *://v.yinyuetai.com/video/h5/*
 // @include    *://v.yinyuetai.com/playlist/h5/*
 // @include    *://www.365yg.com/*
-// @include    *://v.ifeng.com*/video_*
+// @include    *://v.ifeng.com/*video_*
 // @GM_info
 // @include    https://www.youtube.com/watch?v=*
 // @include    https://www.ted.com/talks/*
@@ -70,12 +70,11 @@ if (!NodeList.prototype[Symbol.iterator])
 
 const isEdge = navigator.userAgent.includes('Edge'),
 w = isEdge ? window : unsafeWindow,
-noopFn = () => {},
 observeOpt = {childList : true, subtree : true},
 q = css => document.querySelector(css),
 delElem = e => e.remove(),
 $$ = (c, cb = delElem, doc = document) => {
-	if (!c.length) return;
+	if (!c || !c.length) return;
 	if (typeof c === 'string') c = doc.querySelectorAll(c);
 	if (cb) for (let e of c) {
 		if (e && cb(e)===false) break;
@@ -115,7 +114,6 @@ throttle = function(fn, delay = 100){ //函数节流
 		}, delay);
 	};
 },
-willRemove = throttle($$),//多处同时调用时须防止定时器冲突
 doClick = e => {
 	if (typeof e === 'string') e = q(e);
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
@@ -407,45 +405,36 @@ app = {
 		}
 	},
 	bindEvent() {
+		log('bind event\n', v);
 		const fn = ev => {
-			log('事件canplaythrough\n', v);
 			events.canplay && events.canplay();
 			v.removeEventListener('canplaythrough', fn);
 		};
-		if (v.readyState > 2) fn(); else
-		v.addEventListener('canplaythrough', fn);
+		if (v.readyState > 2) fn();
+		else v.addEventListener('canplaythrough', fn);
 		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
 		events.foundMV && events.foundMV();
 
+		if (this.multipleV) new MutationObserver(this.onGrowVList.bind(this))
+			.observe(document.body, observeOpt);
 		this.vCount = 1;
-		if (this.multipleV) {
-			new MutationObserver(this.onGrowVList.bind(this))
-				.observe(document.body, observeOpt);
-		}
 	},
 	findMV() {
-		if (!this.cssMV) return (v = this.vList[0]);
-		for (let e of this.vList) if (e.matches(this.cssMV)) return (v = e);
+		if (!this.cssMV) return this.vList[0];
+		for (let e of this.vList) if (e.matches(this.cssMV)) return e;
 	},
 	init() {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
-		document.addEventListener('DOMContentLoaded', e => {
-			this.vList = document.getElementsByTagName('video');
-			if (this.findMV()) this.bindEvent();
-			else {
-				this.observer = new MutationObserver(records => {
-					if (v || this.findMV()) {
-						this.observer.disconnect();
-						delete this.observer;
-						this.bindEvent();
-					}
-					if (this.adsCSS) willRemove(this.adsCSS);
-					if (events.observe && events.observe()) delete events.observe;
-				});
-				this.observer.observe(document.body, observeOpt);
-			}
+		this.vList = document.getElementsByTagName('video');
+		document.addEventListener('DOMContentLoaded', async e => {
 			events.DOMReady && events.DOMReady();
+			do {
+				await sleep(190);
+				$$(this.adsCSS);
+				v = this.findMV();
+			} while (!v);
+			this.bindEvent();
 		});
 	}
 };
@@ -484,6 +473,7 @@ let router = {
 				attributes: true,
 				attributeFilter: ['src']
 			});
+			check();
 		});
 	},
 	qq() {
@@ -588,20 +578,19 @@ let router = {
 	},
 	baidu() {
 		if (path.startsWith('/play/')) events.on('keydown', e => {
-			let n, api = w.videojs.getPlayers("video-player").html5player.tech_;
+			let n, p = w.videojs.getPlayers("video-player");
 			switch (e.keyCode) {
 			case 67: n = 0.1; //按键C：加速播放 +0.1
 			case 88: //按键X：减速播放 -0.1
 				n = n || -0.1;
-				n += api.playbackRate();
-				if (0 < n && n <= 16) api.setPlaybackRate(n);
-				break;
+				n += p.html5player.tech_.playbackRate();
+				if (0 < n && n <= 16) p.html5player.tech_.setPlaybackRate(n);
+				return true;
 			case 90: //按键Z：正常速度播放
-				api.setPlaybackRate(1);
-				break;
+				p.html5player.tech_.setPlaybackRate(1);
+				return true;
 			default: return !1;
 			}
-			return true;
 		});
 	},
 	mgtv() {
@@ -650,45 +639,35 @@ if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
-			let h5El, inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
-			cleanAds = throttle((c) => {
+			let n = 0, inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
+			cleanAds = () => {
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
-				inRoom && $$('.layout-Player~*,#dialog-more-video~*');
-			}, 300),
-			doMV_Ads = throttle(() => {
-				$$(h5El.children, e => {
+				v = app.findMV();
+				inRoom && v && $$(v.parentNode.parentNode.children, e => {
 					!e.hidden && e.matches('div:not([class]):not([style])') && (e.hidden = true);
 				});
-			}, 300),
-			mo = new MutationObserver(rs => {
-				const container = rs[0].target;
-				if (!rs[0].addedNodes.length || !container || container.nodeName == 'UL') return;
-				inRoom && doMV_Ads();
-				cleanAds(container);
-			}),
-			onPlay = async () => {
-				v.removeEventListener('play', onPlay);
-				await sleep(9900);
-				mo.disconnect();
 			},
-			swapH5 = async () => {
-				await sleep(190);
+			swapH5 = () => {
 				const p = w.__player;
-				!v && p && !p.isSwitch && p.switchPlayer('h5');
-			};
-			events.on('foundMV', function() {
-				mo.observe(document.body, observeOpt);
-				v.addEventListener('play', onPlay);
-				h5El = v.parentNode.parentNode;
-			});
+				if (p && !v && !p.isSwitched) {
+					p.switchPlayer('h5');
+					p.isSwitched = true;
+				}
+			},
+			timer = setInterval(() => {
+				if (document.readyState=="interactive" || n > 9) {
+					cleanAds();
+					swapH5();
+				}
+				if (document.readyState=="complete" && n > 30) clearInterval(timer);
+				n++;
+			}, 300);
 
-			w.addEventListener('load', swapH5);
-			setTimeout(swapH5, 3000);
-			app.cssMV = inRoom ? 'div[id^=__h5player] video' : '.video-box video';
+			app.cssMV = '[src^=blob]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '#js-recommand>div:nth-of-type(2)~*,div[data-dysign],a[href*="wan.douyu.com"]';
+			app.adsCSS = '.layout-Player~*,[data-dysign],a[href*="wan.douyu.com"]';
 		},
 		panda() {
 			if (isEdge) fakeUA(ua_chrome);
@@ -715,8 +694,6 @@ if (!router[u]) { //直播站点
 				if (!w.TT_ROOM_DATA) return;
 				const $ = w.$;
 				const onBitrate = function(e) {
-					e.stopPropagation();
-					e.preventDefault();
 					const li = $(this);
 					if (li.hasClass('on')) return;
 					const rate = li.attr("ibitrate");
@@ -749,7 +726,7 @@ if (!router[u]) { //直播站点
 	app.isLive = router[u] && !host.startsWith('v.');
 }
 
-!/sohu|pptv/.test(u) && Object.defineProperty(navigator, 'plugins', {
+Object.defineProperty(navigator, 'plugins', {
 	get() {
 		return { length: 0 };
 	}
