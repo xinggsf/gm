@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.2.8
+// @version    1.2.9
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -97,12 +97,6 @@ getStyle = (o, s) => {
 		//s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
 		return x && x.getPropertyValue(s);
 	}
-},
-injectJS = s => {
-	const js = document.createElement('script');
-	if (s.startsWith('http')) js.src = s;
-	else js.textContent = s;
-	document.head.appendChild(js);
 },
 throttle = function(fn, delay = 100){ //函数节流
 	let timer = null, me = this;
@@ -448,10 +442,10 @@ let router = {
 	ted() {
 		app.fullCSS = 'button[title="Enter Fullscreen"]';
 		app.playCSS = 'button[title="play video"]';
-		const opt = GM_getValue('ted_forceHD', true);
+		const forceHD = GM_getValue('ted_forceHD', true);
 		let title = 'TED强制高清';
-		if (opt) title += '    √';
-		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'ted_forceHD', !opt));
+		if (forceHD) title += '    √';
+		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'ted_forceHD', !forceHD));
 
 		const getHDSource = async () => {
 			const pn = r1(/^(\/talks\/\w+)/, location.pathname);
@@ -461,7 +455,7 @@ let router = {
 		},
 		check = async (rs) => {
 			if (!v.src || v.src.startsWith('http')) return;
-			$$(app.vList, e => { e.src = ''}); // 取消多余的媒体资源请求
+			$$(app.vList, e => { e.removeAttribute('src') }); // 取消多余的媒体资源请求
 			try {
 				v.src = await getHDSource();
 			} catch(ex) {
@@ -469,7 +463,7 @@ let router = {
 			}
 		};
 		events.on('foundMV',() => {
-			if (opt) new MutationObserver(check).observe(v, {
+			if (forceHD) new MutationObserver(check).observe(v, {
 				attributes: true,
 				attributeFilter: ['src']
 			});
@@ -483,16 +477,23 @@ let router = {
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
 		});
-		const fn = () => localStorage.clear();
-		events.on('DOMReady', fn);
-		const ps = history.pushState;
-		history.pushState = function() {
-			fn();
-			ps.apply(this, arguments);
-		};
-		w.addEventListener('popstate', fn);
-		document.addEventListener('visibilitychange', ev => !document.hidden && fn());
 		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
+
+		const isVip = GM_getValue('qqVip', !1);
+		let title = '腾讯VIP用户';
+		if (isVip) title += '    √';
+		else {
+			const fn = () => localStorage.clear();
+			events.on('DOMReady', fn);
+			const ps = history.pushState;
+			history.pushState = function() {
+				fn();
+				ps.apply(this, arguments);
+			};
+			w.addEventListener('popstate', fn);
+			document.addEventListener('visibilitychange', ev => !document.hidden && fn());
+		}
+		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'qqVip', !isVip));
 	},
 	youku() {
 		if (host.startsWith('vku.')) {
@@ -507,7 +508,7 @@ let router = {
 					app.fullCSS = '.ABP-FullScreen';
 				} else {
 					w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
-					$$('.youku-layer-logo');//去水印。  破解1080P
+					// $$('.youku-layer-logo');//去水印。  破解1080P
 				}
 			});
 			app.fullCSS = '.control-fullscreen-icon';
