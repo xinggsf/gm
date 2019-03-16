@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.2.9
+// @version    1.3.0
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -678,6 +678,7 @@ if (!router[u]) { //直播站点
 			setTimeout($$, 1900, app.adsCSS);
 		},
 		yy() {
+			app.isLive = !path.startsWith('/x/');
 			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
 			app.webfullCSS = '.liveplayerToolbar-cinema';
@@ -724,7 +725,7 @@ if (!router[u]) { //直播站点
 		}
 	};
 
-	app.isLive = router[u] && !host.startsWith('v.');
+	app.isLive = app.isLive || router[u] && !host.startsWith('v.');
 }
 
 Object.defineProperty(navigator, 'plugins', {
