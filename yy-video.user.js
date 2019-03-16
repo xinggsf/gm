@@ -4,9 +4,8 @@
 // @description      YY视频启用html5
 // @version          0.0.1
 // @include          http://www.yy.com/x/*
-// @noframes
+// @include          https://www.yy.com/x/*
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
-// @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
 // @updateURL        https://raw.githubusercontent.com/xinggsf/gm/master/yy-video.user.js
 // ==/UserScript==
 'use strict';
