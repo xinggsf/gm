@@ -220,10 +220,10 @@ const t = setInterval(() => {
 
 	function make_area() {
 		tools.area();
-		$("#ss_area").empty();
-		$("#ss_area").append("<option value=''></option>");
-		for (let x = -1; x++, x < areas.length; ) {
-			$('#ss_area').append("<option value='" + areas[x] + "'>" + country_code[areas[x]] + "</option>");
+		const el = $("#ss_area").empty();
+		el.append("<option value=''></option>");
+		for (let x of areas) {
+			el.append("<option value='" + x + "'>" + country_code[x] + "</option>");
 		}
 	}
 

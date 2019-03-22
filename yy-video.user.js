@@ -2,7 +2,7 @@
 // @name             YY启用html5
 // @namespace        xinggsf_YY
 // @description      YY视频启用html5
-// @version          0.0.1
+// @version          0.0.2
 // @include          http://www.yy.com/x/*
 // @include          https://www.yy.com/x/*
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
@@ -10,15 +10,13 @@
 // ==/UserScript==
 'use strict';
 
-const r1 = (r, s) => r.test(s) && RegExp.$1,
-modeStr = r1(/^\/\w\/(\d+_\d+_\d+_\d+)/, location.pathname);
-if (modeStr) {
-	const src = `http://record.vod.duowan.com/xcrs/${modeStr}.m3u8`,
-	p = $('#flashBox').empty();
+const p = $('#flashBox').empty()[0];
+if (p) {
+	const vid = location.pathname.slice(3);
 	new Clappr.Player({
-		source: src,
+		source: `http://record.vod.duowan.com/xcrs/${vid}.m3u8`,
 		autoPlay: true,
-		parent: p[0],
+		parent: p,
 		width: '100%',
 		height: '100%',
 	});

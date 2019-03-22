@@ -477,23 +477,6 @@ let router = {
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
 		});
-		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:48.0) Gecko/20100101 Firefox/48.0');
-
-		const isVip = GM_getValue('qqVip', !1);
-		let title = '腾讯VIP用户';
-		if (isVip) title += '    √';
-		else {
-			const fn = () => localStorage.clear();
-			events.on('DOMReady', fn);
-			const ps = history.pushState;
-			history.pushState = function() {
-				fn();
-				ps.apply(this, arguments);
-			};
-			w.addEventListener('popstate', fn);
-			document.addEventListener('visibilitychange', ev => !document.hidden && fn());
-		}
-		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'qqVip', !isVip));
 	},
 	youku() {
 		if (host.startsWith('vku.')) {
@@ -508,7 +491,6 @@ let router = {
 					app.fullCSS = '.ABP-FullScreen';
 				} else {
 					w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
-					// $$('.youku-layer-logo');//去水印。  破解1080P
 				}
 			});
 			app.fullCSS = '.control-fullscreen-icon';

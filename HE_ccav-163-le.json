@@ -1,4 +1,6 @@
 {
+	"request": [],
+	"sendHeader": [],
 	"receiveHeader": [
 		{
 			"enable": true,
@@ -12,7 +14,7 @@
 				"name": "access-control-allow-origin",
 				"value": "*"
 			},
-			"group": "未分组"
+			"group": "ray发布"
 		},
 		{
 			"enable": true,
@@ -26,7 +28,7 @@
 				"name": "access-control-allow-origin",
 				"value": "*"
 			},
-			"group": "未分组"
+			"group": "ray发布"
 		},
 		{
 			"enable": true,
@@ -40,10 +42,10 @@
 				"name": "access-control-allow-origin",
 				"value": "*"
 			},
-			"group": "未分组"
+			"group": "ray发布"
 		},
 		{
-			"enable": true,
+			"enable": false,
 			"name": "ccav_live",
 			"ruleType": "modifyReceiveHeader",
 			"matchType": "prefix",
@@ -54,21 +56,21 @@
 				"name": "access-control-allow-origin",
 				"value": "*"
 			},
-			"group": "未分组"
+			"group": "ray发布"
 		},
 		{
 			"enable": true,
 			"name": "ccav_live2",
 			"ruleType": "modifyReceiveHeader",
 			"matchType": "regexp",
-			"pattern": "^http://cctv[\\.\\w]+?\\.liveplay\\.myqcloud\\.com/live/cctv.+",
+			"pattern": "^http://cctvcnch\\dc\\.v\\.wscdns\\.com/live/cctv.*",
 			"exclude": "",
 			"isFunction": false,
 			"action": {
 				"name": "access-control-allow-origin",
 				"value": "*"
 			},
-			"group": "未分组"
+			"group": "ray发布"
 		}
 	]
 }
