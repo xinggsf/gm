@@ -131,9 +131,7 @@ const t = setInterval(() => {
 					o.push(v.toLowerCase());
 				}
 			});
-			for (let x = 0; x < o.length; x++) {
-				d[o[x]] = x;
-			}
+			for (let [i, k] of o.entries()) d[k] = i;
 			return d;
 		},
 		// 整理链接区域

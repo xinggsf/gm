@@ -45,25 +45,11 @@
 			"group": "ray发布"
 		},
 		{
-			"enable": false,
+			"enable": true,
 			"name": "ccav_live",
 			"ruleType": "modifyReceiveHeader",
-			"matchType": "prefix",
-			"pattern": "http://hls2.cntv.myalicdn.com/cntvlive/cctv",
-			"exclude": "",
-			"isFunction": false,
-			"action": {
-				"name": "access-control-allow-origin",
-				"value": "*"
-			},
-			"group": "ray发布"
-		},
-		{
-			"enable": true,
-			"name": "ccav_live2",
-			"ruleType": "modifyReceiveHeader",
 			"matchType": "regexp",
-			"pattern": "^http://cctvcnch\\dc\\.v\\.wscdns\\.com/live/cctv.*",
+			"pattern": "^http://cctvcnch\\dc\\.v\\.wscdns\\.com/live/cctv",
 			"exclude": "",
 			"isFunction": false,
 			"action": {

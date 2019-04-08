@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.0
+// @version    1.3.1
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -622,31 +622,11 @@ if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			if (isEdge) fakeUA(ua_chrome);
-			let n = 0, inRoom = /^\/(t\/)?\w+$/.test(path), //w.$ROOM?.room_id
-			cleanAds = () => {
+			let inRoom = /^\/(t\/)?\w+$/.test(path); //w.$ROOM?.room_id
+			events.on('canplay', () => {
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
-				v = app.findMV();
-				inRoom && v && $$(v.parentNode.parentNode.children, e => {
-					!e.hidden && e.matches('div:not([class]):not([style])') && (e.hidden = true);
-				});
-			},
-			swapH5 = () => {
-				const p = w.__player;
-				if (p && !v && !p.isSwitched) {
-					p.switchPlayer('h5');
-					p.isSwitched = true;
-				}
-			},
-			timer = setInterval(() => {
-				if (document.readyState=="interactive" || n > 9) {
-					cleanAds();
-					swapH5();
-				}
-				if (document.readyState=="complete" && n > 30) clearInterval(timer);
-				n++;
-			}, 300);
-
+			});
 			app.cssMV = '[src^=blob]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
@@ -661,9 +641,11 @@ if (!router[u]) { //直播站点
 		},
 		yy() {
 			app.isLive = !path.startsWith('/x/');
-			if (!w.chrome) fakeUA(ua_chrome);
-			app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
-			app.webfullCSS = '.liveplayerToolbar-cinema';
+			if (app.isLive) {
+				!w.chrome && fakeUA(ua_chrome);
+				app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
+				app.webfullCSS = '.liveplayerToolbar-cinema';
+			}
 		},
 		huya() {
 			if (firefoxVer && firefoxVer < 57) return true;

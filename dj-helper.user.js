@@ -1,23 +1,26 @@
 // ==UserScript==
-// @name           dj92cc.com助手
-// @namespace      xinggsf@92cc.com
-// @author	       xinggsf~gmail。com
-// @description    一键点赞；一键留言板或回复；群发私信；全站广告拦截；美化dj92cc.com歌曲播放页面
-// @description:en Set css sytle on dj92cc.com site
+// @name           DJ轮回网助手
+// @namespace      xinggsf.DJ
+// @author	       xinggsf
+// @description    一键点赞；一键留言板或回复；群发私信；全站广告拦截；美化DJ轮回网歌曲播放页面
 // @license        GPL version 3
-// @include        http://*.dj92cc.com/*
+// @include        http://*.dj92cc.net/*
+// @include        https://*.dj96.com/*
 // @homepageURL    https://greasyfork.org/scripts/6562
-// updateURL       https://greasyfork.org/scripts/6562.js
-// require        https://greasyfork.org/scripts/11230.js
+// @updateURL      https://raw.githubusercontent.com/xinggsf/gm/master/dj-helper.user.js
 // require        http://static92cc.db-cache.com/js/jquery/jquery.min.js
-// @version        2015.11.25
-// @encoding       utf-8
-// run-at         document-start
+// @version        2.0.1
 // @grant          none
 // ==/UserScript==
 
-window._92cc_Utils = function () {
-	var frList = [],
+/*
+http://www.dj92cc.net/index.php/ajax/dance_user?&did=17795&keyHash=&type=0
+$.JSON {file_path}
+http://mp4db.dj92cc.net/m4a/${file_path}.m4a
+http://2.news.idophoto.com.cn/m4a/${file_path}.m4a
+*/
+const utils = function () {
+	let frList = [],
 	page = 1,
 	frCount = 0,
 	failGetList = false,
@@ -50,7 +53,7 @@ window._92cc_Utils = function () {
 		'飘洋过海来听曲。'
 	],
 	publicUtils = {
-		praiseAllFriend: function() {
+		praiseAllFriend: () => {
 			if ($.cookie('praiseAll')) {
 				$.tipMessage('今天已点赞！', 1, 3000);
 				return;
@@ -59,7 +62,7 @@ window._92cc_Utils = function () {
             post(doPraise,{timer: 500});
 			$.tipMessage('正在点赞！请不要离开或刷新本页面......', 0, 3000);
 		},
-		sendAllInfo: function() {
+		sendAllInfo: () => {
 			try {
 				if ($.cookie('smsAll'))
 					throw new Error('每天只能群发一次！');
@@ -84,7 +87,7 @@ window._92cc_Utils = function () {
 				'还有私信未发送完，请稍候再发';
 			$.tipMessage(s, 0, 3000);
 		},
-		wallAllFriend: function() {
+		wallAllFriend: () => {
 			try {
 				if ($.cookie('wallAll'))
 					throw new Error('每天只能群发一次留言！');
@@ -110,9 +113,9 @@ window._92cc_Utils = function () {
 			post(doWall, {content: s, timer: 15000});
 			$.tipMessage('正在留言！因网站计时，故延时留言！请不要离开或刷新本页面...', 0, 3000);
 		},
-		replyAllWall: function() {
+		replyAllWall: () => {
 			var r, c, uid, s = '/wall?a=wall';
-			if (location.href.indexOf(s) === -1) {
+			if (location.pathname.indexOf(s) === -1) {
 				confirm('必须导航到留言板，确定吗？') && (location.href = s);
 				return;
 			}
@@ -145,9 +148,9 @@ window._92cc_Utils = function () {
 				return i < 5;//每天五条
 			});
 		},
-		replyWall_Del: function() {
+		replyWall_Del() {
 			var r, c, uid, wid, s = '/wall?a=wall';
-			if (location.href.indexOf(s) === -1) {
+			if (location.pathname.indexOf(s) === -1) {
 				confirm('必须导航到留言板，确定吗？') && (location.href = s);
 				return;
 			}
@@ -176,7 +179,7 @@ window._92cc_Utils = function () {
 				return i < 5;//每天五条
 			});
 		},
-		praiseInpage: function() {
+		praiseInpage() {
 			var s, tm, a = [], n=0;
 			getFriendList();
 /* 			c = $.cookie('viewUids').split('_');
@@ -208,11 +211,11 @@ window._92cc_Utils = function () {
 			}, 200);
 			//console.log(a.join());
 		},
-		init: function() {
+		init() {
 			timer && unInit();
-			timer = setInterval($.proxy(onRunQueue, this), 100);
+			timer = setInterval(this.onRunQueue.bind(this), 100);
 		},
-		unInit: function() {
+		unInit() {
 			clearInterval(timer);
 			timer = null;
 		}
@@ -399,29 +402,9 @@ window._92cc_Utils = function () {
 }();
 
 -function (doc) {
-	var x, addr,
+	let s, x;
 	//要删除的元素列表，填入css选择器
-	s = [
-		'script[src*=".cnzz.com"]',
-		'script[src*=".baidu"]',
-		'[id^=BAIDU_]',
-		'img[src$="92show.gif"]',
-		'[class^=gg]',
-		'#mp_banner_top',
-		'.player > h1',
-		'.logo',
-		'span.bds_more',
-		'#bdshare_s',
-		'.header+.play_content',
-		'.banner_text'
-	];
-	s.forEach(function (o) {
-	//用原生API querySelectorAll加快速度
-		x = doc.querySelectorAll(o);
-		s.forEach.call(x, function (e) {
-			e.parentNode.removeChild(e);
-		});
-	});
+	$('.g300,.play_banner,.gg300,.banner').remove();
 /* 	x = $('script[src*="/new/recommend/player"]');
 	if (x.length) {
 		//删除低效的内容生成JS，和可能已经生成的内容
@@ -438,8 +421,7 @@ window._92cc_Utils = function () {
 		}, 'text');
 	}
  */
-	addr = doc.URL.toLowerCase();
-	if (/^http:\/\/www\.dj92cc\.com\/p\d+\.html/.test(addr)) {
+	if (/\d+\.html$/.test(location.pathname)) {
 		x = $(".play_content > .right_bot");
 		$(".play_content > .right").replaceWith(x);
 		x.css({
@@ -453,7 +435,7 @@ window._92cc_Utils = function () {
 		$(".play_content").css('top', '-9px');
 		$(".banner").empty().css('height', '3px');
 	}
-	if (location.host !== 'i.dj92cc.com') return;
+	if (location.host !== 'i.dj92cc.net') return;
 
 	s = ['.overBtns {background: url("' + _config['domainStatic']
 		,'site/images/label.png") no-repeat scroll transparent;\n'
@@ -470,18 +452,14 @@ window._92cc_Utils = function () {
 	setTimeout(function(){
 		if ($.cookie('loginKey').length > 11) {
 			$('<a class="overBtns" id="praiseAll" title="一键点赞" href="#" style="top:100px;background-position:-89px 13px;"/>')
-				.click($.proxy(_92cc_Utils,'praiseAllFriend'))
-				.appendTo("body");
+				.click(utils.praiseAllFriend).appendTo("body");
 			$('<a class="overBtns" id="smsAll" title="群发私信" href="#" style="top:150px;background-position:-89px -36px;"/>')
-				.click($.proxy(_92cc_Utils,'sendAllInfo'))
-				.appendTo("body");
+				.click(utils.sendAllInfo).appendTo("body");
 			$('<a class="overBtns" id="wallAll" title="一键留言" href="#" style="top:200px;background-position:-89px -134px;"/>')
-				.click($.proxy(_92cc_Utils,'wallAllFriend'))
-				.appendTo("body");
+				.click(utils.wallAllFriend).appendTo("body");
 			$('<a class="overBtns" id="replyAll" title="一键回复留言" href="#" style="top:250px;background-position:-89px -85px;"/>')
-				.click($.proxy(_92cc_Utils,'replyAllWall'))
-				.appendTo("body");
-			_92cc_Utils.init();
+				.click(utils.replyAllWall).appendTo("body");
+			utils.init();
 		}
 	}, 300);
 }(document);
