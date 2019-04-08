@@ -4,8 +4,7 @@
 // @author	       xinggsf
 // @description    一键点赞；一键留言板或回复；群发私信；全站广告拦截；美化DJ轮回网歌曲播放页面
 // @license        GPL version 3
-// @include        http://*.dj92cc.net/*
-// @include        https://*.dj96.com/*
+// @include        https://www.dj96.com/*
 // @homepageURL    https://greasyfork.org/scripts/6562
 // @updateURL      https://raw.githubusercontent.com/xinggsf/gm/master/dj-helper.user.js
 // require        http://static92cc.db-cache.com/js/jquery/jquery.min.js
