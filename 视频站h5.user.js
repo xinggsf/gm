@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
-// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、熊猫、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
 // @version    1.3.1
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
@@ -52,7 +52,6 @@
 // @include    *://www.huya.com/*
 // @include    https://v.douyu.com/show/*
 // @include    https://www.douyu.com/*
-// @include    https://www.panda.tv/*
 // @include    *://star.longzhu.com/*
 // @include    https://www.zhanqi.tv/*
 // @grant      unsafeWindow
@@ -631,13 +630,6 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
 			app.adsCSS = '.layout-Player~*,[data-dysign],a[href*="wan.douyu.com"]';
-		},
-		panda() {
-			if (isEdge) fakeUA(ua_chrome);
-			app.webfullCSS = '.h5player-control-bar-fullscreen';
-			app.fullCSS = '.h5player-control-bar-allfullscreen';
-			app.adsCSS = '.act-zhuxianmarch-container, #liveos-container, .ad-container, .room-banner-images';
-			setTimeout($$, 1900, app.adsCSS);
 		},
 		yy() {
 			app.isLive = !path.startsWith('/x/');
