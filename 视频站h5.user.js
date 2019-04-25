@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.1
+// @version    1.3.2
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -50,7 +50,7 @@
 // @include    *://www.yy.com/*
 // @include    *://v.huya.com/play/*
 // @include    *://www.huya.com/*
-// @include    https://v.douyu.com/show/*
+// @include    https://v.douyu.com/*
 // @include    https://www.douyu.com/*
 // @include    *://star.longzhu.com/*
 // @include    https://www.zhanqi.tv/*
@@ -530,7 +530,7 @@ let router = {
 			app.btnNext = app.btnWFS = app.btnFS = null;
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
 			const css = newPlayer ? '.bilibili-player-video-danmaku-switch input' : 'i[name=ctlbar_danmuku_close]';
-			!danmu && setTimeout(doClick, 90, css);//关弹幕
+			!danmu && setTimeout(doClick, 500, css);//关弹幕
 
 			if (autoPlay) {
 				if (v.readyState === 4) v.play();
