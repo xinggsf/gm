@@ -10,7 +10,7 @@
 // @include        https://www.sogou.com/web?*
 // @connect        *
 // @run-at         document-start
-// @grant		   GM_xmlhttpRequest
+// @grant          GM_xmlhttpRequest
 // ==/UserScript==
 
 const host = location.host,
@@ -18,7 +18,7 @@ links = new WeakMap(),
 css = {
 	'www.baidu.com': 'h3.t>a',
 	'www.so.com': 'h3.res-title>a',
-    'www.sogou.com': 'h3>a[href^="/link?url="]'
+	'www.sogou.com': 'h3>a[href^="/link?url="]'
 },
 doXhr = (a, isBaidu) => {
 	// console.log(a.href);
@@ -60,20 +60,20 @@ resetURL = a => {
 	case 'www.so.com':
 		a.href = a.getAttribute('data-url');
 		break;
-    case 'www.sogou.com':
-        let s = a.closest('div').querySelector('div.fb a');
+	case 'www.sogou.com':
+		let s = a.closest('div').querySelector('div.fb a');
 		if (!s) doXhr(a, !1);
 		else {
 			s = s.href.match(/\burl=([^&]+)/)[1];
 			a.href = decodeURIComponent(s);
 		}
 		break;
-    case 'www.baidu.com':
+	case 'www.baidu.com':
 		doXhr(a, true);
 	}
 },
 checkDom = () => {
-    [...document.querySelectorAll(css[host])].forEach(resetURL);
+	[...document.querySelectorAll(css[host])].forEach(resetURL);
 },
 mo = new MutationObserver(checkDom);
 setTimeout(() => {

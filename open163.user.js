@@ -2,7 +2,7 @@
 // @name             网易公开课启用html5
 // @namespace        xinggsf.163.com
 // @description      网易公开课启用html5
-// @version          0.0.3
+// @version          0.0.4
 // @include          http://open.163.com/movie/20*
 // @include          https://open.163.com/movie/20*
 // @resource plrCSS  http://cdn.staticfile.org/dplayer/1.25.0/DPlayer.min.ccs
@@ -12,7 +12,6 @@
 // @grant            GM_addStyle
 // @grant            GM_info
 // @updateURL        https://raw.githubusercontent.com/xinggsf/gm/master/open163.user.js
-// @run-at           document-start
 // ==/UserScript==
 'use strict';
 
@@ -63,7 +62,7 @@ class App {
 			data.url = url;
 			this.qualityNum++;
 		}
-		//else if (r.status==404) console.error('资源不存在');
+		//else if (r.status==404) log('资源不存在');
 	}
 
 	async run() {

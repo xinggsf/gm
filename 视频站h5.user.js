@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.2
+// @version    1.3.3
 // @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -15,7 +15,7 @@
 // @include    *://vku.youku.com/live/*
 // @include    *://*.tudou.com/v/*
 // @include    *://www.bilibili.com/*
-// include    http://v.pptv.com/show/*
+// @include    http://v.pptv.com/show/*
 // @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
 // @include    https://www.mgtv.com/*
@@ -75,10 +75,8 @@ delElem = e => e.remove(),
 $$ = (c, cb = delElem, doc = document) => {
 	if (!c || !c.length) return;
 	if (typeof c === 'string') c = doc.querySelectorAll(c);
-	if (cb) for (let e of c) {
-		if (e && cb(e)===false) break;
-	}
-	return c;
+	if (!cb) return c;
+	for (let e of c) if (e && cb(e)===false) break;
 },
 gmFuncOfCheckMenu = function(name, val) {
 	GM_setValue(name, val);
@@ -90,8 +88,8 @@ sleep = ms => new Promise(resolve => {
 	setTimeout(resolve, ms);
 }),
 getStyle = (o, s) => {
-    if (o.style[s]) return o.style[s];
-    if (getComputedStyle) {//DOM
+	if (o.style[s]) return o.style[s];
+	if (getComputedStyle) {//DOM
 		var x = getComputedStyle(o, '');
 		//s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
 		return x && x.getPropertyValue(s);
@@ -156,7 +154,7 @@ class FullScreen {
 	}
 }
 
-//万能网页全屏,代码参考了：https://github.com/gooyie/ykh5p
+//万能网页全屏, CSS代码参考了：https://github.com/gooyie/ykh5p
 class FullPage {
 	constructor(video, isFixView, onSwitch) {
 		this._video = video;
@@ -548,6 +546,12 @@ let router = {
 		w.addEventListener('popstate', doLater);
 		events.on('canplay', doLater);
 	},
+	pptv() {
+		if (!w.chrome) fakeUA(ua_chrome);
+		app.fullCSS = '.w-zoomIn';
+		app.nextCSS = '.w-next';
+		app.playCSS = '.w-play';
+	},
 	sina() {
 		fakeUA(ua_ipad2);
 	},
@@ -615,7 +619,7 @@ let router = {
 		return true;
 	}
 };
-router.mtime = router.pptv = router.sina;
+router.mtime = router.sina;
 
 if (!router[u]) { //直播站点
 	router = {
@@ -627,6 +631,7 @@ if (!router[u]) { //直播站点
 				$$('i.sign-spec', e=>e.parentNode.remove());
 			});
 			app.cssMV = '[src^=blob]';
+			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
 			app.adsCSS = '.layout-Player~*,[data-dysign],a[href*="wan.douyu.com"]';
@@ -650,7 +655,8 @@ if (!router[u]) { //直播站点
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
 				if (!w.TT_ROOM_DATA) return;
-				const $ = w.$;
+				const $ = w.$, player = v.closest('#player-wrap');
+				if (!player) return;
 				const onBitrate = function(e) {
 					const li = $(this);
 					if (li.hasClass('on')) return;
@@ -667,7 +673,7 @@ if (!router[u]) { //直播站点
 					el.remove();
 					$(".player-videotype-list li").unbind('click').click(onBitrate);
 				});
-				mo.observe(v.closest('#player-wrap'), {childList : true});
+				mo.observe(player, observeOpt);
 			});
 		},
 		longzhu() {
