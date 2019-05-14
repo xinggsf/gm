@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
-// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.3
-// @homepage   http://bbs.kafan.cn/thread-2093014-1-1.html
+// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @version    1.3.4
+// @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
 // @include    https://y.qq.com/*/mv/v/*
@@ -21,7 +21,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @include    http://*.mtime.com/*
+// @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
 // @include    *://www.le.com/ptv/vplay/*
 
@@ -504,7 +504,7 @@ let router = {
 		if (danmu) title += '    √';
 		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
 
-		let newPlayer, x = localStorage.bilibili_player_settings;
+		let src, x = localStorage.bilibili_player_settings;
 		if (x) {
 			x = JSON.parse(x);
 			x.video_status.highquality = true;
@@ -514,37 +514,21 @@ let router = {
 			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.playCSS = 'button[title="play video"]';
-		events.on('foundMV', () => {
-			newPlayer = !!q('#entryOld');
-			app.webfullCSS = newPlayer ? '.bilibili-player-video-web-fullscreen': 'i[name="web_fullscreen"]';
-			app.fullCSS = newPlayer ? '.bilibili-player-video-btn-fullscreen' : 'i[name="browser_fullscreen"]';
-		});
+		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
+		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
 		const _setPlayer = () => {
-			v = q('#bofqi video[src]');
-			if (!v) {
-				setTimeout(_setPlayer, 300);
-				return;
-			}
+			if (src == v.src) return;
+			src = v.src;
 			app.btnNext = app.btnWFS = app.btnFS = null;
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
-			const css = newPlayer ? '.bilibili-player-video-danmaku-switch input' : 'i[name=ctlbar_danmuku_close]';
+			const css = '.bilibili-player-video-danmaku-switch input';
 			!danmu && setTimeout(doClick, 500, css);//关弹幕
-
-			if (autoPlay) {
-				if (v.readyState === 4) v.play();
-				else v.oncanplaythrough = ev => { v.play() };
-			}
-
-			!newPlayer && v.scrollIntoView();
+			if (autoPlay) doClick(app.playCSS);
 		};
-		const fn = history.pushState;
-		history.pushState = function() {
-			fn.apply(this, arguments);
-			setTimeout(_setPlayer, 500);
-		};
-		const doLater = () => { setTimeout(_setPlayer, 500) };
-		w.addEventListener('popstate', doLater);
-		events.on('canplay', doLater);
+		events.on('canplay', () => {
+			_setPlayer();
+			setInterval(_setPlayer, 500);
+		});
 	},
 	pptv() {
 		if (!w.chrome) fakeUA(ua_chrome);
@@ -640,8 +624,9 @@ if (!router[u]) { //直播站点
 			app.isLive = !path.startsWith('/x/');
 			if (app.isLive) {
 				!w.chrome && fakeUA(ua_chrome);
-				app.fullCSS = '.liveplayerToolBar-fullScreenBtn';
-				app.webfullCSS = '.liveplayerToolbar-cinema';
+				app.fullCSS = '.yc__fullscreen-btn';
+				app.webfullCSS = '.yc__cinema-mode-btn';
+				app.playCSS = '.yc__play-btn';
 			}
 		},
 		huya() {

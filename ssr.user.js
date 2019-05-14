@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name         膜法小工具
-// @version      0.6.1
-// @author       dolacmeo  xinggsf
+// @version      0.6.2
 // @description  方便生活，快乐分享
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
@@ -18,6 +17,7 @@
 // @grant        GM_xmlhttpRequest
 // @grant        GM_openInTab
 // @grant        unsafeWindow
+// @updateURL    https://raw.githubusercontent.com/xinggsf/gm/master/ssr.user.js
 // ==/UserScript==
 
 GM_registerMenuCommand('读取github.com的ssr://链接到剪贴板', async () => {
