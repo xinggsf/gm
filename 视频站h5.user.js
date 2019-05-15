@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.4
+// @version    1.3.5
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -401,7 +401,7 @@ app = {
 			events.canplay && events.canplay();
 			v.removeEventListener('canplaythrough', fn);
 		};
-		if (v.readyState > 2) fn();
+		if (v.readyState > 3) fn();
 		else v.addEventListener('canplaythrough', fn);
 		document.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
@@ -513,17 +513,22 @@ let router = {
 		} else //defquality 选择清晰度，720P：64  1080P：80
 			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
 		app.nextCSS = '.bilibili-player-video-btn-next';
-		app.playCSS = 'button[title="play video"]';
+		app.playCSS = '.bilibili-player-video-btn-start';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
-		const _setPlayer = () => {
+		const _setPlayer = async () => {
 			if (src == v.src) return;
 			src = v.src;
 			app.btnNext = app.btnWFS = app.btnFS = null;
+			do {
+				await sleep(300);
+				x = q('.bilibili-player-video-danmaku-switch input');
+			} while (!x);
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
-			const css = '.bilibili-player-video-danmaku-switch input';
-			!danmu && setTimeout(doClick, 500, css);//关弹幕
-			if (autoPlay) doClick(app.playCSS);
+			if (x.checked != danmu) x.click(); //弹幕
+			await sleep(500);
+			autoPlay && doClick(app.playCSS);
+			v.focus();
 		};
 		events.on('canplay', () => {
 			_setPlayer();
