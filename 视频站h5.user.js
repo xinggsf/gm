@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.5
+// @version    1.3.6
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -16,6 +16,7 @@
 // @include    *://*.tudou.com/v/*
 // @include    *://www.bilibili.com/*
 // @include    http://v.pptv.com/show/*
+// @include    http://sports.pptv.com/vod/*
 // @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
 // @include    https://www.mgtv.com/*
@@ -63,10 +64,8 @@
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/视频站h5.user.js
 // ==/UserScript==
-'use strict';
-if (!NodeList.prototype[Symbol.iterator])
-	NodeList.prototype[Symbol.iterator] = HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator];
 
+'use strict';
 const isEdge = navigator.userAgent.includes('Edge'),
 w = isEdge ? window : unsafeWindow,
 observeOpt = {childList : true, subtree : true},
@@ -83,7 +82,7 @@ gmFuncOfCheckMenu = function(name, val) {
 	w.location.reload();
 },
 r1 = (regp, s) => regp.test(s) && RegExp.$1,
-log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#74C;font-size:1.2em'),
+log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#66C;font-size:1.2em'),
 sleep = ms => new Promise(resolve => {
 	setTimeout(resolve, ms);
 }),
@@ -94,16 +93,6 @@ getStyle = (o, s) => {
 		//s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
 		return x && x.getPropertyValue(s);
 	}
-},
-throttle = function(fn, delay = 100){ //函数节流
-	let timer = null, me = this;
-	return function(...args) {
-		timer && clearTimeout(timer);
-		timer = setTimeout(() => {
-			fn.apply(me, args);
-			timer = null;
-		}, delay);
-	};
 },
 doClick = e => {
 	if (typeof e === 'string') e = q(e);
@@ -493,10 +482,11 @@ let router = {
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
 		}
+		app.disableSpace = true;
 	},
 	bilibili() {
 		const autoPlay = GM_getValue('bili_autoPlay', true);
-		let title = '自动播放';
+		let src, x, title = '自动播放';
 		if (autoPlay) title += '    √';
 		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_autoPlay', !autoPlay));
 		const danmu = GM_getValue('bili_danmu', true);
@@ -504,14 +494,6 @@ let router = {
 		if (danmu) title += '    √';
 		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
 
-		let src, x = localStorage.bilibili_player_settings;
-		if (x) {
-			x = JSON.parse(x);
-			x.video_status.highquality = true;
-			x.video_status.iswidescreen = true;
-			localStorage.bilibili_player_settings = JSON.stringify(x);
-		} else //defquality 选择清晰度，720P：64  1080P：80
-			localStorage.bilibili_player_settings = `{"setting_config":{"type":"div","opacity":"1.00","fontfamily":"SimHei, 'Microsoft JhengHei'","fontfamilycustom":"","bold":false,"preventshade":false,"fontborder":0,"speedplus":"1.0","speedsync":false,"fontsize":"1.0","fullscreensync":false,"danmakunumber":50,"fullscreensend":false,"defquality":"80","sameaspanel":false},"video_status":{"autopart":1,"highquality":true,"widescreensave":true,"iswidescreen":true,"videomirror":false,"videospeed":1,"volume":1},"block":{"status":true,"type_scroll":true,"type_top":true,"type_bottom":true,"type_reverse":true,"type_guest":true,"type_color":true,"function_normal":true,"function_subtitle":true,"function_special":true,"cloud_level":2,"cloud_source_video":true,"cloud_source_partition":true,"cloud_source_all":true,"size":0,"regexp":false,"list":[]},"message":{"system":false,"bangumi":false,"news":false}}`;
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.playCSS = '.bilibili-player-video-btn-start';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
@@ -681,8 +663,6 @@ if (!router[u]) { //直播站点
 }
 
 Object.defineProperty(navigator, 'plugins', {
-	get() {
-		return { length: 0 };
-	}
+	get() { return { length: 0 } }
 });
 if (!router[u] || !router[u]()) app.init();
