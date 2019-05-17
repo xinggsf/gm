@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.6
+// @version    1.3.7
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -16,7 +16,6 @@
 // @include    *://*.tudou.com/v/*
 // @include    *://www.bilibili.com/*
 // @include    http://v.pptv.com/show/*
-// @include    http://sports.pptv.com/vod/*
 // @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
 // @include    https://www.mgtv.com/*
@@ -486,7 +485,7 @@ let router = {
 	},
 	bilibili() {
 		const autoPlay = GM_getValue('bili_autoPlay', true);
-		let src, x, title = '自动播放';
+		let x, title = '自动播放';
 		if (autoPlay) title += '    √';
 		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_autoPlay', !autoPlay));
 		const danmu = GM_getValue('bili_danmu', true);
@@ -494,14 +493,17 @@ let router = {
 		if (danmu) title += '    √';
 		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
 
-		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.playCSS = '.bilibili-player-video-btn-start';
+		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
-		const _setPlayer = async () => {
-			if (src == v.src) return;
-			src = v.src;
-			app.btnNext = app.btnWFS = app.btnFS = null;
+		const _setPlayer = async (isFirst = !1) => {
+			if (!isFirst) {
+				x = app.findMV();
+				if (x == v) return;
+				v = x;
+				app.btnNext = app.btnPlay = app.btnWFS = app.btnFS = null;
+			}
 			do {
 				await sleep(300);
 				x = q('.bilibili-player-video-danmaku-switch input');
@@ -509,11 +511,11 @@ let router = {
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
 			if (x.checked != danmu) x.click(); //弹幕
 			await sleep(500);
-			autoPlay && doClick(app.playCSS);
+			if (v.paused == autoPlay) doClick(app.playCSS); //自动播放
 			v.focus();
 		};
 		events.on('canplay', () => {
-			_setPlayer();
+			_setPlayer(true);
 			setInterval(_setPlayer, 500);
 		});
 	},
