@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.7
+// @version    1.3.8
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -485,13 +485,13 @@ let router = {
 	},
 	bilibili() {
 		const autoPlay = GM_getValue('bili_autoPlay', true);
-		let x, title = '自动播放';
-		if (autoPlay) title += '    √';
-		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_autoPlay', !autoPlay));
+		let x = '自动播放';
+		if (autoPlay) x += '    √';
+		GM_registerMenuCommand(x, gmFuncOfCheckMenu.bind(null, 'bili_autoPlay', !autoPlay));
 		const danmu = GM_getValue('bili_danmu', true);
-		title = '弹幕';
-		if (danmu) title += '    √';
-		GM_registerMenuCommand(title, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
+		x = '弹幕';
+		if (danmu) x += '    √';
+		GM_registerMenuCommand(x, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
 
 		app.playCSS = '.bilibili-player-video-btn-start';
 		app.nextCSS = '.bilibili-player-video-btn-next';
@@ -596,18 +596,19 @@ router.mtime = router.sina;
 
 if (!router[u]) { //直播站点
 	router = {
-		douyu() {
+		douyu() { // https://sta-op.douyucdn.cn/front-publish/live_player-master/js/h5-plugin_d7adb66.js
 			if (isEdge) fakeUA(ua_chrome);
-			let inRoom = /^\/(t\/)?\w+$/.test(path); //w.$ROOM?.room_id
+			const inRoom = /^\/(t\/)?\w+$/.test(path);
 			events.on('canplay', () => {
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
+				q('#js-player-aside-state').checked = true;
 			});
 			app.cssMV = '[src^=blob]';
 			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '.layout-Player~*,[data-dysign],a[href*="wan.douyu.com"]';
+			app.adsCSS = '.layout-Player~*,#js-player-dialog,#js-player-guessgame,[data-dysign],a[href*="wan.douyu.com"]';
 		},
 		yy() {
 			app.isLive = !path.startsWith('/x/');
@@ -626,28 +627,30 @@ if (!router[u]) { //直播站点
 			app.playCSS = '#player-btn';
 			app.adsCSS = '#player-subscribe-wap,#wrap-income';// 清爽界面,.room-footer,#J_spbg,.room-core-r,.room-hd-r
 
+			let $, onBitrate = function(e) {
+				const li = $(this);
+				if (li.hasClass('on')) return;
+				const rate = li.attr("ibitrate");
+				w.vplayer.vcore.reqBitRate(rate, w.TT_ROOM_DATA.channel);
+				li.siblings('.on').removeClass('on');
+				li.addClass('on').parent().parent().hide();
+				$('.player-videotype-cur').text(li.text());
+			},
+			resetMenu = () => $(".player-videotype-list li").unbind('click').click(onBitrate);
+
 			events.on('canplay', function() {
 				setTimeout($$, 900, app.adsCSS);
+				$ = w.$;
 				if (!w.TT_ROOM_DATA) return;
-				const $ = w.$, player = v.closest('#player-wrap');
-				if (!player) return;
-				const onBitrate = function(e) {
-					const li = $(this);
-					if (li.hasClass('on')) return;
-					const rate = li.attr("ibitrate");
-					w.vplayer.vcore.reqBitRate(rate, w.TT_ROOM_DATA.channel);
-					li.siblings('.on').removeClass('on');
-					li.addClass('on').parent().parent().hide();
-					$('.player-videotype-cur').text(li.text());
-				};
-				const mo = new MutationObserver(rs => {
+				new MutationObserver(function(rs) {
 					const el = q('#player-login-tip-wrap');
 					if (!el) return;
-					mo.disconnect();
+					this.disconnect();
 					el.remove();
-					$(".player-videotype-list li").unbind('click').click(onBitrate);
-				});
-				mo.observe(player, observeOpt);
+					resetMenu();
+				})
+				.observe(v.closest('#player-wrap'), observeOpt);
+				$('#change-line-btn').click(e => { setTimeout(resetMenu, 100) });
 			});
 		},
 		longzhu() {
