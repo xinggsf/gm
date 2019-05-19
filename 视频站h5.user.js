@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.8
+// @version    1.3.9
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -391,7 +391,7 @@ app = {
 		};
 		if (v.readyState > 3) fn();
 		else v.addEventListener('canplaythrough', fn);
-		document.addEventListener('keydown', this.hotKey.bind(this));
+		document.body.addEventListener('keydown', this.hotKey.bind(this));
 		this.checkUI();
 		events.foundMV && events.foundMV();
 
@@ -493,7 +493,7 @@ let router = {
 		if (danmu) x += '    √';
 		GM_registerMenuCommand(x, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
 
-		app.playCSS = '.bilibili-player-video-btn-start';
+		app.disableSpace = true;
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
@@ -511,7 +511,7 @@ let router = {
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
 			if (x.checked != danmu) x.click(); //弹幕
 			await sleep(500);
-			if (v.paused == autoPlay) doClick(app.playCSS); //自动播放
+			if (v.paused == autoPlay) doClick('.bilibili-player-video-btn-start'); //自动播放
 			v.focus();
 		};
 		events.on('canplay', () => {
@@ -597,12 +597,13 @@ router.mtime = router.sina;
 if (!router[u]) { //直播站点
 	router = {
 		douyu() { // https://sta-op.douyucdn.cn/front-publish/live_player-master/js/h5-plugin_d7adb66.js
-			if (isEdge) fakeUA(ua_chrome);
-			const inRoom = /^\/(t\/)?\w+$/.test(path);
+			if (!w.chrome) fakeUA(ua_chrome);
+			const inRoom = host.startsWith('www.');
 			events.on('canplay', () => {
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
-				q('#js-player-aside-state').checked = true;
+				if (inRoom) q('#js-player-aside-state').checked = true;
+				else w.$(document).unbind('keydown');
 			});
 			app.cssMV = '[src^=blob]';
 			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
@@ -650,7 +651,7 @@ if (!router[u]) { //直播站点
 					resetMenu();
 				})
 				.observe(v.closest('#player-wrap'), observeOpt);
-				$('#change-line-btn').click(e => { setTimeout(resetMenu, 100) });
+				$('.smart_menu_ul, #change-line-btn').click(e => { setTimeout(resetMenu, 100) });
 			});
 		},
 		longzhu() {
@@ -667,7 +668,7 @@ if (!router[u]) { //直播站点
 	app.isLive = app.isLive || router[u] && !host.startsWith('v.');
 }
 
-Object.defineProperty(navigator, 'plugins', {
+!/pptv/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });
 if (!router[u] || !router[u]()) app.init();
