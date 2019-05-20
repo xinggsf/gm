@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name       视频站启用html5播放器
 // @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.3.9
+// @version    1.4.0
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -421,7 +421,6 @@ app = {
 let router = {
 	youtube() {
 		app.fullCSS = '.ytp-fullscreen-button';
-		app.disableSpace = true;
 		app.nextCSS = '.ytp-next-button';
 	},
 	ted() {
@@ -457,7 +456,6 @@ let router = {
 	},
 	qq() {
 		Object.assign(app, {
-			disableSpace: true,
 			nextCSS: '.txp_btn_next',
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
@@ -481,7 +479,6 @@ let router = {
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
 		}
-		app.disableSpace = true;
 	},
 	bilibili() {
 		const autoPlay = GM_getValue('bili_autoPlay', true);
@@ -493,25 +490,20 @@ let router = {
 		if (danmu) x += '    √';
 		GM_registerMenuCommand(x, gmFuncOfCheckMenu.bind(null, 'bili_danmu', !danmu));
 
-		app.disableSpace = true;
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
-		const _setPlayer = async (isFirst = !1) => {
+		const _setPlayer = (isFirst = !1) => {
 			if (!isFirst) {
 				x = app.findMV();
-				if (x == v) return;
+				if (x == v || x.readyState < 4) return; //等待视频加载完成，再进行后续动作
 				v = x;
-				app.btnNext = app.btnPlay = app.btnWFS = app.btnFS = null;
+				app.btnNext = app.btnWFS = app.btnFS = null;
 			}
-			do {
-				await sleep(300);
-				x = q('.bilibili-player-video-danmaku-switch input');
-			} while (!x);
-			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
-			if (x.checked != danmu) x.click(); //弹幕
-			await sleep(500);
 			if (v.paused == autoPlay) doClick('.bilibili-player-video-btn-start'); //自动播放
+			x = q('.bilibili-player-video-danmaku-switch input');
+			if (x && x.checked != danmu) x.click(); //弹幕
+			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
 			v.focus();
 		};
 		events.on('canplay', () => {
@@ -537,23 +529,23 @@ let router = {
 	},
 	baidu() {
 		if (path.startsWith('/play/')) events.on('keydown', e => {
-			let n, p = w.videojs.getPlayers("video-player");
+			let n, p = videojs.getPlayers("video-player").html5player.tech_;
+			if (!p) return;
 			switch (e.keyCode) {
 			case 67: n = 0.1; //按键C：加速播放 +0.1
 			case 88: //按键X：减速播放 -0.1
 				n = n || -0.1;
-				n += p.html5player.tech_.playbackRate();
-				if (0 < n && n <= 16) p.html5player.tech_.setPlaybackRate(n);
+				n += +p.playbackRate().toFixed(1);
+				if (0 < n && n <= 16) p.setPlaybackRate(n);
 				return true;
 			case 90: //按键Z：正常速度播放
-				p.html5player.tech_.setPlaybackRate(1);
+				p.setPlaybackRate(1);
 				return true;
 			default: return !1;
 			}
 		});
 	},
 	mgtv() {
-		app.disableSpace = true;
 		app.nextCSS = 'mango-control-playnext-btn';
 		app.webfullCSS = 'mango-webscreen';
 		app.fullCSS = 'mango-screen';
@@ -593,6 +585,7 @@ let router = {
 	}
 };
 router.mtime = router.sina;
+app.disableSpace = /youtube|youku|qq|bilibili|mgtv|pptv/.test(u) || host == 'open.163.com';
 
 if (!router[u]) { //直播站点
 	router = {
@@ -609,7 +602,7 @@ if (!router[u]) { //直播站点
 			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '.layout-Player~*,#js-player-dialog,#js-player-guessgame,[data-dysign],a[href*="wan.douyu.com"]';
+			app.adsCSS = '.layout-Player~*,#js-player-guessgame,[data-dysign],a[href*="wan.douyu.com"]';
 		},
 		yy() {
 			app.isLive = !path.startsWith('/x/');

@@ -5,8 +5,8 @@
 // @version          0.0.4
 // @include          http://open.163.com/movie/20*
 // @include          https://open.163.com/movie/20*
-// @resource plrCSS  http://cdn.staticfile.org/dplayer/1.25.0/DPlayer.min.ccs
-// @require          http://cdn.staticfile.org/dplayer/1.25.0/DPlayer.min.js
+// @resource plrCSS  https://cdn.jsdelivr.net/npm/dplayer@1.25.0/dist/DPlayer.min.css
+// @require          https://cdn.jsdelivr.net/npm/dplayer@1.25.0/dist/DPlayer.min.js
 // @grant            GM_xmlhttpRequest
 // @grant            GM_getResourceText
 // @grant            GM_addStyle
