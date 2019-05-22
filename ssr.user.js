@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         膜法小工具
-// @version      0.6.2
+// @version      0.6.3
 // @description  方便生活，快乐分享
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
@@ -8,7 +8,7 @@
 // @require      https://cdn.jsdelivr.net/npm/fingerprintjs2@1.8.0/dist/fingerprint2.min.js
 // @resource     userip http://ip.taobao.com/service/getIpInfo.php?ip=myip
 // @resource     country_code https://gist.githubusercontent.com/dolaCmeo/f1810f8ceddf25880c6ae14e8dbc23d5/raw/cd3ab8280a2e6cb4decf3bab705d759e7c98deab/country_code.json
-// @include      *
+// @include      http*
 // @grant        GM_registerMenuCommand
 // @grant        GM_info
 // @grant        GM_addStyle
@@ -20,13 +20,29 @@
 // @updateURL    https://raw.githubusercontent.com/xinggsf/gm/master/ssr.user.js
 // ==/UserScript==
 
+const enb64 = Base64.encodeURI, deb64 = Base64.decode,
+ss2ssr = ([all, ip, port, password, method, date, state]) => {
+	const remarks = enb64(`${state}|更新时间 ${date}`); //国家 时间
+	// group: "Z2l0aHViLmNvbQ" == btoa('github.com')
+	return 'ssr://' + enb64(`${ip}:${port}:origin:${method}:plain:${enb64(password)}/?remarks=${remarks}&group=Z2l0aHViLmNvbQ`);
+},
+// |账号|端口|密码|加密方式|更新时间|国家|
+// |45.33.80.198|13871|f55.fun-63357070|aes-256-cfb|10:17:06|US|
+parseSS_List = (txt) => {
+	let m, a = [],
+	r = /\n\|([-\.\w]+)\|(\d+)\|([-\.\w]+)\|([-\w]+)\|(\d+:\d+:\d+)\|(\w{2,6})\|/g;
+	while (m = r.exec(txt)) a.push(ss2ssr(m));
+	return !a.length ? null : a;
+};
 GM_registerMenuCommand('读取github.com的ssr://链接到剪贴板', async () => {
 	const resp = await fetch('https://raw.githubusercontent.com/dxxzst/Free-SS-SSR/master/README.md');
 	const txt = await resp.text();
-	const m = txt.match(/\bssr:\/\/\w{9,}/g);
-	if (!m) return;
-	GM_setClipboard(m.join('\n'));
-	alert('ssr://链接列表已经拷贝到剪贴板');
+	const m = txt.match(/\bssr:\/\/\w{9,}/g) || parseSS_List(txt);
+	if (!m) alert('站点未提供ssr://链接列表！');
+	else {
+		GM_setClipboard(m.join('\n'));
+		alert('ssr://链接列表已经拷贝到剪贴板');
+	}
 });
 
 if (location.host.startsWith('free-ss.')) {
@@ -40,7 +56,6 @@ if (location.host.startsWith('free-ss.')) {
 		const ssTable = $("table:last"),
 		date_str = new Date().toISOString().slice(0, 10) + '_',
 		country_code = JSON.parse("" + GM_getResourceText('country_code')),
-		enb64 = Base64.encodeURI, deb64 = Base64.decode,
 		ok_method = ['aes-128-cfb', 'aes-128-ctr', 'aes-192-cfb', 'aes-192-ctr', 'aes-256-cfb', 'aes-256-ctr',
 			'bf-cfb', 'camellia-128-cfb', 'camellia-192-cfb', 'camellia-256-cfb', 'chacha20', 'chacha20-ietf', 'rc4-md5', 'salsa20'];
 

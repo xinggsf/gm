@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name       视频站启用html5播放器
-// @description 三大功能 。启用html5播放器；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @version    1.4.0
+// @name       视频网HTML5播放工具
+// @description 三大功能 。启用html5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @version    1.4.1
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    *://v.qq.com/*
 // @include    *://v.sports.qq.com/*
@@ -409,7 +409,7 @@ app = {
 		document.addEventListener('DOMContentLoaded', async e => {
 			events.DOMReady && events.DOMReady();
 			do {
-				await sleep(190);
+				await sleep(300);
 				$$(this.adsCSS);
 				v = this.findMV();
 			} while (!v);
@@ -493,22 +493,24 @@ let router = {
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
-		const _setPlayer = (isFirst = !1) => {
-			if (!isFirst) {
-				x = app.findMV();
-				if (x == v || x.readyState < 4) return; //等待视频加载完成，再进行后续动作
-				v = x;
-				app.btnNext = app.btnWFS = app.btnFS = null;
-			}
-			if (v.paused == autoPlay) doClick('.bilibili-player-video-btn-start'); //自动播放
+		const _setPlayer = () => {
 			x = q('.bilibili-player-video-danmaku-switch input');
-			if (x && x.checked != danmu) x.click(); //弹幕
-			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
+			if (!x) return setTimeout(_setPlayer, 300);
+			if (x.checked != danmu) x.click(); //弹幕
+			autoPlay && v.play(); //自动播放
 			v.focus();
+			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
+		};
+		const setPlayer = () => {
+			x = app.findMV();
+			if (x == v || x.readyState < 4) return; //等待视频加载完成，再进行后续动作
+			v = x;
+			app.btnNext = app.btnWFS = app.btnFS = null;
+			_setPlayer();
 		};
 		events.on('canplay', () => {
-			_setPlayer(true);
-			setInterval(_setPlayer, 500);
+			_setPlayer();
+			setInterval(setPlayer, 500);
 		});
 	},
 	pptv() {
@@ -528,18 +530,18 @@ let router = {
 		app.multipleV = path.startsWith('/u/');
 	},
 	baidu() {
-		if (path.startsWith('/play/')) events.on('keydown', e => {
-			let n, p = videojs.getPlayers("video-player").html5player.tech_;
-			if (!p) return;
+		events.on('keydown', e => {
+			if (!videojs) return;
+			let n, p = videojs.getPlayers("video-player").html5player;
 			switch (e.keyCode) {
 			case 67: n = 0.1; //按键C：加速播放 +0.1
 			case 88: //按键X：减速播放 -0.1
 				n = n || -0.1;
-				n += +p.playbackRate().toFixed(1);
-				if (0 < n && n <= 16) p.setPlaybackRate(n);
+				n += +p.tech_.playbackRate().toFixed(1);
+				if (0 < n && n <= 16) p.tech_.setPlaybackRate(n);
 				return true;
 			case 90: //按键Z：正常速度播放
-				p.setPlaybackRate(1);
+				p.tech_.setPlaybackRate(1);
 				return true;
 			default: return !1;
 			}
@@ -559,7 +561,7 @@ let router = {
 	sohu() {
 		if (!path.endsWith('html')) return true;
 		app.nextCSS = 'li.on[data-vid]+li a';
-		app.fullCSS = '.x-fullscreen-btn';//x-fs-btn
+		app.fullCSS = '.x-fullscreen-btn';
 	},
 	fun() {
 		if (host.startsWith('m.')) {
@@ -585,12 +587,11 @@ let router = {
 	}
 };
 router.mtime = router.sina;
-app.disableSpace = /youtube|youku|qq|bilibili|mgtv|pptv/.test(u) || host == 'open.163.com';
+app.disableSpace = /youtube|youku|qq|bilibili|mgtv|pptv|baidu/.test(u) || host == 'open.163.com';
 
 if (!router[u]) { //直播站点
 	router = {
 		douyu() { // https://sta-op.douyucdn.cn/front-publish/live_player-master/js/h5-plugin_d7adb66.js
-			if (!w.chrome) fakeUA(ua_chrome);
 			const inRoom = host.startsWith('www.');
 			events.on('canplay', () => {
 				$$(app.adsCSS);
@@ -607,7 +608,6 @@ if (!router[u]) { //直播站点
 		yy() {
 			app.isLive = !path.startsWith('/x/');
 			if (app.isLive) {
-				!w.chrome && fakeUA(ua_chrome);
 				app.fullCSS = '.yc__fullscreen-btn';
 				app.webfullCSS = '.yc__cinema-mode-btn';
 				app.playCSS = '.yc__play-btn';
@@ -615,7 +615,6 @@ if (!router[u]) { //直播站点
 		},
 		huya() {
 			if (firefoxVer && firefoxVer < 57) return true;
-			if (!w.chrome) fakeUA(ua_chrome);
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
@@ -648,11 +647,9 @@ if (!router[u]) { //直播站点
 			});
 		},
 		longzhu() {
-			if (!w.chrome) fakeUA(ua_chrome);
 			app.fullCSS = 'a.ya-screen-btn';
 		},
 		zhanqi() {
-			if (isEdge) fakeUA(ua_chrome);
 			localStorage.lastPlayer = 'h5';
 			app.fullCSS = '.video-fullscreen';
 		}
@@ -660,6 +657,7 @@ if (!router[u]) { //直播站点
 
 	app.isLive = app.isLive || router[u] && !host.startsWith('v.');
 }
+if (app.isLive && !w.chrome) fakeUA(ua_chrome);
 
 !/pptv/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
