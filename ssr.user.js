@@ -21,8 +21,8 @@
 // ==/UserScript==
 
 const enb64 = Base64.encodeURI, deb64 = Base64.decode,
-ss2ssr = ([all, ip, port, password, method, date, state]) => {
-	const remarks = enb64(`${state}|更新时间 ${date}`); //国家 时间
+ss2ssr = ([all, ip, port, password, method, time, state]) => {
+	const remarks = enb64(`${state}|更新时间 ${time}`);
 	// group: "Z2l0aHViLmNvbQ" == btoa('github.com')
 	return 'ssr://' + enb64(`${ip}:${port}:origin:${method}:plain:${enb64(password)}/?remarks=${remarks}&group=Z2l0aHViLmNvbQ`);
 },
