@@ -18,7 +18,7 @@
 // @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
 // @include    *://www.le.com/ptv/vplay/*
-// @version    1.4.2
+// @version    1.4.3
 // @include    *://*.163.com/*
 // @include    *://www.icourse163.org/learn/*
 // @include    *://*.sina.com.cn/*
@@ -37,7 +37,7 @@
 // @noframes
 // @include    *://www.yy.com/*
 // @include    *://v.huya.com/play/*
-// @include    *://www.huya.com/*
+// @include    https://www.huya.com/*
 // @include    https://v.douyu.com/*
 // @include    https://www.douyu.com/*
 // @include    *://star.longzhu.com/*
@@ -334,7 +334,6 @@ app = {
 		if (this.btnPlay) this.play = () => this._convertButton(this.btnPlay);
 	},
 	switchFP(toFull) {
-		//if (!this.viewObserver) return;
 		if (toFull) {
 			for (let e of this.vSet) this.viewObserver.unobserve(e);
 		} else {
@@ -372,6 +371,7 @@ app = {
 	},
 	bindEvent() {
 		log('bind event\n', v);
+		events.foundMV && events.foundMV();
 		const fn = ev => {
 			events.canplay && events.canplay();
 			v.removeEventListener('canplaythrough', fn);
@@ -379,12 +379,13 @@ app = {
 		if (v.readyState > 3) fn();
 		else v.addEventListener('canplaythrough', fn);
 		document.body.addEventListener('keydown', this.hotKey.bind(this));
-		this.checkUI();
-		events.foundMV && events.foundMV();
 
-		if (this.multipleV) new MutationObserver(this.onGrowVList.bind(this))
-			.observe(document.body, observeOpt);
-		this.vCount = 1;
+		if (this.multipleV) {
+			new MutationObserver(this.onGrowVList.bind(this))
+				.observe(document.body, observeOpt);
+			this.vCount = 0;
+			this.onGrowVList();
+		}
 	},
 	findMV() {
 		if (!this.cssMV) return this.vList[0];
@@ -393,15 +394,13 @@ app = {
 	init() {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
 		this.vList = document.getElementsByTagName('video');
-		document.addEventListener('DOMContentLoaded', async e => {
-			events.DOMReady && events.DOMReady();
-			do {
-				await sleep(300);
-				$$(this.adsCSS);
-				v = this.findMV();
-			} while (!v);
-			this.bindEvent();
-		});
+		const t = setInterval(() => {
+			$$(this.adsCSS);
+			if (v = this.findMV()) {
+				clearInterval(t);
+				this.bindEvent();
+			}
+		}, 300);
 	}
 };
 
@@ -563,6 +562,10 @@ let router = {
 			vid = w.vplay.videoid;
 			vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
 		}, 99);
+		r1(/\bt-(\d+)/, path) && setTimeout(() => {
+			vid = w.vplay.videoid;
+			location.assign('//m.fun.tv/ivplay/?vid='+vid);
+		}, 99);
 		return true;
 	}
 };
@@ -571,9 +574,11 @@ app.disableSpace = /youtube|youku|qq|bilibili|mgtv|pptv|baidu|365yg/.test(u) || 
 
 if (!router[u]) { //直播站点
 	router = {
-		douyu() { // https://sta-op.douyucdn.cn/front-publish/live_player-master/js/h5-plugin_d7adb66.js
+		douyu() {
 			const inRoom = host.startsWith('www.');
+			if (firefoxVer && !inRoom) return true;
 			events.on('canplay', () => {
+				setTimeout(doClick, 2e3, '.roomSmallPlayerFloatLayout-closeBtn');
 				$$(app.adsCSS);
 				$$('i.sign-spec', e=>e.parentNode.remove());
 				if (inRoom) q('#js-player-aside-state').checked = true;
@@ -598,8 +603,8 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income';
-
+			app.adsCSS = '#player-subscribe-wap,#wrap-income,#hy-ad';
+/*
 			let $, onBitrate = function(e) {
 				const li = $(this);
 				if (li.hasClass('on')) return;
@@ -623,8 +628,8 @@ if (!router[u]) { //直播站点
 					resetMenu();
 				})
 				.observe(v.closest('#player-wrap'), observeOpt);
-				$('.smart_menu_ul, #change-line-btn').click(e => { setTimeout(resetMenu, 100) });
-			});
+				$('.smart_menu_ul, #change-line-btn').click(e => { setTimeout(resetMenu, 90) });
+			}); */
 		},
 		longzhu() {
 			app.fullCSS = 'a.ya-screen-btn';
@@ -638,7 +643,7 @@ if (!router[u]) { //直播站点
 }
 if (app.isLive && !w.chrome) fakeUA(ua_chrome);
 
-!/pptv/.test(u) && Object.defineProperty(navigator, 'plugins', {
+!/pptv|douyu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });
 if (!router[u] || !router[u]()) app.init();

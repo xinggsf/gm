@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         膜法小工具
-// @version      0.6.3
+// @version      0.6.5
 // @description  方便生活，快乐分享
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
@@ -21,23 +21,20 @@
 // ==/UserScript==
 
 const enb64 = Base64.encodeURI, deb64 = Base64.decode,
-ss2ssr = ([all, ip, port, password, method, time, state]) => {
-	const remarks = enb64(`${state}|更新时间 ${time}`);
-	// group: "Z2l0aHViLmNvbQ" == btoa('github.com')
-	return 'ssr://' + enb64(`${ip}:${port}:origin:${method}:plain:${enb64(password)}/?remarks=${remarks}&group=Z2l0aHViLmNvbQ`);
-},
-// |账号|端口|密码|加密方式|更新时间|国家|
-// |45.33.80.198|13871|f55.fun-63357070|aes-256-cfb|10:17:06|US|
-parseSS_List = (txt) => {
-	let m, a = [],
-	r = /\n\|([-\.\w]+)\|(\d+)\|([-\.\w]+)\|([-\w]+)\|(\d+:\d+:\d+)\|(\w{2,6})\|/g;
-	while (m = r.exec(txt)) a.push(ss2ssr(m));
-	return !a.length ? null : a;
+xfetch = (url) => {
+	return new Promise((success, fail) => {
+		GM_xmlhttpRequest({
+			method: 'GET',
+			url: url,
+			onload: success,
+			onerror: fail,
+			ontimeout: fail
+		});
+	});
 };
-GM_registerMenuCommand('读取github.com的ssr://链接到剪贴板', async () => {
-	const resp = await fetch('https://raw.githubusercontent.com/dxxzst/Free-SS-SSR/master/README.md');
-	const txt = await resp.text();
-	const m = txt.match(/\bssr:\/\/\w{9,}/g) || parseSS_List(txt);
+GM_registerMenuCommand('读取youneed.win的ssr://链接到剪贴板', async () => {
+	const resp = await xfetch('https://www.youneed.win/free-ssr');
+	const m = resp.responseText.match(/\bssr:\/\/\w{9,}/g);
 	if (!m) alert('站点未提供ssr://链接列表！');
 	else {
 		GM_setClipboard(m.join('\n'));
