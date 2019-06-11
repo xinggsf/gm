@@ -3,6 +3,7 @@
 // @description 三大功能 。启用html5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    https://*.qq.com/*
+// @exclude    https://user.qzone.qq.com/*
 // @include    https://www.weiyun.com/video_*
 // @include    https://www.youku.com/
 // @include    https://v.youku.com/v_show/id_*
@@ -18,7 +19,7 @@
 // @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
 // @include    *://www.le.com/ptv/vplay/*
-// @version    1.4.3
+// @version    1.4.5
 // @include    *://*.163.com/*
 // @include    *://www.icourse163.org/learn/*
 // @include    *://*.sina.com.cn/*
@@ -103,7 +104,7 @@ getMainDomain = host => {
 	if (['com','tv','net','org','gov','edu'].includes(a[i])) i--;
 	return a[i];
 },
-ua_chrome = 'Mozilla/5.0 (Windows NT 10.0; WOW64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.9',
+ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3626.121 Safari/537.36',
 ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
 
 class FullScreen {
@@ -237,6 +238,10 @@ app = {
 	multipleV: !1, //单页面多视频
 	isFixFPView: !1, //退出网页全屏时是否修正DOM视图
 	getVideos() {
+		if (!v) {
+			v = this.findMV();
+			return;
+		}
 		if (v.offsetWidth>1) return;
 		for (let e of this.vList) if (e.offsetWidth>1) {
 			e.playbackRate = v.playbackRate;
@@ -395,9 +400,9 @@ app = {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
 		this.vList = document.getElementsByTagName('video');
 		const t = setInterval(() => {
-			$$(this.adsCSS);
 			if (v = this.findMV()) {
 				clearInterval(t);
+				$$(this.adsCSS);
 				this.bindEvent();
 			}
 		}, 300);
@@ -407,6 +412,7 @@ app = {
 let router = {
 	youtube() {
 		app.fullCSS = '.ytp-fullscreen-button';
+		app.webfullCSS = '.ytp-size-button';
 		app.nextCSS = '.ytp-next-button';
 	},
 	ted() {
@@ -576,11 +582,9 @@ if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			const inRoom = host.startsWith('www.');
-			if (firefoxVer && !inRoom) return true;
 			events.on('canplay', () => {
 				setTimeout(doClick, 2e3, '.roomSmallPlayerFloatLayout-closeBtn');
 				$$(app.adsCSS);
-				$$('i.sign-spec', e=>e.parentNode.remove());
 				if (inRoom) q('#js-player-aside-state').checked = true;
 				else w.$(document).unbind('keydown');
 			});
@@ -588,7 +592,7 @@ if (!router[u]) { //直播站点
 			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '.layout-Player~*,[data-dysign],a[href*="wan.douyu.com"]';
+			app.adsCSS = '[data-dysign],a[href*="wan.douyu.com"]';
 		},
 		yy() {
 			app.isLive = !path.startsWith('/x/');
@@ -604,32 +608,6 @@ if (!router[u]) { //直播站点
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
 			app.adsCSS = '#player-subscribe-wap,#wrap-income,#hy-ad';
-/*
-			let $, onBitrate = function(e) {
-				const li = $(this);
-				if (li.hasClass('on')) return;
-				const rate = li.attr("ibitrate");
-				w.vplayer.vcore.reqBitRate(rate, w.TT_ROOM_DATA.channel);
-				li.siblings('.on').removeClass('on');
-				li.addClass('on').parent().parent().hide();
-				$('.player-videotype-cur').text(li.text());
-			},
-			resetMenu = () => $(".player-videotype-list li").unbind('click').click(onBitrate);
-
-			events.on('canplay', function() {
-				setTimeout($$, 900, app.adsCSS);
-				$ = w.$;
-				if (!w.TT_ROOM_DATA) return;
-				new MutationObserver(function(rs) {
-					const el = q('#player-login-tip-wrap');
-					if (!el) return;
-					this.disconnect();
-					el.remove();
-					resetMenu();
-				})
-				.observe(v.closest('#player-wrap'), observeOpt);
-				$('.smart_menu_ul, #change-line-btn').click(e => { setTimeout(resetMenu, 90) });
-			}); */
 		},
 		longzhu() {
 			app.fullCSS = 'a.ya-screen-btn';
@@ -640,8 +618,8 @@ if (!router[u]) { //直播站点
 		}
 	};
 	app.isLive = app.isLive || router[u] && !host.startsWith('v.');
+	router[u] && !w.chrome && fakeUA(ua_chrome);
 }
-if (app.isLive && !w.chrome) fakeUA(ua_chrome);
 
 !/pptv|douyu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
