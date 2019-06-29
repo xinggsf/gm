@@ -77,7 +77,6 @@ class Subtitle{
 			return a[0].baseURL + "&tlang=" + lang;
 		}
 
-
 		for (var caption of this.tracks) {
 			if (caption.isTranslatable && caption.languageCode === language_code) {
 				baseURL = caption.baseUrl;

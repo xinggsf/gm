@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         膜法小工具
-// @version      0.6.5
+// @version      0.6.6
 // @description  方便生活，快乐分享
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
@@ -8,7 +8,8 @@
 // @require      https://cdn.jsdelivr.net/npm/fingerprintjs2@1.8.0/dist/fingerprint2.min.js
 // @resource     userip http://ip.taobao.com/service/getIpInfo.php?ip=myip
 // @resource     country_code https://gist.githubusercontent.com/dolaCmeo/f1810f8ceddf25880c6ae14e8dbc23d5/raw/cd3ab8280a2e6cb4decf3bab705d759e7c98deab/country_code.json
-// @include      http*
+// @include      https://free-ss.*
+// @include      https://www.youneed.win/free-ssr
 // @grant        GM_registerMenuCommand
 // @grant        GM_info
 // @grant        GM_addStyle
@@ -20,35 +21,25 @@
 // @updateURL    https://raw.githubusercontent.com/xinggsf/gm/master/ssr.user.js
 // ==/UserScript==
 
-const enb64 = Base64.encodeURI, deb64 = Base64.decode,
-xfetch = (url) => {
-	return new Promise((success, fail) => {
-		GM_xmlhttpRequest({
-			method: 'GET',
-			url: url,
-			onload: success,
-			onerror: fail,
-			ontimeout: fail
-		});
-	});
-};
-GM_registerMenuCommand('读取youneed.win的ssr://链接到剪贴板', async () => {
-	const resp = await xfetch('https://www.youneed.win/free-ssr');
-	const m = resp.responseText.match(/\bssr:\/\/\w{9,}/g);
-	if (!m) alert('站点未提供ssr://链接列表！');
-	else {
-		GM_setClipboard(m.join('\n'));
-		alert('ssr://链接列表已经拷贝到剪贴板');
-	}
-});
+const { encodeURI: enb64, decode: deb64 } = Base64;
 
-if (location.host.startsWith('free-ss.')) {
+if (!location.host.startsWith('free-ss.')) {
+	GM_registerMenuCommand('读取ssr://链接到剪贴板', () => {
+		const m = unsafeWindow.jQuery('.context a[href^=ssr]')
+		.get().map(e => e.href).join('\n');
+		if (!m) alert('站点未提供ssr://链接列表！');
+		else {
+			GM_setClipboard(m);
+			alert('ssr://链接列表已经拷贝到剪贴板');
+		}
+	});
+} else {
 	const t = setInterval(() => {
 		'use strict';
-		const $ = unsafeWindow.$, layer = unsafeWindow.layer;
+		const { $, layer } = unsafeWindow;
 		if (!$ || !layer) return;
 		clearInterval(t);
-		$(".affdiv, .banner").remove(); // 去广告
+		$(".affdiv, .banner").remove(); //去广告
 
 		const ssTable = $("table:last"),
 		date_str = new Date().toISOString().slice(0, 10) + '_',
@@ -74,7 +65,8 @@ if (location.host.startsWith('free-ss.')) {
 		});
 		ssTable.before("<ul id='tools'></ul>");
 		$('#qrcode').after('<div style="display:none" id="qrcode0"></div>');
-		GM_addStyle(`body{margin:0;}
+		GM_addStyle(
+			`body{margin:0;}
 			h2 small a{font-weight:bold;color:#4CAF50;font-size:10px;text-decoration:none;}
 			h2 small button{padding:2px 5px;border:none;font-size:1em;cursor:pointer;}
 			li.a {padding:0 40px;}li.q {padding:0 20px;}
@@ -88,8 +80,8 @@ if (location.host.startsWith('free-ss.')) {
 			#tools .btn{display:inline-block;float:right;}
 			#tools .btn small{color:#e91e63;font-weight: bold;}
 			.showup {opacity: 1;} .showoff {opacity: 0;}
-			#ss_area {display:inline-block;float:right;margin-left:3px;padding:1px 6px;height:23px;cursor:pointer;color:blue;}
-		`);
+			#ss_area {display:inline-block;float:right;margin-left:3px;padding:1px 6px;height:23px;cursor:pointer;color:blue;}`
+		);
 
 		// 终端信息
 		$('#qrcode').after('<div style="display:none" id="client"></div>');
@@ -138,7 +130,7 @@ if (location.host.startsWith('free-ss.')) {
 		// 工具对象
 		let tools = {
 			// 查询当前页面次序
-			order: function () {
+			order() {
 				let o = [], v, d = {};
 				ssTable.find('th').each(function() {
 					v = $(this).html();
@@ -158,7 +150,7 @@ if (location.host.startsWith('free-ss.')) {
 				return d;
 			},
 			// 整理链接区域
-			area: function () {
+			area() {
 				let column = 6, l = [], ssdatas = dataTable.data();
 				if (order != undefined) {
 					column = order.globe;
@@ -174,7 +166,7 @@ if (location.host.startsWith('free-ss.')) {
 				return l;
 			},
 			// ss://method:password@server:port
-			ss: function (data) {
+			ss(data) {
 				let method = data[order.method],
 				password = data[order.password],
 				server = data[order.address],
@@ -183,7 +175,7 @@ if (location.host.startsWith('free-ss.')) {
 				return 'ss://' + enb64(method + ':' + password + '@' + server + ':' + port) + '#' + remark;
 			},
 			// ssr://server:port:protocol:method:obfs:password_base64/?params_base64
-			ssr: function (data) {
+			ssr(data) {
 				let server = data[order.address],
 				port = data[order.port],
 				protocol = "origin",
@@ -195,23 +187,22 @@ if (location.host.startsWith('free-ss.')) {
 				return 'ssr://' + enb64(server + ':' + port + ':' + protocol + ':' + method + ':' + obfs + ':' + enb64(password) + '/?remarks=' + enb64(remarks) + '&group=' + group);
 			},
 			// 将数据处理成链接
-			datas: function () {
+			datas() {
 				let ssdatas;
 				if (dataTable.rows('.selected').data().length > 0) {
 					ssdatas = dataTable.rows('.selected').data();
 				} else {
 					ssdatas = dataTable.data();
 				}
-				ss_links_str = ssr_links_str = "";
+				ss_links_str = ssr_links_str = '';
 				$.each(ssdatas, function (i, data) {
 					ss_links_str += tools.ss(data) + '\n';
 					ssr_links_str += tools.ssr(data) + '\n';
 				});
 				return ssdatas;
 			},
-			upload: function (URL) {
-				if (!URL) return;
-				GM_xmlhttpRequest({
+			upload(URL) {
+				if (URL) GM_xmlhttpRequest({
 					method: 'POST',
 					url: URL,
 					headers: {

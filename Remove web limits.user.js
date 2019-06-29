@@ -3,12 +3,13 @@
 // @name              网页限制解除（精简优化版）
 // @description       解除大部分网站禁止复制、剪切、选择文本、右键菜单的限制。
 // @homepageURL       https://github.com/xinggsf/gm/
-// @supportURL        https://github.com/Cat7373/remove-web-limits/issues/
 // @author            Cat73  xinggsf
-// @version           1.5.5
+// @version           1.5.6
 // @license           LGPLv3
 // @include           https://www.zhihu.com/*
 // @include           https://www.bilibili.com/read/*
+// @include           *://imac.hk/*
+// @include           https://life.tw/*
 
 // @include           *://b.faloo.com/*
 // @include           *://bbs.coocaa.com/*
@@ -25,8 +26,6 @@
 // @include           *://tiyu.baidu.com/*
 // @include           *://yd.baidu.com/*
 // @include           *://yuedu.baidu.com/*
-// @include           *://imac.hk/*
-// @include           https://life.tw/*
 // @include           *://luxmuscles.com/*
 // @include           *://read.qidian.com/*
 // @include           *://www.15yan.com/*
@@ -54,7 +53,6 @@
 // 域名规则列表
 const rules = {
 	plus: {
-		name: "default",
 		hook_eventNames: "contextmenu|select|selectstart|copy|cut|dragstart",
 		unhook_eventNames: "mousedown|mouseup|keydown|keyup",
 		dom0: true,
@@ -66,9 +64,7 @@ const rules = {
 
 const returnTrue = e => true;
 // 获取目标域名应该使用的规则
-const getRule = (host) => {
-	return rules.plus;
-};
+const getRule = (host) => rules[host] || rules.plus;
 const dontHook = e => !!e.closest('form');
 // 储存被 Hook 的函数
 const EventTarget_addEventListener = EventTarget.prototype.addEventListener;
@@ -79,12 +75,9 @@ let hook_eventNames, unhook_eventNames, eventNames;
 
 // Hook addEventListener proc
 function addEventListener(type, func, useCapture) {
-	let _addEventListener = this === document ? document_addEventListener : EventTarget_addEventListener;
-	if (!hook_eventNames.includes(type)) {
-		_addEventListener.apply(this, arguments);
-	} else {
-		_addEventListener.apply(this, [type, returnTrue, useCapture]);
-	}
+	const _addEventListener = this === document ? document_addEventListener : EventTarget_addEventListener;
+	const a = hook_eventNames.includes(type) ? [type, returnTrue, useCapture] : arguments;
+	_addEventListener.apply(this, a);
 }
 
 // 清理或还原DOM节点的onxxx属性
@@ -93,7 +86,7 @@ function clearLoop() {
 	c = [document,document.body, ...document.getElementsByTagName('div')],
 	// https://life.tw/?app=view&no=746862
 	e = document.querySelector('iframe[src="about:blank"]');
-	if (e && e.clientWidth>99 && e.clientHeight>11){
+	if (e && e.clientWidth>99 && e.clientHeight>11) {
 		e = e.contentWindow.document;
 		c.push(e, e.body);
 	}
@@ -111,7 +104,6 @@ function clearLoop() {
 function init() {
 	// 获取当前域名的规则
 	let rule = getRule(location.host);
-
 	// 设置 event 列表
 	hook_eventNames = rule.hook_eventNames.split("|");
 	// Allowed to return value

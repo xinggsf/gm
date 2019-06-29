@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       视频网HTML5播放小工具
-// @description 三大功能 。启用html5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @description 三大功能 。启用HTML5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、乐视、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    https://*.qq.com/*
 // @exclude    https://user.qzone.qq.com/*
@@ -11,7 +11,7 @@
 // @include    https://video.tudou.com/v/*
 // @include    https://www.bilibili.com/*
 // @include    http://v.pptv.com/show/*
-// @include    https://tv.sohu.com/*
+// @include    https://tv.sohu.com/v/*
 // @include    https://film.sohu.com/album/*
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
@@ -19,9 +19,9 @@
 // @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
 // @include    *://www.le.com/ptv/vplay/*
-// @version    1.4.5
+// @version    1.5.0
 // @include    *://*.163.com/*
-// @include    *://www.icourse163.org/learn/*
+// @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
 // @include    *://video.sina.cn/*
 // @include    *://weibo.com/*
@@ -54,66 +54,68 @@
 // ==/UserScript==
 
 'use strict';
-const isEdge = navigator.userAgent.includes('Edge'),
-w = isEdge ? window : unsafeWindow,
-observeOpt = {childList : true, subtree : true},
-q = css => document.querySelector(css),
-delElem = e => e.remove(),
-$$ = (c, cb = delElem, doc = document) => {
+const isEdge = navigator.userAgent.includes('Edge');
+const w = isEdge ? window : unsafeWindow;
+const observeOpt = {childList : true, subtree : true};
+const q = css => document.querySelector(css);
+const delElem = e => e.remove();
+const $$ = (c, cb = delElem, doc = document) => {
 	if (!c || !c.length) return;
 	if (typeof c === 'string') c = doc.querySelectorAll(c);
 	if (!cb) return c;
-	for (let e of c) if (e && cb(e)===false) break;
-},
-gmFuncOfCheckMenu = (title, saveName, defaultVal = true) => {
+	for (let e of c) {
+		if (e && cb(e)===false) break;
+	}
+};
+const gmFuncOfCheckMenu = (title, saveName, defaultVal = true) => {
 	const r = GM_getValue(saveName, defaultVal);
 	if (r) title += '            √';
 	GM_registerMenuCommand(title, () => {
 		GM_setValue(saveName, !r);
-		w.location.reload();
+		location.reload();
 	});
 	return r;
-},
-r1 = (regp, s) => regp.test(s) && RegExp.$1,
-log = console.log.bind(console,`%c脚本[${GM_info.script.name}]`,'color:#c3c;font-size:1.2em'),
-sleep = ms => new Promise(resolve => {
+};
+const r1 = (regp, s) => regp.test(s) && RegExp.$1;
+const log = console.log.bind(console, '%c脚本[%s] 反馈：%s\n%s', 'color:#c3c;font-size:1.5em',
+	GM_info.script.name, GM_info.script.homepage);
+const sleep = ms => new Promise(resolve => {
 	setTimeout(resolve, ms);
-}),
-getStyle = (o, s) => {
+});
+const getStyle = (o, s) => {
 	if (o.style[s]) return o.style[s];
 	if (getComputedStyle) {//DOM
 		var x = getComputedStyle(o, '');
 		//s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
 		return x && x.getPropertyValue(s);
 	}
-},
-doClick = e => {
+};
+const doClick = e => {
 	if (typeof e === 'string') e = q(e);
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
-},
-firefoxVer = r1(/Firefox\/(\d+)/, navigator.userAgent),
-fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
+};
+const firefoxVer = r1(/Firefox\/(\d+)/, navigator.userAgent);
+const fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
 	configurable: false,
 	enumerable: true
-}),
-getMainDomain = host => {
-	let a = host.split('.'),
-	i = a.length -2;
-	if (['com','tv','net','org','gov','edu'].includes(a[i])) i--;
+});
+const getMainDomain = host => {
+	const re = /com|tv|net|org|gov|edu/;
+	const a = host.split('.');
+	let i = a.length - 2;
+	if (re.test(a[i])) i--;
 	return a[i];
-},
-ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3626.121 Safari/537.36',
-ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
+};
+const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3626.121 Safari/537.36';
+const ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
 
 class FullScreen {
 	constructor(video) {
 		this._video = video;
-		const d = document;
+		const d = document, e = video;
 		this._exitFn = d.exitFullscreen || d.webkitExitFullscreen || d.mozCancelFullScreen || d.msExitFullscreen;
-
-		const e = video;
 		this._enterFn = e.requestFullscreen || e.webkitRequestFullScreen || e.mozRequestFullScreen || e.msRequestFullScreen;
 	}
 
@@ -145,8 +147,8 @@ class FullPage {
 		this._onSwitch = onSwitch;
 		this._rects = new Map();
 		this._checkContainer();
-		GM_addStyle(`
-			.z-top {
+		GM_addStyle(
+			`.z-top {
 				position: relative !important;
 				z-index: 23333333 !important;
 			}
@@ -159,30 +161,29 @@ class FullPage {
 				left: 0 !important;
 				background: #000 !important;
 				z-index: 23333333 !important;
-			}
-		`);
+			}`
+		);
 	}
 
 	getPlayerContainer(video) {
-		let d = document.body, e = video, p = e.parentNode;
-		const {clientWidth: wid, clientHeight: h} = e;
-		while (1) {
+		let e = video, p = e.parentNode;
+		const { clientWidth: wid, clientHeight: h } = e;
+		for (;;) {
 			this._rects.set(e, {
 				width: e.clientWidth + 'px',
 				height: e.clientHeight + 'px'
 			});
-			e.style.maxWidth = e.style.maxHeight = '100%';
-			if (p == d || p.clientWidth < wid || p.clientWidth - wid >3 ||
-				p.clientHeight < h || p.clientHeight - h >3) return e;
+			if (e.style.maxWidth) e.style.maxWidth = '100%';
+			if (e.style.maxHeight) e.style.maxHeight = '100%';
+			if (p==document.body || p.clientWidth-wid >3 || p.clientHeight-h >3) return e;
 			e = p;
 			p = e.parentNode;
 		}
 	}
 
 	_checkContainer() {
-		const e = this._video;
-		if (!this._container || this._container === e)
-			this._container = this.getPlayerContainer(e);
+		const c = this._container, e = this._video;
+		if (!c || c === e) this._container = this.getPlayerContainer(e);
 	}
 
 	get container() {
@@ -193,16 +194,18 @@ class FullPage {
 	fixView() {
 		if (!this._isFixView && !this._isFull) return;
 		if (this._video === this._container) return;
-		for(let [e, v] of this._rects) if (this._isFull)
-			e.style.width = e.style.height = e.style.maxWidth = e.style.maxHeight = '100%';
-		else {
-			e.style.width = v.width;
-			e.style.height = v.height;
+		for (let [e, v] of this._rects) {
+			if (this._isFull) {
+				e.style.width = e.style.height = '100%';
+			} else {
+				e.style.width = v.width;
+				e.style.height = v.height;
+			}
 		}
 	}
 
-	static isFull(video) {
-		return window.innerWidth -video.clientWidth < 5 && window.innerHeight - video.clientHeight < 5;
+	static isFull(e) {
+		return w.innerWidth - e.clientWidth <5 && w.innerHeight - e.clientHeight <5;
 	}
 
 	toggle() {
@@ -225,53 +228,58 @@ class FullPage {
 }
 
 let v, _fp, _fs;
-const { host, pathname: path } = location,
-u = getMainDomain(host),//主域名
-events = {
+const { host, pathname: path } = location;
+const u = getMainDomain(host);
+const events = {
 	on(name, fn) {
 		this[name] = fn;
 	}
-},
-app = {
+};
+const app = {
 	isLive: !1,
 	disableSpace: !1,
 	multipleV: !1, //单页面多视频
 	isFixFPView: !1, //退出网页全屏时是否修正DOM视图
-	getVideos() {
-		if (!v) {
-			v = this.findMV();
-			return;
-		}
+	checkMVVisible() {
 		if (v.offsetWidth>1) return;
-		for (let e of this.vList) if (e.offsetWidth>1) {
-			e.playbackRate = v.playbackRate;
-			e.volume = v.volume;
-			v = e;
-			break;
+		for (let e of this.vList) {
+			if (e.offsetWidth>1) {
+				e.playbackRate = v.playbackRate;
+				e.volume = v.volume;
+				v = e;
+			}
 		}
 	},
 	_convertButton(btn) {
-		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ? doClick(btn) : doClick(btn.nextSibling);
+		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ?
+			doClick(btn) : doClick(btn.nextSibling);
 	},
 	hotKey(e) {
 		if (e.ctrlKey || e.altKey || e.target.contentEditable=='true' ||
 			/INPUT|TEXTAREA|SELECT/.test(e.target.nodeName)) return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
 		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode)) return;
-		this.getVideos();
+		if (this.extPlayer && this.extPlayer.contains(e.target) &&
+			[32,37,39].includes(e.keyCode)) return;
+		this.checkMVVisible();
 		this.checkUI();
 		if (events.keydown && events.keydown(e)) return;
 		let n;
 		switch (e.keyCode) {
 		case 32: //space
 			if (this.disableSpace) return;
-			if (this.btnPlay) this.play();
-			else v.paused ? v.play() : v.pause();
+			if (e.shiftKey) {
+				v.scrollIntoView();
+				v.focus();
+			} else {
+				if (this.btnPlay) this.play();
+				else v.paused ? v.play() : v.pause();
+			}
 			e.preventDefault();
 			break;
-		case 37: n = e.shiftKey ? -27 : -5; //left  快退5秒,shift加速
+		case 37: n = e.shiftKey ? -20 : -5; //left  快退5秒,shift加速
 		case 39: //right
-			n = n || (e.shiftKey ? 27 : 5); //快进5秒,shift加速
+			n = n || (e.shiftKey ? 20 : 5); //快进5秒,shift加速
 			v.currentTime += n;
 			break;
 		//case 80: // P 上一首
@@ -284,7 +292,6 @@ app = {
 			n += v.volume;
 			if (0 <= n && n <= 1) v.volume = n;
 			e.preventDefault();
-			e.stopPropagation();
 			break;
 		case 13: //回车键。 全屏
 			if (e.shiftKey) {
@@ -314,7 +321,10 @@ app = {
 			n = n || -0.03;
 			if (!v.paused) v.pause();
 			v.currentTime += n;
+			break;
+		default: return;
 		}
+		e.stopPropagation();
 	},
 	checkUI() {
 		if (this.webfullCSS && !this.btnWFS) this.btnWFS = q(this.webfullCSS);
@@ -348,8 +358,8 @@ app = {
 	onGrowVList() {
 		if (this.vList.length > this.vCount) {
 			if (this.viewObserver) {
-				for (let e of this.vList) if (!this.vSet.has(e)) {
-					this.viewObserver.observe(e);
+				for (let e of this.vList) {
+					if (!this.vSet.has(e)) this.viewObserver.observe(e);
 				}
 			} else {
 				const config = {
@@ -384,6 +394,10 @@ app = {
 		if (v.readyState > 3) fn();
 		else v.addEventListener('canplaythrough', fn);
 		document.body.addEventListener('keydown', this.hotKey.bind(this));
+		if (this.extPlayerCSS) {
+			this.extPlayer = v.closest(this.extPlayerCSS);
+			this.extPlayer && this.extPlayer.addEventListener('keydown', this.hotKey.bind(this));
+		}
 
 		if (this.multipleV) {
 			new MutationObserver(this.onGrowVList.bind(this))
@@ -394,7 +408,9 @@ app = {
 	},
 	findMV() {
 		if (!this.cssMV) return this.vList[0];
-		for (let e of this.vList) if (e.matches(this.cssMV)) return e;
+		for (let e of this.vList) {
+			if (e.matches(this.cssMV)) return e;
+		}
 	},
 	init() {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
@@ -414,18 +430,19 @@ let router = {
 		app.fullCSS = '.ytp-fullscreen-button';
 		app.webfullCSS = '.ytp-size-button';
 		app.nextCSS = '.ytp-next-button';
+		app.extPlayerCSS = '#ytp-player';
 	},
 	ted() {
 		app.fullCSS = 'button[title="Enter Fullscreen"]';
 		app.playCSS = 'button[title="play video"]';
-		const forceHD = gmFuncOfCheckMenu('TED强制高清', 'ted_forceHD'),
-		getHDSource = async () => {
+		const forceHD = gmFuncOfCheckMenu('TED强制高清', 'ted_forceHD');
+		const getHDSource = async () => {
 			const pn = r1(/^(\/talks\/\w+)/, path);
 			const resp = await fetch(`https://www.ted.com${pn}/metadata.json`);
 			const data = await resp.json();
 			return data.talks[0].downloads.nativeDownloads.high;
-		},
-		check = async (rs) => {
+		};
+		const check = async (rs) => {
 			if (!v.src || v.src.startsWith('http')) return;
 			$$(app.vList, e => { e.removeAttribute('src') }); // 取消多余的媒体资源请求
 			try {
@@ -434,8 +451,8 @@ let router = {
 				console.error(ex);
 			}
 		};
-		events.on('foundMV',() => {
-			if (forceHD) new MutationObserver(check).observe(v, {
+		forceHD && events.on('foundMV', () => {
+			new MutationObserver(check).observe(v, {
 				attributes: true,
 				attributeFilter: ['src']
 			});
@@ -447,6 +464,7 @@ let router = {
 			nextCSS: '.txp_btn_next',
 			webfullCSS: '.txp_btn_fake',
 			fullCSS: '.txp_btn_fullscreen',
+			extPlayerCSS: '#mod_player'
 		});
 	},
 	youku() {
@@ -457,34 +475,38 @@ let router = {
 			app.fullCSS = '.live_icon_full';
 		} else {
 			events.on('foundMV', () => {
+				app.btnFS = q(app.fullCSS);
 				if (!app.btnFS) {//使用了优酷播放器YAPfY扩展
 					app.webfullCSS = '.ABP-Web-FullScreen';
 					app.fullCSS = '.ABP-FullScreen';
+					app.nextCSS = '.ABP-Next';
 				} else {
 					w.$('.settings-item.disable').replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
 				}
 			});
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
+			app.extPlayerCSS = '#player';
 		}
 	},
 	bilibili() {
 		app.nextCSS = '.bilibili-player-video-btn-next';
 		app.webfullCSS = '.bilibili-player-video-web-fullscreen';
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
-		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu'),
-		autoPlay = gmFuncOfCheckMenu('自动播放', 'bili_autoPlay'),
-		_setPlayer = () => {
+		app.extPlayerCSS = '#playerWrap';
+		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu');
+		const autoPlay = gmFuncOfCheckMenu('自动播放', 'bili_autoPlay');
+		const _setPlayer = () => {
 			const x = q('.bilibili-player-video-danmaku-switch input');
 			if (!x) return setTimeout(_setPlayer, 300);
 			if (x.checked != danmu) x.click();
 			if (v.paused == autoPlay) autoPlay ? v.play() : v.pause();
 			v.focus();
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
-		},
-		setPlayer = () => {
+		};
+		const setPlayer = () => {
 			const x = app.findMV();
-			if (!x || x == v || x.readyState < 4) return; //等待视频加载完成，再进行后续动作
+			if (!x || x == v || x.readyState < 4) return; //等待视频加载完成
 			v = x;
 			app.btnNext = app.btnWFS = app.btnFS = null;
 			_setPlayer();
@@ -499,6 +521,7 @@ let router = {
 		app.fullCSS = '.w-zoomIn';
 		app.nextCSS = '.w-next';
 		app.playCSS = '.w-play';
+		//app.extPlayerCSS = '#playerWrap';
 	},
 	sina() {
 		fakeUA(ua_ipad2);
@@ -518,23 +541,27 @@ let router = {
 			case 67: n = 0.1;
 			case 88:
 				n = n || -0.1;
-				n += +p.tech_.playbackRate().toFixed(1);
+				n += + p.tech_.playbackRate().toFixed(1);
 				if (0 < n && n <= 16) p.tech_.setPlaybackRate(n);
 				return true;
 			case 90:
 				p.tech_.setPlaybackRate(1);
 				return true;
-			default: return !1;
 			}
 		});
+		app.extPlayerCSS = '.video-content';
 	},
 	mgtv() {
-		app.nextCSS = 'mango-control-playnext-btn';
+		app.nextCSS = 'mango-control-playnext';
 		app.webfullCSS = 'mango-webscreen';
-		app.fullCSS = 'mango-screen';
+		app.fullCSS = 'mango-screen.control-item';
+		app.extPlayerCSS = '#mgtv-player-wrap';
 	},
 	['163']() {
 		app.multipleV = host.startsWith('news.');
+		if ('open.163.com' == host) {
+			app.extPlayerCSS = '#playerWrap';
+		}
 		return host.split('.').length > 3;
 	},
 	le() {
@@ -544,7 +571,6 @@ let router = {
 		app.fullCSS = 'span.hv_ico_screen';
 	},
 	sohu() {
-		if (!path.endsWith('html')) return true;
 		app.nextCSS = 'li.on[data-vid]+li a';
 		app.fullCSS = '.x-fullscreen-btn';
 	},
@@ -576,7 +602,7 @@ let router = {
 	}
 };
 router.mtime = router.sina;
-app.disableSpace = /youtube|youku|qq|bilibili|mgtv|pptv|baidu|365yg/.test(u) || host == 'open.163.com';
+app.disableSpace = /youtube|qq|pptv|365yg/.test(u);
 
 if (!router[u]) { //直播站点
 	router = {
@@ -617,10 +643,11 @@ if (!router[u]) { //直播站点
 			app.fullCSS = '.video-fullscreen';
 		}
 	};
-	app.isLive = app.isLive || router[u] && !host.startsWith('v.');
-	router[u] && !w.chrome && fakeUA(ua_chrome);
+	if (router[u]) {
+		app.isLive = app.isLive || !host.startsWith('v.');
+		!w.chrome && fakeUA(ua_chrome);
+	}
 }
-
 !/pptv|douyu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });

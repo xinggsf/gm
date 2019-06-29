@@ -1,30 +1,31 @@
 // ==UserScript==
 // @name         去除cnBeta的广告
 // @namespace    cnBeta.xinggsf
-// @version      2016.6.1
-// @description  去除cnBeta.com的广告
+// @version      1.1
+// @description  去除cnBeta.com的防广告提示
 // @author       xinggsf
-// @match        http://www.cnbeta.com/*
+// @match        *://*.cnbeta.com/*
 // @grant        unsafeWindow
 // @run-at       document-start
 // ==/UserScript==
 
-'use strict';//HTMLElement 
-let d = unsafeWindow.document,
+'use strict'; //HTMLElement
+const d = unsafeWindow.document,
 js = d.createElement('script');
 js.textContent = 'const JB = 0;';
 d.head.appendChild(js);
 /* //下一种方法仍然有效
-let p = unsafeWindow.Node.prototype,
+const p = unsafeWindow.Node.prototype,
 ib = p.insertBefore;
 p.insertBefore = function(t) {
-	if (t.matches('div[id][style*="position:fixed;top:0;"]')
-		&& this.tagName === 'BODY' &&
+	if (
+		this.tagName === 'BODY' &&
+		t.matches('div[id][style*="position:fixed;top:0;"]') &&
 		t.querySelector('a[href$=".com/articles/3.htm"]'))
 	{
 		p.insertBefore = ib;
-		return;
+	} else {
+		ib.apply(this, arguments);//Array.prototype.slice.call
 	}
-	ib.apply(this, Array.from(arguments));//Array.prototype.slice.call
 }; */
-console.log('Del AD');
+console.log('Kill anti-AD');

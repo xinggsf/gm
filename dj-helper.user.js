@@ -239,9 +239,7 @@ const utils = function () {
 	function post(fn, data) {
 		//不允许重复任务
 		//typeof(fn) === 'string' && (fn = this[fn]);
-		if (queue.some(function(e){
-			return e.run === fn;
-		})) return false;
+		if (queue.some(e => e.run === fn ) return !1;
 		data = data || {};
 		data.run = fn;
 		data.timer && (data.timerc = data.timer);
