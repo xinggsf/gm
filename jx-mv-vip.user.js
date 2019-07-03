@@ -8,7 +8,6 @@
 // @match       https://v.qq.com/x/*
 // @match       https://www.iqiyi.com/v*
 // @match       https://v.youku.com/v_show/*
-// @match       https://video.tudou.com/v/*
 // @match       https://tv.sohu.com/v/*
 // @match       https://film.sohu.com/album/*
 // @match       https://www.mgtv.com/b/*
@@ -36,13 +35,16 @@ const videoPlayer = $(
 let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
 	{"name":"927","type":"站内","url":"https://api.927jx.com/vip/?url="},
-	{"name":"星梦","type":"站内","url":"https://api.52xmw.com/?url="},
+	{"name":"范特尔","type":"站内","url":"https://www.fantee.net/fantee/?url="},
 	{"name":"ab33","type":"站内","url":"https://jx.ab33.top/vip/?url="},
 	{"name":"1717yun","type":"站内","url":"https://www.1717yun.com/jx/ty.php?url="},
 	{"name":"金桥","type":"站内","url":"https://www.jqaaa.com/jx.php?url="},
 	{"name":"618g","type":"站内","url":"https://jx.618g.com/?url="},
-	{"name":"1717yun","type":"站外","url":"https://www.1717yun.com/jx/ty.php?url="},
 	{"name":"m1907","type":"站外","url":"https://z1.m1907.cn/?jx="},
+	{"name":"1717yun","type":"站外","url":"https://www.1717yun.com/jx/ty.php?url="},
+	{"name":"大亨影院","type":"站外","url":"http://jx.cesms.cn/?url="},
+	{"name":"玩的嗨","type":"站外","url":"http://tv.wandhi.com/go.html?url="},
+	{"name":"百域阁","type":"站外","url":"http://app.baiduoos.cn:2019/vip/index.php?url="},
 	{"name":"beac","type":"站外","url":"https://beaacc.com/api.php?url="}
 ];
 
@@ -194,10 +196,11 @@ let router = {
 		posCSS = ".funcRight";
 		GMaddStyle(
 		`.fn-iqiyi-jiexi li {
-			text-align: center; width: 60px; cursor: pointer;
+			color: #ccc; text-align: center; width: 60px; cursor: pointer;
 			line-height: 20px; float:left; border:1px solid gray;
 			border-radius:8px; padding:0 4px; margin:4px 2px;
 		}
+		#_gm__vipJX a {color: #ccc}
 		.fn-iqiyi-jiexi > .qy-popup-box {
 			background-color:#2e2e2e; border:1px solid gray;
 		}
@@ -208,7 +211,7 @@ let router = {
 			text-align:center;z-index:2147483647;
 		}
 		.iqiyi_JX:hover {color: #6ba430}
-		#_gm__vipJX li:hover {color: #01be07}`);
+		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color: #01be07}`);
 		const iqiyi_jiexi = $(
 		`<div class="func-item fn-jiexi-main">
 			<span class="func-inner fn-iqiyi-jiexi-text" style="line-height:40px;">
@@ -252,11 +255,12 @@ let router = {
 		`.fn-qq-jiexi {
 			background-color:#2e2e2e; width:auto; left:-50px; border:1px solid gray;
 		}
-		.fn-qq-jiexi li{
+		.fn-qq-jiexi li {
 			text-align:center; width:60px; line-height:20px; float:left;
 			border:1px solid gray; border-radius:8px; padding:0 4px;
 			color:#999; cursor: pointer; margin:4px 2px;
 		}
+		.fn-qq-jiexi a { color:#999; }
 		#_gm__vipJX li:hover {color:#fe6527}`
 		);
 		const qq_jiexi = $(
@@ -295,12 +299,12 @@ let router = {
 		posCSS = "#bpmodule-playpage-paction .play-fn";
 		GMaddStyle(
 		`.fn-youku-jiexi li {
-			color:#ccc;text-align:center;width:60px;line-height:20px;
+			text-align:center;width:60px;line-height:20px;
 			float:left;border:1px solid gray;border-radius:8px;
 			padding:0 4px;margin:4px 2px; cursor: pointer;
 		}
-		.fn-youku-jiexi > fn-panel {
-			background-color:#2e2e2e; min-width:100px; width:auto; border:1px solid gray;
+		.fn-youku-jiexi > .fn-panel {
+			border:1px solid gray; min-width:180px !important; width:180px !important;
 		}
 		.yk-dmtxtbox { width: 300px !important }
 		#_gm__vipJX li:hover {color:#2592ff}`
@@ -329,10 +333,12 @@ let router = {
 			color:#ccc;text-align:center;width:60px;line-height:20px;float:left;
 			border:1px solid gray;border-radius:8px;padding:0 4px;margin:4px 2px; cursor: pointer;
 		}
+		#_gm__vipJX a {color:#ccc}
 		.fn-mgtv-jiexi > .extend {
 			display:none;top:-5px;left:-50px;text-align:center;position:relative;
 		}
 		#_gm__vipJX li:hover {color:#ff6f00}
+		#_gm__vipJX a:hover {color:#ff6f00 !important}
 		.v-panel-extend > .fn-panel {
 			background-color:#2e2e2e;width:auto;border:1px solid gray;
 		}`);
@@ -359,14 +365,14 @@ let router = {
 		posCSS = ".vBox-tb.cfix";
 		GMaddStyle(
 		`.fn-sohu-jiexi li{
-			color:#ccc; text-align:center; width:60px; line-height:20px;
+			color:#333; text-align:center; width:60px; line-height:20px;
 			float:left; border:1px solid gray; border-radius:8px;
 			padding:0 4px; margin:4px 2px; cursor: pointer;
 		}
 		/* .vBox.vBox-play:hover > div {display: block} */
 		.fn-sohu-jiexi {
 			display: none;background-color:#2e2e2e;border:1px solid gray;
-			padding:0;width:auto;margin:0 0 0 -60px;line-height:25px;
+			padding:0;margin:0 0 0 0;line-height:25px;min-width:180px important;
 		}
 		#_gm__vipJX li:hover {color:#e33c30}`
 		);
@@ -394,12 +400,13 @@ let router = {
 			line-height:20px; float:left; border:1px solid gray;
 			border-radius:8px; padding:0 4px; margin:4px 2px;
 		}
+		#_gm__vipJX a {color:#ccc}
 		.action-item.jiexi:hover > div {display: block}
 		.fn-sohu-jiexi {
 			display:none;background-color:#2e2e2e;border:1px solid gray;
 			width:auto;text-align:center;margin-left:-61px;
 		}
-		#_gm__vipJX li:hover {color:#ee3c3a}`
+		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color:#ee3c3a}`
 		);
 		const sohu_film_jiexi = $(
 		`<div class="action-item jiexi">
@@ -441,58 +448,27 @@ let router = {
 			.find(".fn-le-jiexi-text, li[data-url]").click(innerParse);
 		};
 	},
-	["video.tudou.com"]() {
-		playerCSS = ".td-playbox";
-		posCSS = ".td-interactbox__fn--right";
-		GMaddStyle(
-		`.fn-tudou-jiexi li {
-			color:#ccc;text-align:center;width:60px;line-height:20px;
-			float:left;border:1px solid gray;border-radius:8px;
-			padding:0 5px;margin:4px 2px; height:25px;
-		}
-		.fn-tudou-jiexi > div {
-			background-color:#2e2e2e;border:1px solid gray;
-			width:auto;position:absolute;top:10px;left:-100%;
-		}
-		.td-interactbox__fn__item:hover .fn-tudou-jiexi { display: block }
-		.fn-tudou-jiexi { display:none; border:0; text-align:center }
-		.tudou-jiexi-text:hover, #_gm__vipJX li:hover {
-			color: #ef6f2e; cursor: pointer;
-		}`);
-		const tudou_jiexi = $(
-		`<div class="td-interactbox__fn__item">
-			<div class="dropdown">
-				<div class="tudou-jiexi-text" style="cursor:pointer;color:#fff;">解析</div>
-				<div class="dropdown__panel fn-tudou-jiexi">
-					<div>${jiexiDIV}</div>
-				</div>
-			</div>
-		</div>`);
-		this.wait = el => {
-			el.filter(posCSS).prepend(tudou_jiexi)
-			.find(".tudou-jiexi-text, li[data-url]").click(innerParse);
-		};
-	},
 	["v.pptv.com"]() {
 		playerCSS = "#pptv_playpage_box";
 		posCSS = ".module-video2016-ops ul";
 		GMaddStyle(
 		`#fn-pptv-jiexi li {
-			width:auto;color:#ccc;background:0;text-align:center;
+			color:#ccc;text-align:center;
 			width:60px;line-height:20px;float:left;border:1px solid gray;
 			border-radius:8px;padding:0 4px;margin:4px 2px;
 		}
-		#_gm__vipJX li:hover {color:#39f}
+		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color:#39f}
+		#_gm__vipJX a {color:#ccc}
 		#pptv-jiexi-btn:hover>div {display: block}
 		#fn-pptv-jiexi {
-			display:none; position:absolute; top:50px; width:auto;
-			text-align:center; background-color:#2e2e2e; border:1px solid gray;
+			display:none; position:absolute; top:50px;
+			background-color:#444; border:1px solid gray;
 		}`);
 		const pptv_jiexi = $(
 		`<li id="pptv-jiexi-btn" style="cursor:pointer;">
 			<a class="pptv_jiexi-text"><i class="ic4"></i>解析</a>
 			<div id="fn-pptv-jiexi">${jiexiDIV}</div>
-		</li>`.replace(/\t+/g, (s, a1, a2) => s.slice(2)) // 缩进 2格。a1 - a9 匹配组
+		</li>`.replace(/\t+/g, (a0, a1, a2) => a0.slice(2)) // 缩进 2格。a0 - a9 匹配组
 		);
 		this.wait = el => {
 			el.filter(posCSS).prepend(pptv_jiexi)
@@ -515,7 +491,7 @@ function init() {
 	}
 	jiexiDIV = `
 	<div style="display:flex;">
-		<div style="width:180px;padding:10px 0;color:#ccc;" id="_gm__vipJX">
+		<div style="width:180px;padding:10px 0;" id="_gm__vipJX">
 			<div style="text-align:center;line-height:20px;">站内解析</div>
 			<ul style="margin:0 10px;">${inli}<div style="clear:both;"></div></ul>
 			<div style="text-align:center;line-height:20px;">站外解析</div>

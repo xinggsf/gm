@@ -19,7 +19,7 @@
 // @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
 // @include    *://www.le.com/ptv/vplay/*
-// @version    1.5.0
+// @version    1.5.1
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -241,14 +241,13 @@ const app = {
 	multipleV: !1, //单页面多视频
 	isFixFPView: !1, //退出网页全屏时是否修正DOM视图
 	checkMVVisible() {
-		if (v.offsetWidth>1) return;
-		for (let e of this.vList) {
-			if (e.offsetWidth>1) {
-				e.playbackRate = v.playbackRate;
-				e.volume = v.volume;
-				v = e;
-			}
+		if (this.vList.length < 2 || v.offsetWidth>1) return;
+		let e = this._findList(k => k.offsetWidth>1);
+		if (e) {
+			e.playbackRate = v.playbackRate;
+			e.volume = v.volume;
 		}
+		v = e;
 	},
 	_convertButton(btn) {
 		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ?
@@ -407,14 +406,12 @@ const app = {
 		}
 	},
 	findMV() {
-		if (!this.cssMV) return this.vList[0];
-		for (let e of this.vList) {
-			if (e.matches(this.cssMV)) return e;
-		}
+		return !this.cssMV ? this.vList[0] : this._findList(e => e.matches(this.cssMV));
 	},
 	init() {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;//多视频页面
 		this.vList = document.getElementsByTagName('video');
+		this._findList = [].find.bind(this.vList);
 		const t = setInterval(() => {
 			if (v = this.findMV()) {
 				clearInterval(t);
