@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        VIP视频解析
-// @namespace   http://mofiter.com/
-// @version     1.5
+// @namespace   mofiter.xinngsf
+// @version     1.6
 // @description 添加的解析按钮样式与原站一致，不会产生突兀感，支持多个解析接口切换，支持自定义接口，支持站内站外解析，支持 Tampermonkey、Violentmonkey、Greasemonkey
 // @require     https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -11,7 +11,7 @@
 // @match       https://tv.sohu.com/v/*
 // @match       https://film.sohu.com/album/*
 // @match       https://www.mgtv.com/b/*
-// @author  xinngsf mofiter
+// @author   xinngsf mofiter
 // @match       http://v.pptv.com/show/*
 // @match       https://v.pptv.com/show/*
 // @match       http://www.le.com/ptv/vplay/*
@@ -24,6 +24,7 @@
 // @grant       GM_setValue
 // @grant       GM.setValue
 // @grant       GM_registerMenuCommand
+// @updateURL   https://raw.githubusercontent.com/xinggsf/gm/master/jx-mv-vip.user.js
 // ==/UserScript==
 
 'use strict';
@@ -34,18 +35,18 @@ const videoPlayer = $(
 </div>`);
 let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
-	{"name":"927","type":"站内","url":"https://api.927jx.com/vip/?url="},
-	{"name":"范特尔","type":"站内","url":"https://www.fantee.net/fantee/?url="},
-	{"name":"ab33","type":"站内","url":"https://jx.ab33.top/vip/?url="},
-	{"name":"1717yun","type":"站内","url":"https://www.1717yun.com/jx/ty.php?url="},
-	{"name":"金桥","type":"站内","url":"https://www.jqaaa.com/jx.php?url="},
-	{"name":"618g","type":"站内","url":"https://jx.618g.com/?url="},
-	{"name":"m1907","type":"站外","url":"https://z1.m1907.cn/?jx="},
-	{"name":"1717yun","type":"站外","url":"https://www.1717yun.com/jx/ty.php?url="},
-	{"name":"大亨影院","type":"站外","url":"http://jx.cesms.cn/?url="},
-	{"name":"玩的嗨","type":"站外","url":"http://tv.wandhi.com/go.html?url="},
-	{"name":"百域阁","type":"站外","url":"http://app.baiduoos.cn:2019/vip/index.php?url="},
-	{"name":"beac","type":"站外","url":"https://beaacc.com/api.php?url="}
+	{"name":"927","type":1,"url":"https://api.927jx.com/vip/?url="},
+	{"name":"66","type":3,"url":"https://vip.66parse.club/?url="},
+	{"name":"ab33","type":1,"url":"https://jx.ab33.top/vip/?url="},
+	{"name":"beac","type":3,"url":"https://beaacc.com/api.php?url="},
+	{"name":"1717yun","type":3,"url":"https://www.1717yun.com/jx/ty.php?url="},
+	{"name":"金桥","type":1,"url":"https://www.jqaaa.com/jx.php?url="},
+	{"name":"618g","type":1,"url":"https://jx.618g.com/?url="},
+	{"name":"范特尔","type":1,"url":"https://www.fantee.net/fantee/?url="},
+	{"name":"m1907","type":2,"url":"https://z1.m1907.cn/?jx="},
+	{"name":"大亨影院","type":2,"url":"http://jx.cesms.cn/?url="},
+	{"name":"玩的嗨","type":2,"url":"http://tv.wandhi.com/go.html?url="},
+	{"name":"百域阁","type":2,"url":"http://app.baiduoos.cn:2019/vip/index.php?url="}
 ];
 
 const hasDOM = css => $(css).length > 0;
@@ -78,7 +79,7 @@ class TaskPool { //简易任务池
 		}, 500);
 		this._tasks = tasks;
 	}
-	//wait for doing. Key = css | number; value = function($el) { return true: wait again }
+	//wait for do something. Key = css | number; value = function($el) { return true: wait again }
 	add(cb, key) {
 		if (!key) key = this._tasks.size + 1;
 		this._tasks.set(key, cb);
@@ -117,9 +118,12 @@ function showSetting() {
 			</td>
 			<td>
 				<label title="站内" style="margin-right:5px;">
-					<input id="interface-type-in" name="interface-type" value="站内" type="radio" style="margin:0 5px;">
+					<input id="interface-type-in" name="interface-type" value="1" type="radio" style="margin:0 5px;">
 				</input>站内</label>
-				<label title="站外" style="margin-right:10px;"><input id="interface-type-out" name="interface-type" value="站外" type="radio" style="margin:0 5px;" checked></input>站外</label>
+				<label title="站外" style="margin-right:5px;">
+					<input id="interface-type-io" name="interface-type" value="3" type="radio" style="margin:0 5px;">
+				</input>站外</label>
+				<label title="站内外" style="margin-right:15px;"><input id="interface-type-out" name="interface-type" value="2" type="radio" style="margin:0 5px;" checked></input>站内外</label>
 			</td>
 			<td>
 				<input type="button" value="增加" id="save_button" style="cursor:pointer;font-size:12px;background-color:#222;color:white;border:1px solid #ccc;border-radius:5px;padding:2px 6px;"></input>
@@ -148,7 +152,7 @@ function showSetting() {
 		const tr = $(this).closest('tr');
 		var interface_name = tr.find("#interface-name").val().trim();
 		var interface_url = tr.find("#interface-url").val().trim();
-		var interface_type = tr.find('input[name="interface-type"]:checked').val();
+		var interface_type = tr.find('input[name="interface-type"]:checked').val() | 0;
 		if (interface_name == "") {
 			alert("请输入接口名称");
 			return;
@@ -161,7 +165,7 @@ function showSetting() {
 			alert(" 请输入以 http 或 https 开头的接口地址");
 			return;
 		}
-		if (interface_type == "站内" && !interface_url.startsWith("https")) {
+		if ((interface_type & 1) && !interface_url.startsWith("https")) {
 			alert("站内解析只支持以 https 开头的接口地址，请修改接口类型");
 			return;
 		}
@@ -283,16 +287,9 @@ let router = {
 			.on("mouseover mouseout", () => {
 				qq_jiexi.toggleClass("open");
 			})
-			.find(".fn-qq-jiexi-text, li[data-url]").click(function() {
-				if (vipPage === true) {
-					$(".txp_btn_play[data-status=pause]").click();
-					return;
-				}
-				innerParse(this);
-				$('.txp_ad_skip_text:contains("关闭广告")').click();
-			});
-			tasks.add(el => { el.prop("hidden", true) }, ".tvip_layer,#mask_layer");
+			.find(".fn-qq-jiexi-text, li[data-url]").click(innerParse);
 		};
+		tasks.add(el => { el.prop("hidden", true) }, ".tvip_layer,#mask_layer");
 	},
 	["v.youku.com"]() {
 		playerCSS = '#ykPlayer';
@@ -351,9 +348,6 @@ let router = {
 				</div>
 			</div>
 		</div>`);
-		/* mgtv_jiexi.on("mouseover mouseout", () => {
-			mgtv_jiexi.children(".extend").toggle();
-		}); */
 		this.wait = el => {
 			$(".aside-tabbox li").click(delayReload);
 			el.filter(posCSS).append(mgtv_jiexi)
@@ -468,7 +462,7 @@ let router = {
 		`<li id="pptv-jiexi-btn" style="cursor:pointer;">
 			<a class="pptv_jiexi-text"><i class="ic4"></i>解析</a>
 			<div id="fn-pptv-jiexi">${jiexiDIV}</div>
-		</li>`.replace(/\t+/g, (a0, a1, a2) => a0.slice(2)) // 缩进 2格。a0 - a9 匹配组
+		</li>`
 		);
 		this.wait = el => {
 			el.filter(posCSS).prepend(pptv_jiexi)
@@ -483,14 +477,10 @@ function init() {
 	const list = interfaces.concat(userIntfs);
 	let k, oli = '', inli = '';
 	for (k of list) {
-		if (k.type == "站内") {
-			inli += `<li data-url="${k.url + url}">${k.name}</li>`;
-		} else {
-			oli += `<li><a target="_blank" href="${k.url + url}">${k.name}</a></li>`;
-		}
+		if (k.type & 1) inli += `<li data-url="${k.url + url}">${k.name}</li>`;
+		if (k.type & 2) oli += `<li><a target="_blank" href="${k.url + url}">${k.name}</a></li>`;
 	}
-	jiexiDIV = `
-	<div style="display:flex;">
+	jiexiDIV = `<div style="display:flex;">
 		<div style="width:180px;padding:10px 0;" id="_gm__vipJX">
 			<div style="text-align:center;line-height:20px;">站内解析</div>
 			<ul style="margin:0 10px;">${inli}<div style="clear:both;"></div></ul>

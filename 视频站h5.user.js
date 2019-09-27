@@ -10,6 +10,7 @@
 // @include    https://vku.youku.com/live/*
 // @include    https://video.tudou.com/v/*
 // @include    https://www.bilibili.com/*
+// @include    https://www.acfun.cn/*
 // @include    http://v.pptv.com/show/*
 // @include    https://tv.sohu.com/v/*
 // @include    https://film.sohu.com/album/*
@@ -19,7 +20,7 @@
 // @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
 // @include    *://www.le.com/ptv/vplay/*
-// @version    1.5.1
+// @version    1.5.2
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -554,6 +555,10 @@ let router = {
 		app.fullCSS = 'mango-screen.control-item';
 		app.extPlayerCSS = '#mgtv-player-wrap';
 	},
+	acfun() {
+		app.webfullCSS = '.fullscreen-web';
+		app.fullCSS = '.fullscreen-screen';
+	},
 	['163']() {
 		app.multipleV = host.startsWith('news.');
 		if ('open.163.com' == host) {
@@ -570,6 +575,13 @@ let router = {
 	sohu() {
 		app.nextCSS = 'li.on[data-vid]+li a';
 		app.fullCSS = '.x-fullscreen-btn';
+	},
+	mtime() {
+		fakeUA(ua_ipad2);
+		events.on('foundMV', () => {
+			v.preload = 'auto';
+			v.autoplay = true;
+		});
 	},
 	fun() {
 		if (host.startsWith('m.')) {
@@ -598,7 +610,6 @@ let router = {
 		return true;
 	}
 };
-router.mtime = router.sina;
 app.disableSpace = /youtube|qq|pptv|365yg/.test(u);
 
 if (!router[u]) { //直播站点
