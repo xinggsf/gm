@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         膜法小工具
-// @version      0.6.6
+// @version      0.6.7
 // @description  方便生活，快乐分享
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
@@ -25,8 +25,8 @@ const { encodeURI: enb64, decode: deb64 } = Base64;
 
 if (!location.host.startsWith('free-ss.')) {
 	GM_registerMenuCommand('读取ssr://链接到剪贴板', () => {
-		const m = unsafeWindow.jQuery('.context a[href^=ssr]')
-		.get().map(e => e.href).join('\n');
+		const m = [...document.querySelectorAll('.context a[href^=ssr]')]
+			.map(e => e.href).join('\n');
 		if (!m) alert('站点未提供ssr://链接列表！');
 		else {
 			GM_setClipboard(m);

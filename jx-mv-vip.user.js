@@ -121,9 +121,9 @@ function showSetting() {
 					<input id="interface-type-in" name="interface-type" value="1" type="radio" style="margin:0 5px;">
 				</input>站内</label>
 				<label title="站外" style="margin-right:5px;">
-					<input id="interface-type-io" name="interface-type" value="3" type="radio" style="margin:0 5px;">
+					<input id="interface-type-io" name="interface-type" value="2" type="radio" style="margin:0 5px;">
 				</input>站外</label>
-				<label title="站内外" style="margin-right:15px;"><input id="interface-type-out" name="interface-type" value="2" type="radio" style="margin:0 5px;" checked></input>站内外</label>
+				<label title="站内外" style="margin-right:15px;"><input id="interface-type-out" name="interface-type" value="3" type="radio" style="margin:0 5px;" checked></input>站内外</label>
 			</td>
 			<td>
 				<input type="button" value="增加" id="save_button" style="cursor:pointer;font-size:12px;background-color:#222;color:white;border:1px solid #ccc;border-radius:5px;padding:2px 6px;"></input>
