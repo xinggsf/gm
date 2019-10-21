@@ -8,7 +8,7 @@
 // @match       https://v.qq.com/x/*
 // @match       https://www.iqiyi.com/v*
 // @match       https://v.youku.com/v_show/*
-// @match       https://tv.sohu.com/v/*
+// @match       https://tv.sohu.com/*.shtml*
 // @match       https://film.sohu.com/album/*
 // @match       https://www.mgtv.com/b/*
 // @author   xinngsf mofiter
@@ -289,7 +289,10 @@ let router = {
 			})
 			.find(".fn-qq-jiexi-text, li[data-url]").click(innerParse);
 		};
-		tasks.add(el => { el.prop("hidden", true) }, ".tvip_layer,#mask_layer");
+		tasks.add(el => {
+			el.remove();
+			return true;
+		}, ".tvip_layer,#mask_layer");
 	},
 	["v.youku.com"]() {
 		playerCSS = '#ykPlayer';

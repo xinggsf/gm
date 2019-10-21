@@ -19,8 +19,7 @@
 // @include    *://m.fun.tv/*
 // @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
-// @include    *://www.le.com/ptv/vplay/*
-// @version    1.5.2
+// @version    1.5.3
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -44,6 +43,12 @@
 // @include    https://www.douyu.com/*
 // @include    *://star.longzhu.com/*
 // @include    https://www.zhanqi.tv/*
+
+// @include    https://www.yunbtv.com/vodplay/*
+// @include    http://www.dililitv.com/vplay/*
+// @include    http://www.dililitv.com/gresource/*?Play=*
+// @include    http://www.vtuapp.com/tv-play-*
+// @include    https://www.66s.cc/*/play/*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -58,7 +63,7 @@
 const isEdge = navigator.userAgent.includes('Edge');
 const w = isEdge ? window : unsafeWindow;
 const observeOpt = {childList : true, subtree : true};
-const q = css => document.querySelector(css);
+const q = (css, p = document) => p.querySelector(css);
 const delElem = e => e.remove();
 const $$ = (c, cb = delElem, doc = document) => {
 	if (!c || !c.length) return;
@@ -242,13 +247,27 @@ const app = {
 	multipleV: !1, //单页面多视频
 	isFixFPView: !1, //退出网页全屏时是否修正DOM视图
 	checkMVVisible() {
-		if (this.vList.length < 2 || v.offsetWidth>1) return;
+		if (this.vList.length < 2 || v.offsetWidth>1) return v;
 		let e = this._findList(k => k.offsetWidth>1);
 		if (e) {
 			e.playbackRate = v.playbackRate;
 			e.volume = v.volume;
 		}
 		v = e;
+		return v;
+	},
+	checkDPlayer() {
+		if (v && !this.DPlayer_el && v.closest('.dplayer-video-wrap')) {
+			this.DPlayer_el = v.closest('.dplayer');
+			_fp = new FullPage(v, this.isFixFPView, this.switchFP);
+			_fs = null;
+			this.btnFS = q('.dplayer-full-icon', this.DPlayer_el);
+			this.fullScreen = () => this._convertButton(this.btnFS);
+			this.btnWFS = null;
+			this.btnPlay = null;
+			this.btnNext = null;
+		}
+		return this.DPlayer_el;
 	},
 	_convertButton(btn) {
 		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ?
@@ -261,8 +280,8 @@ const app = {
 		if (this.isLive && [37,39,78,88,67,90].includes(e.keyCode)) return;
 		if (this.extPlayer && this.extPlayer.contains(e.target) &&
 			[32,37,39].includes(e.keyCode)) return;
-		this.checkMVVisible();
-		this.checkUI();
+		if (!this.checkMVVisible()) return;
+		!this.checkDPlayer() && this.checkUI();
 		if (events.keydown && events.keydown(e)) return;
 		let n;
 		switch (e.keyCode) {
@@ -565,12 +584,6 @@ let router = {
 			app.extPlayerCSS = '#playerWrap';
 		}
 		return host.split('.').length > 3;
-	},
-	le() {
-		fakeUA('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 Version/7.0.3 Safari/7046A194A');
-		app.nextCSS = 'div.hv_ico_next';
-		app.webfullCSS = 'span.hv_ico_webfullscreen';
-		app.fullCSS = 'span.hv_ico_screen';
 	},
 	sohu() {
 		app.nextCSS = 'li.on[data-vid]+li a';
