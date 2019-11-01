@@ -8,7 +8,7 @@
 // @match       https://v.qq.com/x/*
 // @match       https://www.iqiyi.com/v*
 // @match       https://v.youku.com/v_show/*
-// @match       https://tv.sohu.com/*.shtml*
+// @match       https://tv.sohu.com/*
 // @match       https://film.sohu.com/album/*
 // @match       https://www.mgtv.com/b/*
 // @author   xinngsf mofiter
@@ -384,7 +384,7 @@ let router = {
 		this.wait = el => {
 			playerCSS = el.filter(playerCSS);
 			el.filter(posCSS).prepend(sohu_jiexi)
-			.find("a.vbtn, li[data-url]").click(innerParse);
+			.find("li[data-url]").click(innerParse);
 			$("#player_vipTips").hide();
 		};
 	},
@@ -455,7 +455,7 @@ let router = {
 			border-radius:8px;padding:0 4px;margin:4px 2px;
 		}
 		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color:#39f}
-		#_gm__vipJX a {color:#ccc}
+		#_gm__vipJX a {color:#ccc;display:inline;padding:0 4px;}
 		#pptv-jiexi-btn:hover>div {display: block}
 		#fn-pptv-jiexi {
 			display:none; position:absolute; top:50px;

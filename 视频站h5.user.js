@@ -19,7 +19,7 @@
 // @include    *://m.fun.tv/*
 // @include    *://*.mtime.com/*
 // @include    *://www.miaopai.com/*
-// @version    1.5.3
+// @version    1.5.5
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -100,6 +100,10 @@ const doClick = e => {
 	if (typeof e === 'string') e = q(e);
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 };
+const clickDualButton = (btn) => {
+	(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ?
+		doClick(btn) : doClick(btn.nextSibling);
+};
 const firefoxVer = r1(/Firefox\/(\d+)/, navigator.userAgent);
 const fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
@@ -146,19 +150,21 @@ class FullScreen {
 
 //万能网页全屏, CSS代码参考了：https://github.com/gooyie/ykh5p
 class FullPage {
-	constructor(video, isFixView, onSwitch) {
+	constructor(video, onSwitch) {
 		this._video = video;
-		this._isFixView = isFixView;
 		this._isFull = !1;
 		this._onSwitch = onSwitch;
-		this._rects = new Map();
 		this._checkContainer();
 		GM_addStyle(
-			`.z-top {
+			`.gm-fp-body .gm-fp-zTop {
 				position: relative !important;
 				z-index: 23333333 !important;
 			}
-			.webfullscreen {
+			.gm-fp-wrapper .gm-fp-innerBox {
+				width: 100% !important;
+				height: 100% !important;
+			}
+			.gm-fp-wrapper {
 				display: block !important;
 				position: fixed !important;
 				width: 100% !important;
@@ -175,13 +181,8 @@ class FullPage {
 		let e = video, p = e.parentNode;
 		const { clientWidth: wid, clientHeight: h } = e;
 		for (;;) {
-			this._rects.set(e, {
-				width: e.clientWidth + 'px',
-				height: e.clientHeight + 'px'
-			});
-			if (e.style.maxWidth) e.style.maxWidth = '100%';
-			if (e.style.maxHeight) e.style.maxHeight = '100%';
 			if (p==document.body || p.clientWidth-wid >3 || p.clientHeight-h >3) return e;
+			e.classList.add('gm-fp-innerBox');
 			e = p;
 			p = e.parentNode;
 		}
@@ -189,25 +190,20 @@ class FullPage {
 
 	_checkContainer() {
 		const c = this._container, e = this._video;
-		if (!c || c === e) this._container = this.getPlayerContainer(e);
+		if (!c || c === e) {
+			this._container = this.getPlayerContainer(e);
+			const d = document.body;
+			let p = this._container.parentNode;
+			while (p !== d) {
+				p.classList.add('gm-fp-zTop');
+				p = p.parentNode;
+			}
+		}
 	}
 
 	get container() {
 		this._checkContainer();
 		return this._container;
-	}
-
-	fixView() {
-		if (!this._isFixView && !this._isFull) return;
-		if (this._video === this._container) return;
-		for (let [e, v] of this._rects) {
-			if (this._isFull) {
-				e.style.width = e.style.height = '100%';
-			} else {
-				e.style.width = v.width;
-				e.style.height = v.height;
-			}
-		}
 	}
 
 	static isFull(e) {
@@ -219,16 +215,9 @@ class FullPage {
 		if (!this._isFull && cb) cb(true);
 		const d = document.body;
 		d.style.overflow = this._isFull ? '' : 'hidden';
-		this.container.classList.toggle('webfullscreen');
-
-		let p = this.container.parentNode;
-		while (p !== d) {
-			p.classList.toggle('z-top');
-			p = p.parentNode;
-		}
+		d.classList.toggle('gm-fp-body');
+		this.container.classList.toggle('gm-fp-wrapper');
 		this._isFull = !this._isFull;
-
-		setTimeout(this.fixView.bind(this), 9);
 		if (!this._isFull && cb) setTimeout(cb, 199, !1);
 	}
 }
@@ -245,7 +234,6 @@ const app = {
 	isLive: !1,
 	disableSpace: !1,
 	multipleV: !1, //单页面多视频
-	isFixFPView: !1, //退出网页全屏时是否修正DOM视图
 	checkMVVisible() {
 		if (this.vList.length < 2 || v.offsetWidth>1) return v;
 		let e = this._findList(k => k.offsetWidth>1);
@@ -259,19 +247,11 @@ const app = {
 	checkDPlayer() {
 		if (v && !this.DPlayer_el && v.closest('.dplayer-video-wrap')) {
 			this.DPlayer_el = v.closest('.dplayer');
-			_fp = new FullPage(v, this.isFixFPView, this.switchFP);
-			_fs = null;
+			_fp = new FullPage(v, this.switchFP);
 			this.btnFS = q('.dplayer-full-icon', this.DPlayer_el);
-			this.fullScreen = () => this._convertButton(this.btnFS);
-			this.btnWFS = null;
-			this.btnPlay = null;
-			this.btnNext = null;
+			this.btnFP = this.btnPlay = this.btnNext = _fs = null;
 		}
 		return this.DPlayer_el;
-	},
-	_convertButton(btn) {
-		(!btn.nextSibling || btn.clientWidth >1 || getStyle(btn, 'display') !== 'none') ?
-			doClick(btn) : doClick(btn.nextSibling);
 	},
 	hotKey(e) {
 		if (e.ctrlKey || e.altKey || e.target.contentEditable=='true' ||
@@ -291,7 +271,7 @@ const app = {
 				v.scrollIntoView();
 				v.focus();
 			} else {
-				if (this.btnPlay) this.play();
+				if (this.btnPlay) clickDualButton(this.btnPlay);
 				else v.paused ? v.play() : v.pause();
 			}
 			e.preventDefault();
@@ -314,16 +294,16 @@ const app = {
 			break;
 		case 13: //回车键。 全屏
 			if (e.shiftKey) {
-				_fp ? _fp.toggle() : this.fullPage();
+				_fp ? _fp.toggle() : clickDualButton(this.btnFP);
 			} else {
-				_fs ? _fs.toggle() : this.fullScreen();
+				_fs ? _fs.toggle() : clickDualButton(this.btnFS);
 			}
 			break;
 		case 27: //esc
 			if (FullScreen.isFull()) {
-				_fs ? _fs.exit() : this.fullScreen();
+				_fs ? _fs.exit() : clickDualButton(this.btnFS);
 			} else if (FullPage.isFull(v)) {
-				_fp ? _fp.toggle() : this.fullPage();
+				_fp ? _fp.toggle() : clickDualButton(this.btnFP);
 			}
 			break;
 		case 67: n = 0.1; //按键C：加速播放 +0.1
@@ -346,26 +326,16 @@ const app = {
 		e.stopPropagation();
 	},
 	checkUI() {
-		if (this.webfullCSS && !this.btnWFS) this.btnWFS = q(this.webfullCSS);
-		if (this.btnWFS) {
-			this.fullPage = () => this._convertButton(this.btnWFS);
-			if (_fp) _fp = null;
-		} else {
-			_fp = _fp || new FullPage(v, this.isFixFPView, this.switchFP);
-		}
+		if (this.webfullCSS && !this.btnFP) this.btnFP = q(this.webfullCSS);
+		if (this.btnFP) _fp = null;
+		else if (!_fp) _fp = new FullPage(v, this.switchFP);
 
 		if (this.fullCSS && !this.btnFS) this.btnFS = q(this.fullCSS);
-		if (!this.btnFS) {
-			_fs = _fs || new FullScreen(v);
-		} else {
-			this.fullScreen = () => this._convertButton(this.btnFS);
-			if (_fs) _fs = null;
-		}
+		if (this.btnFS) _fs = null;
+		else if (!_fs) _fs = new FullScreen(v);
 
 		if (this.nextCSS && !this.btnNext) this.btnNext = q(this.nextCSS);
-
 		if (this.playCSS && !this.btnPlay) this.btnPlay = q(this.playCSS);
-		if (this.btnPlay) this.play = () => this._convertButton(this.btnPlay);
 	},
 	switchFP(toFull) {
 		if (toFull) {
@@ -397,7 +367,7 @@ const app = {
 			if (entry.isIntersecting && v != entry.target) {//intersectionRatio
 				v = entry.target;
 				_fs = new FullScreen(v);
-				_fp = new FullPage(v, this.isFixFPView, this.switchFP);
+				_fp = new FullPage(v, this.switchFP);
 				events.switchMV && events.switchMV();
 				break;
 			}
@@ -525,7 +495,7 @@ let router = {
 			const x = app.findMV();
 			if (!x || x == v || x.readyState < 4) return; //等待视频加载完成
 			v = x;
-			app.btnNext = app.btnWFS = app.btnFS = null;
+			app.btnNext = app.btnFP = app.btnFS = null;
 			_setPlayer();
 		};
 		events.on('canplay', () => {
@@ -544,7 +514,6 @@ let router = {
 		fakeUA(ua_ipad2);
 	},
 	weibo() {
-		app.isFixFPView = true;
 		app.multipleV = path.startsWith('/u/');
 	},
 	miaopai() {

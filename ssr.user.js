@@ -10,6 +10,7 @@
 // @resource     country_code https://gist.githubusercontent.com/dolaCmeo/f1810f8ceddf25880c6ae14e8dbc23d5/raw/cd3ab8280a2e6cb4decf3bab705d759e7c98deab/country_code.json
 // @include      https://free-ss.*
 // @include      https://www.youneed.win/free-ssr
+// include      https://104.31.74.55/free-ssr
 // @grant        GM_registerMenuCommand
 // @grant        GM_info
 // @grant        GM_addStyle
