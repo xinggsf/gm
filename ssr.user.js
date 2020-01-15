@@ -160,7 +160,7 @@ const t = setInterval(() => {
 		area() {
 			const column = order.globe;
 			areas.clear();
-			for (const k of dataTable.data()) {
+			for (const k of Array.from(dataTable.data())) {
 				k[column][0] != '*' && areas.add(k[column]);
 			}
 		},
@@ -190,9 +190,9 @@ const t = setInterval(() => {
 			return 'ssr://'+ enb64(`${server}:${port}:origin:${method}:plain:${password}/?remarks=${remarks}&group=ZnJlZS1zcw`);
 		},
 		datas() {
-			const ssdatas = dataTable.rows('.selected').data();
+			let ssdatas = dataTable.rows('.selected').data();
 			if (!ssdatas.length) ssdatas = dataTable.data();
-			return ssdatas;
+			return Array.from(dataTable.data());
 		},
 		ss() {
 			return this.datas().map(data => this._ss(data));
@@ -264,7 +264,7 @@ const t = setInterval(() => {
 		unsafeWindow.dataTable = dataTable = ssTable.DataTable({ retrieve: true });
 		tools.order(order);
 		dataTable.order([0, 'asc']).draw();
-		console.log(dataTable.data(), dataTable.rows());
+		//console.log(dataTable.data(), dataTable.rows());
 		$("h2:last").append(
 			`<small>
 				<a title="${GM_info.script.name}" target="_blank" href="${GM_info.script.supportURL}">
