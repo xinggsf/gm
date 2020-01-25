@@ -1,9 +1,9 @@
 // ==UserScript==
-// @name           去除百度、搜狗重定向
+// @name           去除百度、搜狗、360搜索等的重定向
 // @author         xinggsf
 // @updateURL      https://raw.githubusercontent.com/xinggsf/gm/master/Restore-search-results.user.js
 // @namespace      Restore-search-results
-// @description    去除百度、搜狗重定向
+// @description    去除百度、搜狗、360搜索等的重定向
 // @version        2019.11.11
 // @include        https://www.baidu.com/s?*
 // @include        https://www.so.com/s?*
@@ -22,7 +22,6 @@ css = {
 	'www.sogou.com': 'h3>a[href^="/link?url="]'
 },
 doXhr = (a, isBaidu) => {
-	// console.log(a.href);
 	const xhr = GM_xmlhttpRequest({
 		url: a.href,
 		headers: {
@@ -55,7 +54,7 @@ resetURL = a => {
 	}
 	switch (host) {
 	case 'www.so.com':
-		a.href = a.getAttribute('data-url');
+		a.href = a.getAttribute('data-mdurl');
 		break;
 	case 'www.sogou.com':
 		let s = a.closest('div').querySelector('div.fb a');

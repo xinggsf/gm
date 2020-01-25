@@ -152,7 +152,7 @@ const t = setInterval(() => {
 				if (v.includes("qrcode")) d.qrcode = i;
 				else if (v.includes("clock")) d.clock = i;
 				else if (v.includes("globe")) d.globe = i;
-				else if (v.split("/").length >= 3) d.point = i;
+				else if (v.split("/").length > 2) d.point = i;
 				else d[v.toLowerCase()] = i;
 			});
 		},
@@ -192,7 +192,7 @@ const t = setInterval(() => {
 		datas() {
 			let ssdatas = dataTable.rows('.selected').data();
 			if (!ssdatas.length) ssdatas = dataTable.data();
-			return Array.from(dataTable.data());
+			return Array.from(ssdatas);
 		},
 		ss() {
 			return this.datas().map(data => this._ss(data));
@@ -283,7 +283,7 @@ const t = setInterval(() => {
 		$("title").append("⚡");
 		$('#site_info').click(ev => showInfo('div.footer'));
 		$('#user_info').click(ev => showInfo('#client'));
-		const rowCount = dataTable.rows().length; //dataTable.$('tr').length;
+		const rowCount = dataTable.rows().length;
 		$("#tools").html(
 			`<li class="txt">
 				<p id="link_num">
@@ -340,13 +340,14 @@ const t = setInterval(() => {
 			let n = 0, len = 0;
 			dataTable.$('tr').each(function () {
 				let s = $(this).find('td:first').text();
-				if (/[a-z]/i.test(s) || s.split('/').some(x => Number(x) < 6)) {
+				if (/[a-z]/i.test(s) || s.split('/').some(x => parseInt(x) < 6)) {
 					$(this).addClass('delete');
 					n++;
 				} else len++;
 			});
-			if (!n) layer.msg("所有链接较为稳定(＞5)", { time: 900 });
-			else {
+			if (n == 0) {
+				layer.msg("所有链接较为稳定(＞5)", { time: 900 });
+			} else {
 				layer.msg(`已移除不稳定链接(${n}条)`, { time: 900 });
 				$(this).before(`<small> (已移除${n}条) </small>`);
 				dataTable.rows('.delete').remove();
@@ -359,7 +360,7 @@ const t = setInterval(() => {
 		});
 		dataTable.$('tr').click(function () {
 			$(this).toggleClass('selected');
-			onSelectRow(dataTable.$('tr.selected').length);
+			onSelectRow(dataTable.rows('.selected').length);
 		});
 	}
 
@@ -381,7 +382,7 @@ const t = setInterval(() => {
 
 
 	function failed() {
-		if (!dataTable.$('tr').length) {
+		if (!dataTable.rows().length) {
 			layer.confirm('貌似脚本加载失败了！？', {
 				title: GM_info.script.name + " " + GM_info.script.version,
 				closeBtn: 0,

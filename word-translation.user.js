@@ -4,7 +4,7 @@
 // @version      1.6.1
 // @description  划词翻译,自动切换谷歌翻译和有道词典
 // @author       xinggsf  田雨菲
-// @include      *
+// @include      http*
 // @run-at       document-start
 // @connect      dict.youdao.com
 // @connect      translate.google.cn

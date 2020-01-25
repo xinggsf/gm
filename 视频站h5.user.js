@@ -441,14 +441,13 @@ let router = {
 		} else {
 			events.on('foundMV', () => {
 				app.btnFS = q(app.fullCSS);
-				if (app.btnFS) w.$('.settings-item.disable')
-					.replaceWith('<div data-val=1080p class=settings-item data-eventlog=xsl>1080p</div>');
-				else { //使用了优酷播放器YAPfY扩展
+				if (!app.btnFS) { //使用了优酷播放器YAPfY扩展
 					app.webfullCSS = '.ABP-Web-FullScreen';
 					app.fullCSS = '.ABP-FullScreen';
 					app.nextCSS = '.ABP-Next';
 				}
 			});
+			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
 			app.extPlayerCSS = '#player';
@@ -484,7 +483,6 @@ let router = {
 		app.fullCSS = '.w-zoomIn';
 		app.nextCSS = '.w-next';
 		app.playCSS = '.w-play';
-		//app.extPlayerCSS = '#playerWrap';
 	},
 	sina() {
 		fakeUA(ua_ipad2);
@@ -514,7 +512,7 @@ let router = {
 		app.nextCSS = 'mango-control-playnext';
 		app.webfullCSS = 'mango-webscreen';
 		app.fullCSS = 'mango-screen.control-item';
-		app.extPlayerCSS = '#mgtv-player-wrap';
+		//app.extPlayerCSS = '#mgtv-player-wrap';
 	},
 	acfun() {
 		app.webfullCSS = '.fullscreen-web';
@@ -580,7 +578,7 @@ if (!router[u]) { //直播站点
 			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '[data-dysign],a[href*="wan.douyu.com"]';
+			app.adsCSS = '[class$="-ad"],a[href*="wan.douyu.com"]';
 		},
 		yy() {
 			app.isLive = !path.startsWith('/x/');
