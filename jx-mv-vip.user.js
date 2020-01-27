@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        VIP视频解析
 // @namespace   mofiter.xinngsf
-// @version     1.6
+// @version     1.6.1
 // @description 添加的解析按钮样式与原站一致，不会产生突兀感，支持多个解析接口切换，支持自定义接口，支持站内站外解析，支持 Tampermonkey、Violentmonkey、Greasemonkey
 // @require     https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -197,7 +197,7 @@ const showSetting = () => {
 const router = {
 	["www.iqiyi.com"]() {
 		playerCSS = "#flashbox";
-		posCSS = ".funcRight";
+		posCSS = ".qy-flash-func";
 		GMaddStyle(
 		`.fn-iqiyi-jiexi li {
 			color: #ccc; text-align: center; width: 60px; cursor: pointer;
@@ -225,31 +225,9 @@ const router = {
 				<div class="qy-popup-box">${jiexiDIV}</div>
 			</div>
 		</div>`);
-		const iqiyi_jx = $(
-		`<div class="iqiyi_JX" style="float:left;color:#999;cursor:pointer;">
-			<span class="func-name">解析</span>
-		</div>`);
-		tasks.add(() => {
-			$(".qy-player-vippay-popup").parent().hide();
-			$("body > div").each((i, item) => {
-				if ($(item).css("position") === "fixed") item.hidden = true;
-			});
-			return true; // 循环
-		});
-		tasks.add(el => {
-			el.filter('.qy-flash-func').prepend(iqiyi_jiexi)
-			.find(".fn-iqiyi-jiexi-text, li[data-url]").click(function() {
-				$(".cupid-public-time").click();
-				innerParse(this);
-			});
-		}, ".qy-flash-func, .func-like-v1:visible");
 		this.wait = el => {
-			el.filter(posCSS).prepend(iqiyi_jx).click(function() {
-				$(".vipFloatbgCls").parent().hide();
-				$(".J_play-underFrame").hide();
-				$(".usrTx-register a").click();
-				innerParse(this);
-			});
+			el.filter(posCSS).prepend(iqiyi_jiexi)
+			.find(".fn-iqiyi-jiexi-text, li[data-url]").click(innerParse);
 		};
 	},
 	["v.qq.com"]() {
@@ -296,7 +274,7 @@ const router = {
 	},
 	["v.youku.com"]() {
 		playerCSS = '#ykPlayer';
-		posCSS = "#bpmodule-playpage-paction .play-fn";
+		posCSS = "ul.play-fn";
 		GMaddStyle(
 		`#module_basic_player, #player { height:100% !important }
 		.fn-youku-jiexi li {
@@ -311,8 +289,7 @@ const router = {
 		#_gm__vipJX li:hover {color:#2592ff}`
 		);
 		const youku_jiexi = $(
-		`<li class="fn-download fn-youku-jiexi">
-			<span class="fn-title"><i class="fn-icon"></i></span>
+		`<li class="play-fn-li fn-youku-jiexi">
 			<span class="text fn-youku-jiexi-text">解析</span>
 			<div class="fn-panel">${jiexiDIV}</div>
 		</li>`);

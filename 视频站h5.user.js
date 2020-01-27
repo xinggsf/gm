@@ -9,7 +9,9 @@
 // @include    https://v.youku.com/v_show/id_*
 // @include    https://vku.youku.com/live/*
 // @include    https://video.tudou.com/v/*
+// @include    https://www.iqiyi.com/*
 // @include    https://www.bilibili.com/*
+// @include    https://www.ixigua.com/*
 // @include    https://www.acfun.cn/*
 // @include    http://v.pptv.com/show/*
 // @include    https://tv.sohu.com/*
@@ -17,7 +19,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.5.6
+// @version    1.5.7
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -365,10 +367,10 @@ const app = {
 		};
 		if (v.readyState > 3) fn();
 		else v.addEventListener('canplaythrough', fn);
-		by.addEventListener('keydown', this.hotKey.bind(this));
+		by.addEventListener('keydown', this.hotKey);
 		if (this.extPlayerCSS) {
 			const x = this.extPlayer = v.closest(this.extPlayerCSS);
-			x && x.addEventListener('keydown', this.hotKey.bind(this));
+			x && x.addEventListener('keydown', this.hotKey);
 		}
 
 		if (this.multipleV) {
@@ -378,6 +380,7 @@ const app = {
 		}
 	},
 	init() {
+		this.hotKey = this.hotKey.bind(this);
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;
 		this.vList = d.getElementsByTagName('video');
 		const fn = e => this.cssMV ? e.matches(this.cssMV) : e.offsetWidth > 9;
@@ -439,14 +442,6 @@ let router = {
 			});
 			app.fullCSS = '.live_icon_full';
 		} else {
-			events.on('foundMV', () => {
-				app.btnFS = q(app.fullCSS);
-				if (!app.btnFS) { //使用了优酷播放器YAPfY扩展
-					app.webfullCSS = '.ABP-Web-FullScreen';
-					app.fullCSS = '.ABP-FullScreen';
-					app.nextCSS = '.ABP-Next';
-				}
-			});
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
@@ -476,6 +471,14 @@ let router = {
 		events.on('canplay', () => {
 			_setPlayer();
 			intervalQuery(setPlayer, app.findMV, !1);
+		});
+	},
+	ixigua() {
+		app.fullCSS = '.xgplayer-fullscreen';
+		app.webfullCSS = '.xgplayer-cssfullscreen';
+		app.nextCSS = '.xgplayer-playNext';
+		events.on('foundMV', () => {
+			v.addEventListener('keydown', app.hotKey);
 		});
 	},
 	pptv() {
@@ -508,12 +511,6 @@ let router = {
 		});
 		app.extPlayerCSS = '.video-content';
 	},
-	mgtv() {
-		app.nextCSS = 'mango-control-playnext';
-		app.webfullCSS = 'mango-webscreen';
-		app.fullCSS = 'mango-screen.control-item';
-		//app.extPlayerCSS = '#mgtv-player-wrap';
-	},
 	acfun() {
 		app.webfullCSS = '.fullscreen-web';
 		app.fullCSS = '.fullscreen-screen';
@@ -525,6 +522,7 @@ let router = {
 	sohu() {
 		app.nextCSS = 'li.on[data-vid]+li a';
 		app.fullCSS = '.x-fullscreen-btn';
+		app.webfullCSS = '.x-pagefs-btn';
 	},
 	mtime() {
 		fakeUA(ua_ipad2);
@@ -560,7 +558,7 @@ let router = {
 		return true;
 	}
 };
-app.disableSpace = /youtube|qq|pptv|365yg/.test(u);
+app.disableSpace = /youtube|ixigua|qq|pptv|365yg/.test(u);
 
 if (!router[u]) { //直播站点
 	router = {
