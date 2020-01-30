@@ -19,7 +19,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.5.7
+// @version    1.5.8
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -48,7 +48,7 @@
 // @include    https://www.yunbtv.com/vodplay/*
 // @include    http://www.dililitv.com/*
 // @include    http://www.vtuapp.com/tv-play-*
-// @include    https://www.66s.cc/*/play/*
+// @include    https://www.i6v.cc/*/play/*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -259,7 +259,7 @@ const app = {
 				v.scrollIntoView();
 				v.focus();
 			} else {
-				if (this.disableSpace) return;
+				if (this.disableSpace && by != e.target) return;
 				if (this.btnPlay) clickDualButton(this.btnPlay);
 				else v.paused ? v.play() : v.pause();
 			}
@@ -351,7 +351,7 @@ const app = {
 	},
 	onIntersection(entries) {
 		const entry = find.call(entries, k => k.isIntersecting);
-		if (v == entry.target) return;
+		if (!entry || v == entry.target) return;
 		v = entry.target;
 		_fs = new FullScreen(v);
 		_fp = new FullPage(v, this.switchFP);
@@ -442,6 +442,10 @@ let router = {
 			});
 			app.fullCSS = '.live_icon_full';
 		} else {
+			events.on('canplay', () => {
+				w.$('.settings-item.quality-item')
+					.removeClass('disable youku_vip_pay_btn login-canuse');
+			});
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
@@ -517,6 +521,7 @@ let router = {
 	},
 	['163']() {
 		app.multipleV = host.startsWith('news.');
+		GM_addStyle('div.video,video{max-height: 100% !important;}');
 		return host.split('.').length > 3;
 	},
 	sohu() {
