@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       视频网HTML5播放小工具
-// @description 三大功能 。启用HTML5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、A站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @description 三大功能 。启用HTML5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    https://*.qq.com/*
 // @exclude    https://user.qzone.qq.com/*
@@ -13,7 +13,7 @@
 // @include    https://www.bilibili.com/*
 // @include    https://www.ixigua.com/*
 // @include    https://www.acfun.cn/*
-// @include    http://v.pptv.com/show/*
+// @include    *://v.pptv.com/show/*
 // @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
 // @include    https://www.mgtv.com/*
@@ -24,13 +24,13 @@
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
 // @include    *://video.sina.cn/*
+// @include    https://k.sina.cn/*
 // @include    *://weibo.com/*
 // @include    *://*.weibo.com/*
 // @include    https://pan.baidu.com/*
 // @include    https://yun.baidu.com/*
-// @include    *://v.yinyuetai.com/video/h5/*
+// @include    *://v.yinyuetai.com/video/*
 // @include    *://v.yinyuetai.com/playlist/h5/*
-// @include    *://www.365yg.com/*
 // @include    *://v.ifeng.com/*
 // @include    *://*.mtime.com/*
 // @GM_info
@@ -46,8 +46,8 @@
 // @include    https://www.zhanqi.tv/*
 
 // @include    https://www.yunbtv.com/vodplay/*
-// @include    http://www.dililitv.com/*
-// @include    http://www.vtuapp.com/tv-play-*
+// @include    *://www.dililitv.com/*
+// @include    *://www.dynamicpuer.com/tv-play-*
 // @include    https://www.i6v.cc/*/play/*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
@@ -60,8 +60,7 @@
 // ==/UserScript==
 
 'use strict';
-const isEdge = navigator.userAgent.includes('Edge');
-const w = isEdge ? window : unsafeWindow;
+const w = unsafeWindow || window;
 const d = document, find = [].find;
 let v, _fp, _fs, by; // document.body
 const observeOpt = {childList : true, subtree : true};
@@ -443,8 +442,9 @@ let router = {
 			app.fullCSS = '.live_icon_full';
 		} else {
 			events.on('canplay', () => {
-				w.$('.settings-item.quality-item')
-					.removeClass('disable youku_vip_pay_btn login-canuse');
+				w.$('.settings-item.quality-item').remove('[data-val=download]')
+					.removeClass('disable youku_vip_pay_btn login-canuse')
+					.children('span').remove();
 			});
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
@@ -484,12 +484,6 @@ let router = {
 		events.on('foundMV', () => {
 			v.addEventListener('keydown', app.hotKey);
 		});
-	},
-	pptv() {
-		if (!w.chrome) fakeUA(ua_chrome);
-		app.fullCSS = '.w-zoomIn';
-		app.nextCSS = '.w-next';
-		app.playCSS = '.w-play';
 	},
 	sina() {
 		fakeUA(ua_ipad2);
@@ -563,7 +557,7 @@ let router = {
 		return true;
 	}
 };
-app.disableSpace = /youtube|ixigua|qq|pptv|365yg/.test(u);
+app.disableSpace = /youtube|ixigua|qq|pptv/.test(u);
 
 if (!router[u]) { //直播站点
 	router = {
@@ -614,4 +608,14 @@ if (!router[u]) { //直播站点
 !/pptv|douyu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });
+GM_registerMenuCommand('脚本功能快捷键表' , alert.bind(w,
+`左右方向键：快进、进退5秒; +shift: 20秒
+上下方向键：音量调节
+空格键：暂停/播放; +shift: 定位播放器窗口
+N：播放下一集
+回车键：切换全屏; +shift: 切换网页全屏
+ESC：退出（网页）全屏
+C：加速0.1倍播放       X：减速0.1倍播放       Z：正常速度播放
+D：上一帧        F：下一帧`
+));
 if (!router[u] || !router[u]()) app.init();

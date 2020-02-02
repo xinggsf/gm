@@ -33,11 +33,13 @@ const xfetch = (url) => new Promise((success, fail) => {
 	});
 });
 
+//host文件添加  104.31.74.55  www.youneed.win youneed.win
 GM_registerMenuCommand('读取www.youneed.win的ssr列表到剪贴板', async () => {
-	const resp = await xfetch('https://www.youneed.win/free-ssr'); //host文件 www.youneed.win 104.31.74.55
-	const m = resp.responseText.match(/\bssr:\/\/\w+/g);
-	// const m = [...document.querySelectorAll('.context a[href^=ssr]')].map(e => e.href).join('\n');
-	if (!m) alert('站点未提供ssr://链接列表！');
+	// const resp = await xfetch('https://www.youneed.win/free-ssr');
+	// const m = resp.responseText.match(/\bssr:\/\/\w+/g);
+	const m = [].map.call(document.querySelectorAll('table:first-child a[data]'),
+		e => e.getAttribute('data'));
+	if (!m.length) alert('站点未提供ssr://链接列表！');
 	else {
 		GM_setClipboard(m.join('\n'));
 		alert('ssr://链接列表已经拷贝到剪贴板');
