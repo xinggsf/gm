@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         智能划词翻译
 // @namespace    https://greasyfork.org/zh-CN/users/150560
-// @version      1.6.1
+// @version      1.6.2
 // @description  划词翻译,自动切换谷歌翻译和有道词典
 // @author       xinggsf  田雨菲
 // @include      http*
@@ -14,7 +14,7 @@
 
 'use strict';
 const youdaoUrl = 'http://dict.youdao.com/jsonapi?xmlVersion=5.1&dicts={"count":99,"dicts":[["ec"]]}&jsonversion=2&q=';
-const googleUrl = 'https://translate.google.cn/translate_a/single?client=gtx&dt=t&dt=bd&dj=1&source=input&hl=zh-CN&sl=auto&tl=';
+const googleUrl = 'https://translate.google.cn/translate_a/single?client=gtx&dt=t&dt=bd&dj=1&source=input&tl=zh-CN&sl=auto&tl=';
 const reHZ = /^[\u4E00-\u9FA5\uFF00-\uFF20\u3000-\u301C]/;
 
 const countOfWord = s => s ? s.split(/\W+/).length : 0;
