@@ -42,7 +42,6 @@ const interfaces = [
 	{"name":"1717yun","type":3,"url":"https://www.1717yun.com/jx/ty.php?url="},
 	{"name":"金桥","type":1,"url":"https://www.jqaaa.com/jx.php?url="},
 	{"name":"618g","type":1,"url":"https://jx.618g.com/?url="},
-	{"name":"范特尔","type":1,"url":"https://www.fantee.net/fantee/?url="},
 	{"name":"m1907","type":2,"url":"https://z1.m1907.cn/?jx="},
 	{"name":"大亨影院","type":2,"url":"http://jx.cesms.cn/?url="},
 	{"name":"玩的嗨","type":2,"url":"http://tv.wandhi.com/go.html?url="},
@@ -55,7 +54,7 @@ const delayReload = () => {
 };
 const innerParse = function(li) {
 	if (this instanceof Node) li = this;
-	if (!videoPlayer.parent()[0]) $(playerCSS).empty().append(videoPlayer);
+	$(playerCSS).empty().append(videoPlayer);
 	const s = li.getAttribute('data-url') || interfaces[0].url + url;
 	videoPlayer.find("#iframe-player").attr("src", s);
 };
@@ -276,17 +275,16 @@ const router = {
 		playerCSS = '#ykPlayer';
 		posCSS = "ul.play-fn";
 		GMaddStyle(
-		`#module_basic_player, #player { height:100% !important }
-		.fn-youku-jiexi li {
+		`.fn-youku-jiexi li {
 			text-align:center;width:60px;line-height:20px;
 			float:left;border:1px solid gray;border-radius:8px;
 			padding:0 4px;margin:4px 2px; cursor: pointer;
 		}
+		#_gm__vipJX a {color:#ccc}
 		.fn-youku-jiexi > .fn-panel {
-			border:1px solid gray; min-width:180px !important; width:180px !important;
+			border:1px solid gray; min-width:183px !important; width:11.2em !important;
 		}
-		.yk-dmtxtbox { width: 300px !important }
-		#_gm__vipJX li:hover {color:#2592ff}`
+		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color:#2592ff}`
 		);
 		const youku_jiexi = $(
 		`<li class="play-fn-li fn-youku-jiexi">

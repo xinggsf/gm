@@ -5,7 +5,6 @@
 // @include    https://*.qq.com/*
 // @exclude    https://user.qzone.qq.com/*
 // @include    https://www.weiyun.com/video_*
-// @include    https://www.youku.com/
 // @include    https://v.youku.com/v_show/id_*
 // @include    https://vku.youku.com/live/*
 // @include    https://video.tudou.com/v/*
@@ -19,7 +18,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.5.8
+// @version    1.5.9
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -276,6 +275,7 @@ const app = {
 		case 40: //降音量
 			n = n || -0.1;
 			n += v.volume;
+			n = + n.toFixed(1);
 			if (0 <= n && n <= 1) v.volume = n;
 			e.preventDefault();
 			break;
@@ -297,6 +297,7 @@ const app = {
 		case 88: //按键X：减速播放 -0.1
 			n = n || -0.1;
 			n += v.playbackRate;
+			n = + n.toFixed(2);
 			if (0 < n && n <= 16) v.playbackRate = n;
 			break;
 		case 90: //按键Z：正常速度播放
@@ -458,12 +459,10 @@ let router = {
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
 		app.extPlayerCSS = '#playerWrap';
 		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu');
-		const autoPlay = gmFuncOfCheckMenu('自动播放', 'bili_autoPlay');
 		const _setPlayer = () => {
 			const x = q('.bilibili-player-video-danmaku-switch input');
 			if (!x) return setTimeout(_setPlayer, 300);
 			if (x.checked != danmu) x.click();
-			if (v.paused == autoPlay) autoPlay ? v.play() : v.pause();
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
 		};
 		const setPlayer = x => {
@@ -563,7 +562,7 @@ if (!router[u]) { //直播站点
 	router = {
 		douyu() {
 			const inRoom = host.startsWith('www.');
-			events.on('canplay', () => {
+			events.on('foundMV', () => {
 				if (inRoom) {
 					intervalQuery(doClick, '.roomSmallPlayerFloatLayout-closeBtn');
 					q('#js-player-aside-state').checked = true;
@@ -609,7 +608,7 @@ if (!router[u]) { //直播站点
 	get() { return { length: 0 } }
 });
 GM_registerMenuCommand('脚本功能快捷键表' , alert.bind(w,
-`左右方向键：快进、进退5秒; +shift: 20秒
+`左右方向键：快退、快进5秒; +shift: 20秒
 上下方向键：音量调节
 空格键：暂停/播放; +shift: 定位播放器窗口
 N：播放下一集
