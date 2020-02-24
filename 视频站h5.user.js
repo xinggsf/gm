@@ -13,6 +13,7 @@
 // @include    https://www.ixigua.com/*
 // @include    https://www.acfun.cn/*
 // @include    *://v.pptv.com/show/*
+// @include    *://www.miguvideo.com/*
 // @include    https://tv.sohu.com/*
 // @include    https://film.sohu.com/album/*
 // @include    https://www.mgtv.com/*
@@ -484,6 +485,12 @@ let router = {
 			v.addEventListener('keydown', app.hotKey);
 		});
 	},
+	miguvideo() {
+		app.playCSS = '.play-btn';
+		app.fullCSS = '.zoom-btn';
+		app.webfullCSS = '.page-zoom-btn';
+		app.nextCSS = '.next-btn';
+	},
 	sina() {
 		fakeUA(ua_ipad2);
 	},
@@ -589,7 +596,7 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income,#hy-ad';
+			app.adsCSS = '#player-subscribe-wap,#wrap-income,#hy-ad,#hy-ab';
 		},
 		longzhu() {
 			app.fullCSS = 'a.ya-screen-btn';

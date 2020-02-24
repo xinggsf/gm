@@ -29,6 +29,7 @@
 
 'use strict';
 const { host, href: url } = location;
+const vs = document.getElementsByTagName('video');
 const videoPlayer = $(
 `<div id="iframe-div" style="width:100%;height:100%;z-index:2147483647;">
 	<iframe id="iframe-player" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
@@ -53,6 +54,7 @@ const delayReload = () => {
 	setTimeout(location.reload.bind(location), 1000);
 };
 const innerParse = function(li) {
+	if (vs.length > 0) vs[0].removeAttribute('src');
 	if (this instanceof Node) li = this;
 	$(playerCSS).empty().append(videoPlayer);
 	const s = li.getAttribute('data-url') || interfaces[0].url + url;
