@@ -284,7 +284,7 @@ const router = {
 		}
 		#_gm__vipJX a {color:#ccc}
 		.fn-youku-jiexi > .fn-panel {
-			border:1px solid gray; min-width:183px !important; width:11.2em !important;
+			border:1px solid gray; min-width:9em !important; width:auto !important;
 		}
 		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color:#2592ff}`
 		);

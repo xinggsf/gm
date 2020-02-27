@@ -19,7 +19,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.5.9
+// @version    1.6.0
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -404,7 +404,7 @@ let router = {
 	ted() {
 		app.fullCSS = 'button[title="Enter Fullscreen"]';
 		app.playCSS = 'button[title="play video"]';
-		const forceHD = gmFuncOfCheckMenu('TED强制高清', 'ted_forceHD');
+		if (!gmFuncOfCheckMenu('TED强制高清', 'ted_forceHD')) return;
 		const getHDSource = async () => {
 			const pn = r1(/^(\/talks\/\w+)/, path);
 			const resp = await fetch(`https://www.ted.com${pn}/metadata.json`);
@@ -420,7 +420,7 @@ let router = {
 				console.error(ex);
 			}
 		};
-		forceHD && events.on('foundMV', () => {
+		events.on('foundMV', () => {
 			new MutationObserver(check).observe(v, {
 				attributes: true,
 				attributeFilter: ['src']
@@ -429,12 +429,10 @@ let router = {
 		});
 	},
 	qq() {
-		Object.assign(app, {
-			nextCSS: '.txp_btn_next',
-			webfullCSS: '.txp_btn_fake',
-			fullCSS: '.txp_btn_fullscreen',
-			extPlayerCSS: '#mod_player'
-		});
+		app.nextCSS = '.txp_btn_next';
+		app.webfullCSS = '.txp_btn_fake';
+		app.fullCSS = '.txp_btn_fullscreen';
+		app.extPlayerCSS = '#mod_player';
 	},
 	youku() {
 		if (host.startsWith('vku.')) {
@@ -443,11 +441,13 @@ let router = {
 			});
 			app.fullCSS = '.live_icon_full';
 		} else {
-			events.on('canplay', () => {
+			const fn = () => {
 				w.$('.settings-item.quality-item').remove('[data-val=download]')
 					.removeClass('disable youku_vip_pay_btn login-canuse')
 					.children('span').remove();
-			});
+			};
+			events.on('canplay', fn);
+			GM_registerMenuCommand('清除清晰度选择限制', fn);
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
@@ -460,20 +460,14 @@ let router = {
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
 		app.extPlayerCSS = '#playerWrap';
 		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu');
-		const _setPlayer = () => {
-			const x = q('.bilibili-player-video-danmaku-switch input');
-			if (!x) return setTimeout(_setPlayer, 300);
-			if (x.checked != danmu) x.click();
-			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton'); //关循环播放
-		};
 		const setPlayer = x => {
-			if (x == v || x.readyState < 4) return;
-			v = x;
+			if (x == v) return; v = x;
+			if (!danmu) intervalQuery(doClick, '.bilibili-player-video-danmaku-switch input');
+			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton');//关循环播放
 			app.btnNext = app.btnFP = app.btnFS = null;
-			_setPlayer();
 		};
-		events.on('canplay', () => {
-			_setPlayer();
+		events.on('foundMV', () => {
+			if (!danmu) intervalQuery(doClick, '.bilibili-player-video-danmaku-switch input');
 			intervalQuery(setPlayer, app.findMV, !1);
 		});
 	},
@@ -570,18 +564,17 @@ if (!router[u]) { //直播站点
 		douyu() {
 			const inRoom = host.startsWith('www.');
 			events.on('foundMV', () => {
-				if (inRoom) {
+				if (!inRoom) w.$(d).unbind('keydown');
+				else if (path != '/') {
 					intervalQuery(doClick, '.roomSmallPlayerFloatLayout-closeBtn');
 					q('#js-player-aside-state').checked = true;
 				}
-				else w.$(d).unbind('keydown');
-				$$(app.adsCSS);//intervalQuery($$, $$.bind(null, app.adsCSS, !1), !1); setInterval(x => $$(app.adsCSS),300);
 			});
 			app.cssMV = '[src^=blob]';
 			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
 			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
 			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
-			app.adsCSS = '[class$="-ad"],a[href*="wan.douyu.com"]';
+			app.adsCSS = 'a[href*="wan.douyu.com"]';
 		},
 		yy() {
 			app.isLive = !path.startsWith('/x/');
