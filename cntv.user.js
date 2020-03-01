@@ -2,10 +2,10 @@
 // @name             CCAV启用html5
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
-// @version          0.0.5
+// @version          0.0.6
 // @include          http://tv.cntv.cn/video/*
 // @include          http://*.cctv.com/*
-// @include          http://tv.cctv.com/live/cctv*
+// @exclude          http://tv.cctv.com/live/cctv*
 // @noframes
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
@@ -37,7 +37,8 @@ class App {
 		try {
 			await this.getVid();
 			const data = await this.fetchSrc();
-			$(this.createH5Player.bind(this, data.hls_url));
+			await sleep(800);
+			this.createH5Player(data.hls_url);
 		} catch(ex) {
 			console.error(ex);
 		}
@@ -69,45 +70,14 @@ class App {
 			source: url,
 			autoPlay: true,
 			width: '100%',
-			height: '100%',
+			height: hi,
 			parent: e[0],
 			plugins: [LevelSelector]
 		});
 	}
 }
 
-class Live {
-	constructor() {
-		Object.defineProperty(navigator, 'userAgent', {
-			value: 'Mozilla/5.0 (iPad; CPU OS 5_0 Mac OS X) Version/5.1 Mobile/9A334 Safari/7534.48.3',
-			writable: false,
-			configurable: false,
-			enumerable: true
-		});
-		$(() => { this.onReady() });
-	}
-
-	async onReady() {
-		const vs = document.getElementsByTagName('video');
-		while(!vs.length) await sleep(300);
-		const src = vs[0].src,
-		c = $(vs[0]).parent().empty(),
-		player = new Clappr.Player({
-			source: src,
-			autoPlay: true,
-			width: '100%',
-			height: '100%',
-			parent: c[0],
-			plugins: [LevelSelector]
-		});
-		$('#fzzx').click(async e => {
-			player.stop();
-			await sleep(300);
-			c.children(':not([data-player])').hide();
-			player.load(vs[0].src, 'application/vnd.apple.mpegurl', true);
-		});
-	}
-}
-
-if (location.pathname.startsWith('/live/cctv')) new Live();
-else new App().run();
+Object.defineProperty(navigator, 'plugins', {
+	get() { return { length: 0 } }
+});
+new App().run();

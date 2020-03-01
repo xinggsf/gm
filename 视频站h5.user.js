@@ -451,7 +451,7 @@ let router = {
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
-			app.extPlayerCSS = '#player';
+			//app.extPlayerCSS = '#ykPlayer';
 		}
 	},
 	bilibili() {
