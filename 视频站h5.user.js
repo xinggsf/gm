@@ -19,7 +19,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.6.0
+// @version    1.6.1
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    *://*.sina.com.cn/*
@@ -175,11 +175,12 @@ class FullPage {
 	}
 
 	getPlayerContainer(video) {
-		let e = video, p = e.parentNode;
+		video.classList.add('gm-fp-innerBox');
+		let e = video.parentNode, p = e.parentNode;
 		const { clientWidth: wid, clientHeight: h } = e;
 		for (;;) {
 			e.classList.add('gm-fp-innerBox');
-			if (p == by || p.clientWidth-wid > 3 || p.clientHeight-h > 3) return e;
+			if (e.nodeName != 'DIV' || p.clientWidth-wid > 3 || p.clientHeight-h > 3) return e;
 			e = p;
 			p = e.parentNode;
 		}
@@ -460,14 +461,15 @@ let router = {
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
 		app.extPlayerCSS = '#playerWrap';
 		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu');
+		const danmuCSS = '.bilibili-player-video-danmaku-switch > .bui-checkbox';
 		const setPlayer = x => {
 			if (x == v) return; v = x;
-			if (!danmu) intervalQuery(doClick, '.bilibili-player-video-danmaku-switch input');
+			intervalQuery(e => {if (e.checked != danmu) e.click()}, danmuCSS);
 			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton');//关循环播放
 			app.btnNext = app.btnFP = app.btnFS = null;
 		};
 		events.on('foundMV', () => {
-			if (!danmu) intervalQuery(doClick, '.bilibili-player-video-danmaku-switch input');
+			if (!danmu) intervalQuery(doClick, danmuCSS);
 			intervalQuery(setPlayer, app.findMV, !1);
 		});
 	},
