@@ -175,15 +175,14 @@ class FullPage {
 	}
 
 	getPlayerContainer(video) {
-		video.classList.add('gm-fp-innerBox');
-		let e = video.parentNode, p = e.parentNode;
+		let e = video, p = e.parentNode;
 		const { clientWidth: wid, clientHeight: h } = e;
-		for (;;) {
+		do {
 			e.classList.add('gm-fp-innerBox');
-			if (e.nodeName != 'DIV' || p.clientWidth-wid > 3 || p.clientHeight-h > 3) return e;
 			e = p;
 			p = e.parentNode;
-		}
+		} while (e.nodeName == 'DIV' && p.clientWidth-wid < 5 && p.clientHeight-h < 5);
+		return e;
 	}
 
 	_checkContainer() {
@@ -234,14 +233,14 @@ const app = {
 		return v;
 	},
 	checkDPlayer() {
-		if (this.dplayerElem) return true;
-		if (this.dplayerElem = v.closest('.dplayer')) {
-			_fp = new FullPage(v, this.switchFP);
-			this.btnFS = q('.dplayer-full-icon', this.dplayerElem);
-			this.btnFP = this.btnPlay = this.btnNext = _fs = null;
+		if (this.dpShell) return true;
+		if (this.dpShell = v.closest('.dplayer')) {
+			this.btnFP = q('.dplayer-full-in-icon > span', this.dpShell);
+			this.btnFS = q('.dplayer-full-icon', this.dpShell);
+			this.btnPlay = this.btnNext = _fs = _fp = null;
 			this.disableSpace = !1;
 		}
-		return !!this.dplayerElem;
+		return !!this.dpShell;
 	},
 	hotKey(e) {
 		if (e.ctrlKey || e.altKey || e.target.contentEditable=='true' ||
@@ -289,6 +288,7 @@ const app = {
 			}
 			break;
 		case 27: //esc
+			if (this.dpShell && this.dpShell.matches('.dplayer-fulled')) return;
 			if (FullScreen.isFull()) {
 				_fs ? _fs.exit() : clickDualButton(this.btnFS);
 			} else if (FullPage.isFull(v)) {
@@ -352,6 +352,7 @@ const app = {
 		this.vCount = this.vList.length;
 	},
 	onIntersection(entries) {
+		if (this.vList.length < 2) return;
 		const entry = find.call(entries, k => k.isIntersecting);
 		if (!entry || v == entry.target) return;
 		v = entry.target;
@@ -606,6 +607,7 @@ if (!router[u]) { //直播站点
 		!w.chrome && fakeUA(ua_chrome);
 	}
 }
+
 !/pptv|douyu/.test(u) && Object.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });

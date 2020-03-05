@@ -36,16 +36,19 @@ const videoPlayer = $(
 </div>`);
 let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
-	{name:"m1907",type:2,url:"https://z1.m1907.cn/?jx="},
 	{name:"66",type:3,url:"https://vip.66parse.club/?url="},
+	{name:"m1907",type:2,url:"https://z1.m1907.cn/?jx="},
 	{name:"思古",type:3,url:"https://api.sigujx.com/v.php?url="},
+	{name:"78科技",type:3,url:"https://api.78sy.cn/?url="},
 	{name:"明日",type:3,url:"https://jx.yingxiangbao.cn/vip.php?url="},
+	//{name:"乐博",type:3,url:"https://sjjx.leboop.com/jiexi/?url="},
 	{name:"927",type:1,url:"https://api.927jx.com/vip/?url="},
 	{name:"ab33",type:1,url:"https://jx.ab33.top/vip/?url="},
 	{name:"beac",type:3,url:"https://beaacc.com/api.php?url="},
 	{name:"七彩云",type:3,url:"https://jx.7cyd.com/index_v.php?url="},
 	{name:"菜鸟",type:3,url: "https://jiexi.bm6ig.cn/?url="},
 	{name:"义气猫",type:3,url: "https://jx.yqmao.cn/369/?url="},
+	{name:"9ki",type:3,url: "https://www.9ki.cc/jx.php?url="},
 	{name:"rdhk",type:3,url: "https://api.rdhk.net/?url="},
 	{name:"黑云",type:3,url: "https://jiexi.380k.com/?url="},
 	{name:"石头云",type:3,url:"https://jiexi.071811.cc/jx.php?url="},
@@ -53,7 +56,7 @@ const interfaces = [
 	{name:"金桥",type:1,url:"https://www.jqaaa.com/jx.php?url="},
 	{name:"618g",type:1,url:"https://jx.618g.com/?url="},
 	{name:"大亨影院",type:2,url:"http://jx.oopw.top/?url="}
-	//{name:"玩的嗨",type:2,url:"http://tv.wandhi.com/go.html?url="}https://www.9ki.cc/jx.php?url=
+	//  {name:"玩的嗨",type:2,url:"http://tv.wandhi.com/go.html?url="}
 ];
 
 const hasDOM = css => $(css).length > 0;
@@ -226,7 +229,7 @@ const router = {
 		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color: #01be07}`);
 		const iqiyi_jiexi = $(
 		`<div class="func-item fn-jiexi-main">
-			<span class="func-inner fn-iqiyi-jiexi-text" style="line-height:40px;">
+			<span class="func-inner fn-iqiyi-jiexi-text" style="height:40px;">
 				<span class="func-name">解析</span>
 			</span>
 			<div class="fn-iqiyi-jiexi">
@@ -234,7 +237,7 @@ const router = {
 			</div>
 		</div>`);
 		this.wait = el => {
-			el.filter(posCSS).prepend(iqiyi_jiexi)
+			el.filter(posCSS).append(iqiyi_jiexi)
 			.find(".fn-iqiyi-jiexi-text, li[data-url]").click(innerParse);
 		};
 	},
