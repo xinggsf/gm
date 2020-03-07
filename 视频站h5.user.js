@@ -19,14 +19,14 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.6.1
+// @version    1.6.2
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
-// @include    *://*.sina.com.cn/*
-// @include    *://video.sina.cn/*
+// @include    https://*.sina.com.cn/*
+// @include    https://video.sina.cn/*
 // @include    https://k.sina.cn/*
-// @include    *://weibo.com/*
-// @include    *://*.weibo.com/*
+// @include    https://weibo.com/*
+// @include    https://*.weibo.com/*
 // @include    https://pan.baidu.com/*
 // @include    https://yun.baidu.com/*
 // @include    *://v.yinyuetai.com/video/*
@@ -155,8 +155,9 @@ class FullPage {
 		GM_addStyle(
 			`.gm-fp-body .gm-fp-zTop {
 				position: relative !important;
-				z-index: 23333333 !important;
+				z-index: 2147483647 !important;
 			}
+			.gm-fp-body{ overflow:hidden !important; }
 			.gm-fp-wrapper .gm-fp-innerBox {
 				width: 100% !important;
 				height: 100% !important;
@@ -169,7 +170,7 @@ class FullPage {
 				top: 0 !important;
 				left: 0 !important;
 				background: #000 !important;
-				z-index: 23333333 !important;
+				z-index: 2147483647 !important;
 			}`
 		);
 	}
@@ -182,19 +183,16 @@ class FullPage {
 			e = p;
 			p = e.parentNode;
 		} while (e.nodeName == 'DIV' && p.clientWidth-wid < 5 && p.clientHeight-h < 5);
+		//e 为返回值，在此之后不能变了
+		while (p !== by) {
+			p.classList.add('gm-fp-zTop');
+			p = p.parentNode;
+		}
 		return e;
 	}
 
 	_checkContainer() {
-		const c = this._container, e = this._video;
-		if (!c || c === e) {
-			this._container = this.getPlayerContainer(e);
-			let p = this._container.parentNode;
-			while (p !== by) {
-				p.classList.add('gm-fp-zTop');
-				p = p.parentNode;
-			}
-		}
+		this._container = this._container || this.getPlayerContainer(this._video);
 	}
 
 	get container() {
@@ -209,7 +207,6 @@ class FullPage {
 	toggle() {
 		const cb = this._onSwitch;
 		if (!this._isFull && cb) cb(true);
-		by.style.overflow = this._isFull ? '' : 'hidden';
 		by.classList.toggle('gm-fp-body');
 		this.container.classList.toggle('gm-fp-wrapper');
 		this._isFull = !this._isFull;
@@ -229,7 +226,7 @@ const app = {
 	disableSpace: !1,
 	multipleV: !1, //多视频页面
 	checkMV() {
-		if (!v.offsetWidth) v = this.findMV();// !v.closest('body')
+		if (!v || !v.offsetWidth) v = this.findMV();
 		return v;
 	},
 	checkDPlayer() {
@@ -239,6 +236,7 @@ const app = {
 			this.btnFS = q('.dplayer-full-icon', this.dpShell);
 			this.btnPlay = this.btnNext = _fs = _fp = null;
 			this.disableSpace = !1;
+			this.dpShell.closest('body > *').classList.add('gm-dp-zTop');
 		}
 		return !!this.dpShell;
 	},
@@ -375,11 +373,21 @@ const app = {
 			const x = this.extPlayer = v.closest(this.extPlayerCSS);
 			x && x.addEventListener('keydown', this.hotKey);
 		}
+		if (localStorage.mvPlayRate) v.playbackRate = localStorage.mvPlayRate;
+		v.addEventListener('ratechange', ev => {
+			localStorage.mvPlayRate = v.playbackRate;
+		}, true);
 
 		if (this.multipleV) {
 			new MutationObserver(this.onGrowVList.bind(this)).observe(by, observeOpt);
 			this.vCount = 0;
 			this.onGrowVList();
+		}
+		if (this.checkDPlayer()) {
+			v.addEventListener('dblclick', ev => {
+				if (document.fullscreen) document.exitFullscreen();
+				else this.btnFP.click();
+			}, true);
 		}
 	},
 	init() {
@@ -387,7 +395,7 @@ const app = {
 		this.switchFP = this.multipleV ? this.switchFP.bind(this) : null;
 		this.vList = d.getElementsByTagName('video');
 		const fn = e => this.cssMV ? e.matches(this.cssMV) : e.offsetWidth > 9;
-		this.findMV = () => find.call(this.vList, fn);
+		this.findMV = find.bind(this.vList, fn);
 		intervalQuery(e => {
 			v = e;
 			$$(this.adsCSS);

@@ -1,17 +1,18 @@
 // ==UserScript==
 // @name        VIP视频解析
 // @namespace   mofiter.xinngsf
-// @version     1.6.2
+// @version     1.6.3
 // @description 添加的解析按钮样式与原站一致，不会产生突兀感，支持多个解析接口切换，支持自定义接口，支持站内站外解析，支持 Tampermonkey、Violentmonkey、Greasemonkey
 // @require     https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
+// @match       https://v.qq.com/tv/*
 // @match       https://v.qq.com/x/*
 // @match       https://www.iqiyi.com/v*
 // @match       https://v.youku.com/v_show/*
 // @match       https://tv.sohu.com/*
 // @match       https://film.sohu.com/album/*
 // @match       https://www.mgtv.com/b/*
-// @author   xinngsf mofiter
+// @author   xinngsf   mofiter
 // @match       http://v.pptv.com/show/*
 // @match       https://v.pptv.com/show/*
 // @match       http://www.le.com/ptv/vplay/*
