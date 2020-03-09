@@ -470,7 +470,7 @@ const init = () => {
 		if (k.type & 2) outLi += `<li><a target="_blank" href="${addr}">${k.name}</a></li>`;
 	}
 	jiexiDIV = `<div style="display:flex;">
-		<div style="width:180px;padding:10px 0;" id="_gm__vipJX">
+		<div style="width:188px;padding:10px 0;" id="_gm__vipJX">
 			<div style="text-align:center;line-height:20px;">站内解析</div>
 			<ul style="margin:0 10px;">${inLi}<div style="clear:both;"></div></ul>
 			<div style="text-align:center;line-height:20px;">站外解析</div>

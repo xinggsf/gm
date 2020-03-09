@@ -237,6 +237,9 @@ const app = {
 			this.btnPlay = this.btnNext = _fs = _fp = null;
 			this.disableSpace = !1;
 			this.dpShell.closest('body > *').classList.add('gm-dp-zTop');
+			v.addEventListener('dblclick', ev => {
+				this.btnFP.click();
+			}, true);
 		}
 		return !!this.dpShell;
 	},
@@ -383,12 +386,7 @@ const app = {
 			this.vCount = 0;
 			this.onGrowVList();
 		}
-		if (this.checkDPlayer()) {
-			v.addEventListener('dblclick', ev => {
-				if (document.fullscreen) document.exitFullscreen();
-				else this.btnFP.click();
-			}, true);
-		}
+		this.checkDPlayer();
 	},
 	init() {
 		this.hotKey = this.hotKey.bind(this);
