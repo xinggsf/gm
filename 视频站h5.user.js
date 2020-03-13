@@ -459,7 +459,6 @@ let router = {
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';
-			//app.extPlayerCSS = '#ykPlayer';
 		}
 	},
 	bilibili() {
@@ -468,7 +467,7 @@ let router = {
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
 		app.extPlayerCSS = '#playerWrap';
 		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu');
-		const danmuCSS = '.bilibili-player-video-danmaku-switch > .bui-checkbox';
+		const danmuCSS = '.bilibili-player-video-danmaku-switch .bui-checkbox';
 		const setPlayer = x => {
 			if (x == v) return; v = x;
 			intervalQuery(e => {if (e.checked != danmu) e.click()}, danmuCSS);
@@ -580,9 +579,9 @@ if (!router[u]) { //直播站点
 				}
 			});
 			app.cssMV = '[src^=blob]';
-			app.playCSS = inRoom ? 'div[title="播放"]' : 'input[title="播放"]';
-			app.webfullCSS = inRoom ? 'div[title="网页全屏"]' : 'input[title="进入网页全屏"]';
-			app.fullCSS = inRoom ? 'div[title="窗口全屏"]' : 'input[title="进入全屏"]';
+			app.playCSS = inRoom ? 'div[class|=play]' : 'input[class|=play]';
+			app.webfullCSS = inRoom ? 'div[class|=wfs]' : 'input[title="进入网页全屏"]';
+			app.fullCSS = inRoom ? 'div[class|=fs]' : 'input[title="进入全屏"]';
 			app.adsCSS = 'a[href*="wan.douyu.com"]';
 		},
 		yy() {

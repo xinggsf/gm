@@ -18,38 +18,10 @@
 		},
 		{
 			"enable": true,
-			"name": "网易公开课",
-			"ruleType": "modifyReceiveHeader",
-			"matchType": "regexp",
-			"pattern": "^https?://(ce)?mov\\.bn\\.netease\\.com/.+\\.mp4$",
-			"exclude": "",
-			"isFunction": false,
-			"action": {
-				"name": "access-control-allow-origin",
-				"value": "*"
-			},
-			"group": "ray发布"
-		},
-		{
-			"enable": true,
 			"name": "ccav",
 			"ruleType": "modifyReceiveHeader",
 			"matchType": "prefix",
 			"pattern": "http://asp.cntv.kcdnvip.com/asp/hls/",
-			"exclude": "",
-			"isFunction": false,
-			"action": {
-				"name": "access-control-allow-origin",
-				"value": "*"
-			},
-			"group": "ray发布"
-		},
-		{
-			"enable": true,
-			"name": "ccav_live",
-			"ruleType": "modifyReceiveHeader",
-			"matchType": "regexp",
-			"pattern": "^http://cctvcnch\\dc\\.v\\.wscdns\\.com/live/cctv",
 			"exclude": "",
 			"isFunction": false,
 			"action": {
