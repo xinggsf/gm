@@ -19,7 +19,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.6.2
+// @version    1.6.3
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    https://*.sina.com.cn/*

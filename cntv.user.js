@@ -77,7 +77,4 @@ class App {
 	}
 }
 
-Object.defineProperty(navigator, 'plugins', {
-	get() { return { length: 0 } }
-});
 new App().run();

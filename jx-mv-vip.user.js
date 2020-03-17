@@ -31,10 +31,10 @@
 'use strict';
 const { host, href: url } = location;
 const vs = document.getElementsByTagName('video');
-const videoPlayer = $(
+const videoPlayer =
 `<div id="iframe-div" style="width:100%;height:100%;z-index:2147483647;">
 	<iframe id="iframe-player" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
-</div>`);
+</div>`;
 let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
 	{name:"66",type:3,url:"https://vip.66parse.club/?url="},
@@ -65,11 +65,11 @@ const delayReload = () => {
 	setTimeout(location.reload.bind(location), 1000);
 };
 const innerParse = function(li) {
-	if (vs.length > 0) vs[0].removeAttribute('src');
+	if (vs.length > 0) vs[0].remove();
 	if (this instanceof Node) li = this;
-	$(playerCSS).empty().append(videoPlayer);
+	const e = $(playerCSS).empty().append(videoPlayer);
 	const s = li.getAttribute('data-url') || interfaces[0].url + url;
-	videoPlayer.find("#iframe-player").attr("src", s);
+	e.find("#iframe-player").attr("src", s);
 };
 
 class TaskPool { //简易任务池
@@ -209,7 +209,7 @@ const showSetting = () => {
 const router = {
 	["www.iqiyi.com"]() {
 		playerCSS = "#flashbox";
-		posCSS = ".qy-flash-func";
+		posCSS = ".qy-flash-func:first";
 		GMaddStyle(
 		`.fn-iqiyi-jiexi li {
 			color: #ccc; text-align: center; width: 60px; cursor: pointer;
@@ -238,8 +238,8 @@ const router = {
 			</div>
 		</div>`);
 		this.wait = el => {
-			el.filter(posCSS).append(iqiyi_jiexi)
-			.find(".fn-iqiyi-jiexi-text, li[data-url]").click(innerParse);
+			$(posCSS).append(iqiyi_jiexi)
+			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);
 		};
 	},
 	["v.qq.com"]() {
@@ -272,7 +272,7 @@ const router = {
 					$('.mod_episode .item').click(delayReload);
 				});
 			}
-			$(".action_gift, .action_more").remove(); //为了避免显示空间不足，移除举报按钮
+			$(".action_gift, .action_more").remove();
 			el.filter(posCSS).append(qq_jiexi)
 			.on("mouseover mouseout", () => {
 				qq_jiexi.toggleClass("open");
@@ -290,12 +290,12 @@ const router = {
 		GMaddStyle(
 		`.fn-youku-jiexi li {
 			text-align:center;width:60px;line-height:20px;
-			float:left;border:1px solid gray;border-radius:8px;
+			float:left;border:1px solid gray;border-radius:5px;
 			padding:0 4px;margin:4px 2px; cursor: pointer;
 		}
 		#_gm__vipJX a {color:#ccc}
 		.fn-youku-jiexi > .fn-panel {
-			border:1px solid gray; min-width:9em !important; width:auto !important;
+			border:1px solid gray; min-width:190px;
 		}
 		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color:#2592ff}`
 		);
