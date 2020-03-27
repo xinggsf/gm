@@ -157,7 +157,7 @@ class FullPage {
 				position: relative !important;
 				z-index: 2147483647 !important;
 			}
-			.gm-fp-body{ overflow:hidden !important; }
+			.gm-fp-wrapper, .gm-fp-body{ overflow:hidden !important; }
 			.gm-fp-wrapper .gm-fp-innerBox {
 				width: 100% !important;
 				height: 100% !important;
@@ -376,8 +376,8 @@ const app = {
 			const x = this.extPlayer = v.closest(this.extPlayerCSS);
 			x && x.addEventListener('keydown', this.hotKey);
 		}
-		if (localStorage.mvPlayRate) v.playbackRate = localStorage.mvPlayRate;
-		v.addEventListener('ratechange', ev => {
+		if (!this.isLive && localStorage.mvPlayRate) v.playbackRate = localStorage.mvPlayRate;
+		!this.isLive && v.addEventListener('ratechange', ev => {
 			localStorage.mvPlayRate = v.playbackRate;
 		}, true);
 
@@ -449,13 +449,15 @@ let router = {
 			});
 			app.fullCSS = '.live_icon_full';
 		} else {
+			const switchQuality = gmFuncOfCheckMenu('自动切换最高清晰度', 'yk_switchQuality', !1);
 			const fn = () => {
 				w.$('.settings-item.quality-item').remove('[data-val=download]')
 					.removeClass('disable youku_vip_pay_btn login-canuse')
 					.children('span').remove();
+				switchQuality && w.$(v).one('play', ev => {w.$('.quality-item:first').click()});
 			};
 			events.on('canplay', fn);
-			GM_registerMenuCommand('清除清晰度选择限制', fn);
+			GM_registerMenuCommand('解除清晰度选择限制', fn);
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = '.control-next-video';

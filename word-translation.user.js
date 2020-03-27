@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         智能划词翻译
 // @namespace    https://greasyfork.org/zh-CN/users/150560
-// @version      1.6.1
+// @version      1.6.2
 // @description  划词翻译,自动切换谷歌翻译和有道词典
 // @author       xinggsf  田雨菲
 // @include      http*
@@ -82,15 +82,18 @@ class Icon {
 		icon.hidden = true;
 		//拦截二个鼠标事件，以防止选中的文本消失
 		icon.addEventListener('mousedown', e => e.preventDefault(), true);
-		icon.addEventListener('mouseup', e => e.preventDefault(), true);
-		icon.addEventListener('click', e => {
-			const text = window.getSelection().toString().trim().replace(/\s{2,}/g, ' ');
-			if (text) {
-				icon.hidden = true;
-				tip.pop(e);
-				const url = isChina(text) ? googleUrl +'en&q=' :
-					countOfWord(text) == 1 ? youdaoUrl : googleUrl +'zh-CN&q=';
-				ajax(url, text);
+		icon.addEventListener('mouseup', ev => ev.preventDefault(), true);
+		icon.addEventListener('click', ev => {
+			if (ev.ctrlKey) navigator.clipboard.readText()
+			.then(text => {
+				this.queryText(text.trim(),ev);
+			})
+			.catch(err => {
+				console.error('Failed to read clipboard contents: ', err);
+			});
+			else {
+				const text = window.getSelection().toString().trim().replace(/\s{2,}/g, ' ');
+				this.queryText(text,ev);				
 			}
 		});
 		this._icon = icon;
@@ -104,6 +107,15 @@ class Icon {
 	}
 	hide() {
 		this._icon.hidden = true;
+	}
+	queryText(text,ev) {
+		if (text) {
+			icon.hidden = true;
+			tip.pop(ev);
+			const url = isChina(text) ? googleUrl +'en&q=' :
+				countOfWord(text) == 1 ? youdaoUrl : googleUrl +'zh-CN&q=';
+			ajax(url, text);
+		}
 	}
 }
 const icon = new Icon();
