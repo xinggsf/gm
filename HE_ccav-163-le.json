@@ -3,25 +3,11 @@
 	"sendHeader": [],
 	"receiveHeader": [
 		{
-			"enable": true,
+			"enable": false,
 			"name": "le",
 			"ruleType": "modifyReceiveHeader",
 			"matchType": "prefix",
 			"pattern": "http://jdplay.lecloud.com/play.videocache.lecloud.com/",
-			"exclude": "",
-			"isFunction": false,
-			"action": {
-				"name": "access-control-allow-origin",
-				"value": "*"
-			},
-			"group": "ray发布"
-		},
-		{
-			"enable": true,
-			"name": "ccav",
-			"ruleType": "modifyReceiveHeader",
-			"matchType": "prefix",
-			"pattern": "http://asp.cntv.kcdnvip.com/asp/hls/",
 			"exclude": "",
 			"isFunction": false,
 			"action": {

@@ -379,7 +379,7 @@ const app = {
 		if (!this.isLive && localStorage.mvPlayRate) v.playbackRate = localStorage.mvPlayRate;
 		!this.isLive && v.addEventListener('ratechange', ev => {
 			localStorage.mvPlayRate = v.playbackRate;
-		}, true);
+		});
 
 		if (this.multipleV) {
 			new MutationObserver(this.onGrowVList.bind(this)).observe(by, observeOpt);
