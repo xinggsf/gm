@@ -47,6 +47,7 @@ const interfaces = [
 	{name:"ab33",type:1,url:"https://jx.ab33.top/vip/?url="},
 	{name:"beac",type:3,url:"https://beaacc.com/api.php?url="},
 	{name:"七彩云",type:3,url:"https://jx.7cyd.com/index_v.php?url="},
+	{name:"fwwmy",type:3,url:"https://jx.fwwmy1.cn/mingri/ming_2.php?url="},
 	{name:"菜鸟",type:3,url: "https://jiexi.bm6ig.cn/?url="},
 	{name:"义气猫",type:3,url: "https://jx.yqmao.cn/369/?url="},
 	{name:"9ki",type:3,url: "https://www.9ki.cc/jx.php?url="},

@@ -85,12 +85,12 @@ class Icon {
 		icon.addEventListener('mouseup', ev => ev.preventDefault(), true);
 		icon.addEventListener('click', ev => {
 			if (ev.ctrlKey) navigator.clipboard.readText()
-			.then(text => {
-				this.queryText(text.trim(),ev);
-			})
-			.catch(err => {
-				console.error('Failed to read clipboard contents: ', err);
-			});
+				.then(text => {
+					this.queryText(text.trim(),ev);
+				})
+				.catch(err => {
+					console.error('Failed to read clipboard contents: ', err);
+				});
 			else {
 				const text = window.getSelection().toString().trim().replace(/\s{2,}/g, ' ');
 				this.queryText(text,ev);

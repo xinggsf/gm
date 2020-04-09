@@ -19,7 +19,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.6.3
+// @version    1.6.5
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    https://*.sina.com.cn/*
@@ -454,9 +454,12 @@ let router = {
 				w.$('.settings-item.quality-item').remove('[data-val=download]')
 					.removeClass('disable youku_vip_pay_btn login-canuse')
 					.children('span').remove();
-				switchQuality && w.$(v).one('play', ev => {w.$('.quality-item:first').click()});
 			};
 			events.on('canplay', fn);
+			events.on('foundMV',() => {
+				switchQuality && w.$(v).one('play', ev => {w.$('.quality-item:first').click()});
+				by.addEventListener('keyup', e => e.stopPropagation());
+			});
 			GM_registerMenuCommand('解除清晰度选择限制', fn);
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
@@ -600,6 +603,7 @@ if (!router[u]) { //直播站点
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
 			app.adsCSS = '#player-subscribe-wap,#wrap-income,#hy-ad,#hy-ab';
+			intervalQuery(doClick, '.login-tips-close');
 		},
 		longzhu() {
 			app.fullCSS = 'a.ya-screen-btn';

@@ -11,7 +11,6 @@
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
 // @grant            GM_xmlhttpRequest
 // @updateURL        https://raw.githubusercontent.com/xinggsf/gm/master/cntv.user.js
-// @run-at           document-start
 // ==/UserScript==
 'use strict';
 
@@ -27,9 +26,6 @@ const xfetch = (url, type = 'json') => {
 		});
 	});
 },
-sleep = ms => new Promise(resolve => {
-	setTimeout(resolve, ms);
-}),
 r1 = (r, s) => r.test(s) && RegExp.$1;
 
 class App {
@@ -37,7 +33,6 @@ class App {
 		try {
 			await this.getVid();
 			const data = await this.fetchSrc();
-			await sleep(800);
 			this.createH5Player(data.hls_url);
 		} catch(ex) {
 			console.error(ex);
