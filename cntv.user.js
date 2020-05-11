@@ -3,9 +3,9 @@
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
 // @version          0.0.6
-// @include          http://tv.cntv.cn/video/*
-// @include          http://*.cctv.com/*
-// @exclude          http://tv.cctv.com/live/cctv*
+// @include          http*://tv.cntv.cn/video/*
+// @include          http*://*.cctv.com/*
+// @exclude          http*://tv.cctv.com/live/cctv*
 // @noframes
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
@@ -41,8 +41,8 @@ class App {
 
 	async getVid() {
 		const url = location.href;
-		this.vid = r1(/^http:\/\/tv\.cntv\.cn\/video\/\w+\/(\w+)/, url) ||
-					r1(/^http:\/\/xiyou\.cctv\.com\/\w\-([\w\-]+)\.html/, url);
+		this.vid = r1(/^https:\/\/tv\.cntv\.cn\/video\/\w+\/(\w+)/, url) ||
+					r1(/^https:\/\/xiyou\.cctv\.com\/\w\-([\w\-]+)\.html/, url);
 
 		if (!this.vid) {
 			const resp = await fetch(url);
@@ -53,7 +53,7 @@ class App {
 	}
 
 	async fetchSrc() {
-		const resp = await xfetch('http://vdn.apps.cntv.cn/api/getHttpVideoInfo.do?pid=' + this.vid);
+		const resp = await xfetch('https://vdn.apps.cntv.cn/api/getHttpVideoInfo.do?pid=' + this.vid);
 		return resp.response;
 	}
 
