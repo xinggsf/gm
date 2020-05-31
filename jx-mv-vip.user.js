@@ -29,7 +29,9 @@
 // ==/UserScript==
 
 'use strict';
-const { host, href: url } = location;
+let { host, href: url } = location;
+let l = url.indexOf('?',19);
+if (l > 0) url = url.slice(0, l);
 const vs = document.getElementsByTagName('video');
 const videoPlayer =
 `<div id="iframe-div" style="width:100%;height:100%;z-index:2147483647;">

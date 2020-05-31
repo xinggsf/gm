@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name         膜法小工具
-// @version      0.7.0
+// @version      0.7.1
 // @description  方便生活，快乐分享
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
 // @require      https://cdn.jsdelivr.net/npm/js-base64@2.4.3/base64.min.js
 // @require      https://cdn.jsdelivr.net/npm/fingerprintjs2@1.8.0/dist/fingerprint2.min.js
-// @resource     userip http://ip.taobao.com/service/getIpInfo.php?ip=myip
 // @resource     country_code https://gist.githubusercontent.com/dolaCmeo/f1810f8ceddf25880c6ae14e8dbc23d5/raw/cd3ab8280a2e6cb4decf3bab705d759e7c98deab/country_code.json
 // @include      https://free-ss.*
 // @include      https://www.youneed.win/free-ssr
@@ -101,49 +100,6 @@ const t = setInterval(() => {
 		table#client-info tr td:first-child {text-align: center;}
 		table#client-info tr td{border-bottom: black solid thin;}`
 	);
-
-	// 终端信息
-	$('#qrcode').after('<div style="display:none" id="client"></div>');
-
-	function client_table() {
-		const fp = new Fingerprint2(),
-		ip_info = JSON.parse(GM_getResourceText('userip')).data;
-		let client_infos = `<tr><td>IP</td><td>${ip_info.ip}</td></tr>
-			<tr><td>ISP</td><td>${ip_info.isp} | ${ip_info.isp_id}</td></tr>
-			<tr><td>Country</td><td>${ip_info.country} | ${ip_info.country_id}</td></tr>
-			<tr><td>Region</td><td>${ip_info.region} | ${ip_info.region_id}</td></tr>
-			<tr><td>City</td><td>${ip_info.city} | ${ip_info.city_id}</td></tr>
-			<tr><td>County</td><td>${ip_info.county} | ${ip_info.county_id}</td></tr>
-			<tr><td>Area</td><td>${ip_info.area} | ${ip_info.area_id}</td></tr>`;
-		fp.get(function (result, components) {
-			const datas = {};
-			for (let i = components.length - 1; i >= 0; i--) {
-				datas[components[i].key] = components[i].value;
-			}
-			const ua = datas.user_agent.replace(')', ')<br>');
-			const resolution = datas.resolution.join(' x ');
-			const timezone = datas.timezone_offset / 60;
-			const canvasFP = datas.canvas.replace('canvas winding:yes~canvas fp:', '');
-			const webglFP = datas.webgl.split('~extensions')[0];
-			client_infos += `<tr><td>User Agent</td><td>${ua}</td></tr>
-				<tr><td>Language</td><td>${datas.language}</td></tr>
-				<tr><td>Color Depth</td><td>${datas.color_depth}</td></tr>
-				<tr><td>Processors</td><td>${datas.hardware_concurrency}</td></tr>
-				<tr><td>Resolution</td><td>${resolution}</td></tr>
-				<tr><td>Timezone</td><td>${timezone}</td></tr>
-				<tr><td>Platform</td><td>${datas.navigator_platform}</td></tr>
-				<tr><td>Canvas FP</td><td><img src="${canvasFP}"></td></tr>
-				<tr><td>WebGL FP</td><td><img src="${webglFP}"></td></tr>
-				<tr><td>WebGL Vendor</td><td>${datas.webgl_vendor}</td></tr>`;
-			$("#client").append(
-				`<h4>${result}</h4>
-				<small>以下信息只做展示不收集，IP信息来自淘宝IP</small><hr>
-				<table id="client-info">${client_infos}</table>`.replace(/[\r\n\t]/g, '')
-			);
-		});
-	}
-
-	client_table();
 
 	// 工具对象
 	const tools = {

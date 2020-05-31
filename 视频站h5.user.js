@@ -19,7 +19,7 @@
 // @include    https://www.mgtv.com/*
 // @include    *://www.fun.tv/vplay/*
 // @include    *://m.fun.tv/*
-// @version    1.6.5
+// @version    1.6.6
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    https://*.sina.com.cn/*
@@ -44,7 +44,7 @@
 // @include    https://www.douyu.com/*
 // @include    *://star.longzhu.com/*
 // @include    https://www.zhanqi.tv/*
-
+// @run-at     document-start
 // @include    https://www.yunbtv.com/vodplay/*
 // @include    *://www.dililitv.com/*
 // @include    *://www.dynamicpuer.com/tv-play-*
@@ -54,7 +54,6 @@
 // @grant      GM_registerMenuCommand
 // @grant      GM_setValue
 // @grant      GM_getValue
-// @run-at     document-start
 // @namespace  https://greasyfork.org/users/7036
 // @updateURL  https://raw.githubusercontent.com/xinggsf/gm/master/%E8%A7%86%E9%A2%91%E7%AB%99h5.user.js
 // ==/UserScript==
@@ -289,7 +288,7 @@ const app = {
 			}
 			break;
 		case 27: //esc
-			if (this.dpShell && this.dpShell.matches('.dplayer-fulled')) return;
+			if (this.dpShell) return;
 			if (FullScreen.isFull()) {
 				_fs ? _fs.exit() : clickDualButton(this.btnFS);
 			} else if (FullPage.isFull(v)) {
@@ -365,6 +364,16 @@ const app = {
 		by = d.body;
 		log('bind event\n', v);
 		events.foundMV && events.foundMV();
+		if (!this.isLive) {
+			const onCanplay = ev => {
+				v.playbackRate = localStorage.mvPlayRate;
+				v.addEventListener('ratechange', ev => {
+					localStorage.mvPlayRate = v.playbackRate;
+				});
+				v.removeEventListener('canplay', onCanplay);
+			};
+			v.addEventListener('canplay', onCanplay);
+		}
 		const fn = ev => {
 			events.canplay && events.canplay();
 			v.removeEventListener('canplaythrough', fn);
@@ -376,10 +385,6 @@ const app = {
 			const x = this.extPlayer = v.closest(this.extPlayerCSS);
 			x && x.addEventListener('keydown', this.hotKey);
 		}
-		if (!this.isLive && localStorage.mvPlayRate) v.playbackRate = localStorage.mvPlayRate;
-		!this.isLive && v.addEventListener('ratechange', ev => {
-			localStorage.mvPlayRate = v.playbackRate;
-		});
 
 		if (this.multipleV) {
 			new MutationObserver(this.onGrowVList.bind(this)).observe(by, observeOpt);
@@ -403,12 +408,6 @@ const app = {
 };
 
 let router = {
-	youtube() {
-		app.fullCSS = '.ytp-fullscreen-button';
-		app.webfullCSS = '.ytp-size-button';
-		app.nextCSS = '.ytp-next-button';
-		app.extPlayerCSS = '#ytp-player';
-	},
 	ted() {
 		app.fullCSS = 'button[title="Enter Fullscreen"]';
 		app.playCSS = 'button[title="play video"]';
@@ -463,7 +462,7 @@ let router = {
 			GM_registerMenuCommand('解除清晰度选择限制', fn);
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
-			app.nextCSS = '.control-next-video';
+			app.nextCSS = 'span.icon-next';
 		}
 	},
 	bilibili() {
@@ -619,9 +618,6 @@ if (!router[u]) { //直播站点
 	}
 }
 
-!/pptv|douyu/.test(u) && Object.defineProperty(navigator, 'plugins', {
-	get() { return { length: 0 } }
-});
 GM_registerMenuCommand('脚本功能快捷键表' , alert.bind(w,
 `左右方向键：快退、快进5秒; +shift: 20秒
 上下方向键：音量调节

@@ -2,10 +2,10 @@
 // @name             CCAV启用html5
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
-// @version          0.0.6
+// @version          0.0.7
 // @include          http://tv.cntv.cn/video/*
 // @include          http://*.cctv.com/*
-// @exclude          http://tv.cctv.com/live/cctv*
+// @exclude          http://tv.cctv.com/live/*
 // @noframes
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
@@ -14,19 +14,17 @@
 // ==/UserScript==
 'use strict';
 
-const xfetch = (url, type = 'json') => {
-	return new Promise((success, fail) => {
-		GM_xmlhttpRequest({
-			method: 'GET',
-			url: url,
-			responseType: type,
-			onload: success,
-			onerror: fail,
-			ontimeout: fail
-		});
+const xfetch = (url, type = 'json') => new Promise((success, fail) => {
+	GM_xmlhttpRequest({
+		method: 'GET',
+		url: url,
+		responseType: type,
+		onload: success,
+		onerror: fail,
+		ontimeout: fail
 	});
-},
-r1 = (r, s) => r.test(s) && RegExp.$1;
+});
+const r1 = (r, s) => r.test(s) && RegExp.$1;
 
 class App {
 	async run() {
