@@ -372,7 +372,10 @@ const t = setInterval(() => {
 		});
 	}
 
-	unsafeWindow.tools = tools;
-	unsafeWindow.start = start;
-	ssTable.on('init.dt', start).on('error.dt', failed);
+	if (ssTable.find('tr.even')[0]) start();
+	else {
+		unsafeWindow.tools = tools;
+		unsafeWindow.start = start;
+		ssTable.on('init.dt', start).on('error.dt', failed);
+	}
 }, 300);

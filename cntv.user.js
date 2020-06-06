@@ -7,6 +7,7 @@
 // @include          http://*.cctv.com/*
 // @exclude          http://tv.cctv.com/live/*
 // @noframes
+// @grant      		 GM_addStyle
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
 // @grant            GM_xmlhttpRequest
@@ -59,15 +60,16 @@ class App {
 		const e = $('#myFlash');
 		const hi = (e[0].clientHeight || 500) + 'px';
 		e.empty().css('height', hi).parent().css('height', '100%');
-		this.player = new Clappr.Player({
+		new Clappr.Player({
 			source: url,
 			autoPlay: true,
 			width: '100%',
 			height: hi,
 			parent: e[0],
-			plugins: [LevelSelector]
+			plugins: [LevelSelector],
 		});
 	}
 }
 
 new App().run();
+GM_addStyle('#myFlash, #myFlash > div:first-child{height:100% !important}');

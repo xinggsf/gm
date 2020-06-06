@@ -64,6 +64,23 @@ const d = document, find = [].find;
 let v, _fp, _fs, by; // document.body
 const observeOpt = {childList : true, subtree : true};
 const noopFn = () => {};
+const dom = new Proxy({}, {
+	get(target, tag) {
+		return function (attrs = {}, ...children) {
+			const el = d.createElement(tag);
+			for (let prop of Object.keys(attrs)) {
+				el.setAttribute(prop, attrs[prop]);
+			}
+			for (let child of children) {
+				if (typeof child === 'string') {
+					child = d.createTextNode(child);
+				}
+				el.appendChild(child);
+			}
+			return el;
+		}
+	}
+});
 const q = (css, p = d) => p.querySelector(css);
 const delElem = e => e.remove();
 const $$ = (c, cb = delElem, doc = d) => {
@@ -270,7 +287,7 @@ const app = {
 			v.currentTime += n;
 			break;
 		case 78: // N 下一首
-			this.btnNext && this.btnNext.offsetWidth > 1 && doClick(this.btnNext);
+			this.btnNext && doClick(this.btnNext);
 			break;
 		case 38: n = 0.1; //加音量
 		case 40: //降音量
@@ -366,11 +383,11 @@ const app = {
 		events.foundMV && events.foundMV();
 		if (!this.isLive) {
 			const onCanplay = ev => {
-				v.playbackRate = localStorage.mvPlayRate;
+				v.removeEventListener('canplay', onCanplay);
+				v.playbackRate = localStorage.mvPlayRate || 1;
 				v.addEventListener('ratechange', ev => {
 					localStorage.mvPlayRate = v.playbackRate;
 				});
-				v.removeEventListener('canplay', onCanplay);
 			};
 			v.addEventListener('canplay', onCanplay);
 		}
