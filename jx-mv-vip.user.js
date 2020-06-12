@@ -68,7 +68,7 @@ const delayReload = () => {
 	setTimeout(location.reload.bind(location), 1000);
 };
 const innerParse = function(li) {
-	if (vs.length > 0) vs[0].remove();
+	$(vs).remove();
 	if (this instanceof Node) li = this;
 	const e = $(playerCSS).empty().append(videoPlayer);
 	const s = li.getAttribute('data-url') || interfaces[0].url + url;
