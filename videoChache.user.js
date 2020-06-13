@@ -28,7 +28,7 @@ const check = () => {
 	return buf.start(i) >= playPos || iEnd > v.duration -55;
 };
 const finish = () => {
-	v.removeEventListener('canplaythrough', onChache, true);
+	v.removeEventListener('canplaythrough', onChache);
 	v.currentTime = playPos;
 	chached = !1;
 	v.pause();
@@ -45,7 +45,7 @@ GM_registerMenuCommand('开始缓存视频', () => {
 	v.pause();
 	disablePlay();
 	playPos = v.currentTime;
-	v.addEventListener('canplaythrough', onChache, true);
+	v.addEventListener('canplaythrough', onChache);
 	check();
 	v.currentTime = iEnd;
 });

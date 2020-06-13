@@ -74,34 +74,17 @@ const d = document, find = [].find;
 let v, _fp, _fs, by; // document.body
 const observeOpt = {childList : true, subtree : true};
 const noopFn = () => {};
-const dom = new Proxy({}, {
-	get(target, tag) {
-		return function (attrs = {}, ...children) {
-			const el = d.createElement(tag);
-			for (let prop of Object.keys(attrs)) {
-				el.setAttribute(prop, attrs[prop]);
-			}
-			for (let child of children) {
-				if (typeof child === 'string') {
-					child = d.createTextNode(child);
-				}
-				el.appendChild(child);
-			}
-			return el;
-		}
-	}
-});
 const q = (css, p = d) => p.querySelector(css);
 const delElem = e => e.remove();
 const $$ = (c, cb = delElem, doc = d) => {
 	if (!c || !c.length) return;
 	if (typeof c === 'string') c = doc.querySelectorAll(c);
 	if (!cb) return c;
-	for (let e of c) if (e && cb(e)===false) break;
+	for (let e of c) if (e && cb(e)=== !1) break;
 };
 const gmFuncOfCheckMenu = (title, saveName, defaultVal = true) => {
 	const r = GM_getValue(saveName, defaultVal);
-	if (r) title += '            √';
+	if (r) title = '√  '+ title;
 	GM_registerMenuCommand(title, () => {
 		GM_setValue(saveName, !r);
 		location.reload();
@@ -498,7 +481,7 @@ let router = {
 		app.fullCSS = '.bilibili-player-video-btn-fullscreen';
 		app.extPlayerCSS = '#playerWrap';
 		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu');
-		const danmuCSS = '.bilibili-player-video-danmaku-switch .bui-checkbox';
+		const danmuCSS = '.bilibili-player-video-danmaku-switch input';
 		const setPlayer = x => {
 			if (x == v) return; v = x;
 			intervalQuery(e => {if (e.checked != danmu) e.click()}, danmuCSS);
