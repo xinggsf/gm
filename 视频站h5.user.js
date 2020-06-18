@@ -25,7 +25,7 @@
 // @include    https://m.fun.tv/*
 // @include    http://www.fun.tv/vplay/*
 // @include    https://www.fun.tv/vplay/*
-// @version    1.6.6
+// @version    1.6.7
 // @include    *://*.163.com/*
 // @include    *://*.icourse163.org/*
 // @include    https://*.sina.com.cn/*
@@ -130,7 +130,7 @@ const fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 const getMainDomain = host => {
 	const a = host.split('.');
 	let i = a.length - 2;
-	if (/com|tv|net|org|gov|edu/.test(a[i])) i--;
+	if (/^(com|tv|net|org|gov|edu)$/.test(a[i])) i--;
 	return a[i];
 };
 const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3626.121 Safari/537.36';
@@ -445,6 +445,10 @@ let router = {
 			check();
 		});
 	},
+	youtube() {
+		app.playCSS = 'button.ytp-play-button';
+		app.fullCSS = 'button.ytp-fullscreen-button';
+	},
 	qq() {
 		app.nextCSS = '.txp_btn_next';
 		app.webfullCSS = '.txp_btn_fake';
@@ -485,13 +489,22 @@ let router = {
 		const setPlayer = x => {
 			if (x == v) return; v = x;
 			intervalQuery(e => {if (e.checked != danmu) e.click()}, danmuCSS);
-			doClick('i.bilibili-player-iconfont-repeat.icon-24repeaton');//关循环播放
 			app.btnNext = app.btnFP = app.btnFS = null;
 		};
 		events.on('foundMV', () => {
 			if (!danmu) intervalQuery(doClick, danmuCSS);
 			intervalQuery(setPlayer, app.findMV, !1);
 		});
+	},
+	pptv() {
+		app.fullCSS = '.w-zoom-container > div';
+		app.webfullCSS = '.w-expand-container > div';
+		app.nextCSS = '.w-next';
+	},
+	mgtv() {
+		app.fullCSS = 'mango-screen';
+		app.webfullCSS = 'mango-webscreen > a';
+		app.nextCSS = 'mango-control-playnext-btn';
 	},
 	ixigua() {
 		app.fullCSS = '.xgplayer-fullscreen';
@@ -532,6 +545,7 @@ let router = {
 		app.extPlayerCSS = '.video-content';
 	},
 	acfun() {
+		app.nextCSS = '.btn-next-part .control-btn';
 		app.webfullCSS = '.fullscreen-web';
 		app.fullCSS = '.fullscreen-screen';
 	},
@@ -628,6 +642,9 @@ if (!router[u]) { //直播站点
 	}
 }
 
+Object.defineProperty(navigator, 'plugins', {
+	get() { return { length: 0 } }
+});
 GM_registerMenuCommand('脚本功能快捷键表' , alert.bind(w,
 `左右方向键：快退、快进5秒; +shift: 20秒
 上下方向键：音量调节

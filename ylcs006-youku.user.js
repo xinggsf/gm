@@ -10,7 +10,7 @@
 'use strict';
 
 const r1 = (regp, s) => regp.test(s) && RegExp.$1;
-const createScript = (text) => {
+const runScript = (text) => {
 	const e = document.createElement('script');
 	e.textContent = text;
 	document.head.appendChild(e);
@@ -29,7 +29,7 @@ const rules = [{
 			if (i < 2) {
 				const json = JSON.parse(val.slice(i + cb.length + 1, -1));
 				delete json.data.data.ad;
-				createScript(`${cb}(${JSON.stringify(json)})`);
+				runScript(`${cb}(${JSON.stringify(json)})`);
 			}
 		}
 	}
@@ -49,3 +49,22 @@ Reflect.defineProperty(HTMLScriptElement.prototype, 'src', {
 		else this._rawSrc = val;
 	}
 });
+/*
+Reflect.setPrototypeOf(HTMLScriptElement, new Proxy(HTMLScriptElement.prototype, {
+	appendChild(txt) {
+		const s = txt.toString();
+		const isHandle = rule instanceof RegExp ? rule.test(s) : s.includes(rule);
+		if (!isHandle) return rawAppend(txt);
+		if (cb) {
+			txt.textContent = cb(s);
+			//return rawAppend(txt);
+		}
+	},
+	set(target, key, value, receiver) {
+		if (key == 'src') {
+			const rule = rules.find(r => value.includes(r.rule));
+			if (rule) return rule.callback(value);
+		}
+		Reflect.set(target, key, value, receiver);
+	}
+})); */

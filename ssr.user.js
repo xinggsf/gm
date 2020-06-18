@@ -18,6 +18,7 @@
 // @connect      www.youneed.win
 // @grant        GM_openInTab
 // @grant        unsafeWindow
+// @run-at       document-idle
 // @updateURL    https://raw.githubusercontent.com/xinggsf/gm/master/ssr.user.js
 // ==/UserScript==
 
