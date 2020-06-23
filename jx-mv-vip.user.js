@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        VIP视频解析
 // @namespace   mofiter.xinngsf
-// @version     1.6.3
+// @version     1.6.4
 // @description 添加的解析按钮样式与原站一致，不会产生突兀感，支持多个解析接口切换，支持自定义接口，支持站内站外解析，支持 Tampermonkey、Violentmonkey、Greasemonkey
 // @require     https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -41,26 +41,27 @@ let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
 	{name:"66",type:3,url:"https://vip.66parse.club/?url="},
 	{name:"m1907",type:2,url:"https://z1.m1907.cn/?jx="},
+	{name:"七彩云",type:3,url:"https://v.7cyd.com/vip/?url="},
+	{name:"猪蹄",type:3,url:"https://jx.iztyy.com/svip/?url="},
+	{name:"tv920",type:3,url:"https://api.tv920.com/jx/?url="},
 	{name:"思古",type:3,url:"https://api.sigujx.com/v.php?url="},
-	{name:"78科技",type:3,url:"https://api.78sy.cn/?url="},
 	{name:"明日",type:3,url:"https://jx.yingxiangbao.cn/vip.php?url="},
+	{name:"盘古",type:3,url:"https://www.pangujiexi.cc/jiexi.php?url="},
+	{name:"黑云",type:3,url: "https://jiexi.380k.com/?url="},
 	//{name:"乐博",type:3,url:"https://sjjx.leboop.com/jiexi/?url="},
 	{name:"927",type:1,url:"https://api.927jx.com/vip/?url="},
 	{name:"ab33",type:1,url:"https://jx.ab33.top/vip/?url="},
 	{name:"beac",type:3,url:"https://beaacc.com/api.php?url="},
-	{name:"七彩云",type:3,url:"https://jx.7cyd.com/index_v.php?url="},
 	{name:"fwwmy",type:3,url:"https://jx.fwwmy1.cn/mingri/ming_2.php?url="},
 	{name:"菜鸟",type:3,url: "https://jiexi.bm6ig.cn/?url="},
-	{name:"义气猫",type:3,url: "https://jx.yqmao.cn/369/?url="},
-	{name:"9ki",type:3,url: "https://www.9ki.cc/jx.php?url="},
+	//{name:"义气猫",type:3,url: "https://jx.yqmao.cn/369/?url="},
+	//{name:"9ki",type:3,url: "https://www.9ki.cc/jx.php?url="},
 	{name:"rdhk",type:3,url: "https://api.rdhk.net/?url="},
-	{name:"黑云",type:3,url: "https://jiexi.380k.com/?url="},
 	{name:"石头云",type:3,url:"https://jiexi.071811.cc/jx.php?url="},
 	{name:"1717yun",type:3,url:"https://www.1717yun.com/jx/ty.php?url="},
-	{name:"金桥",type:1,url:"https://www.jqaaa.com/jx.php?url="},
-	{name:"618g",type:1,url:"https://jx.618g.com/?url="},
+	{name:"金桥",type:3,url:"https://www.jqaaa.com/jx.php?url="},
+	{name:"618g",type:3,url:"https://jx.618g.com/?url="},
 	{name:"大亨影院",type:2,url:"http://jx.oopw.top/?url="}
-	//  {name:"玩的嗨",type:2,url:"http://tv.wandhi.com/go.html?url="}
 ];
 
 const hasDOM = css => $(css).length > 0;
@@ -283,9 +284,9 @@ const router = {
 			.find(".fn-qq-jiexi-text, li[data-url]").click(innerParse);
 		};
 		tasks.add(el => {
-			el.remove();
+			el.hide();
 			return true;
-		}, ".tvip_layer,#mask_layer");
+		}, ".mod_vip_popup,#mask_layer");
 	},
 	["v.youku.com"]() {
 		playerCSS = '#ykPlayer';
@@ -465,9 +466,9 @@ const router = {
 const init = () => {
 	GM_registerMenuCommand("自定义 VIP 视频解析接口", showSetting);
 	userIntfs = GMgetValue("user_interface", []);
-	const list = interfaces.concat(userIntfs);
+	userIntfs.length && interfaces.push.apply(interfaces, userIntfs);
 	let outLi = '', inLi = '';
-	for (const k of list) {
+	for (const k of interfaces) {
 		const addr = k.url.trim() + url;
 		if (k.type & 1) inLi += `<li data-url="${addr}">${k.name}</li>`;
 		if (k.type & 2) outLi += `<li><a target="_blank" href="${addr}">${k.name}</a></li>`;

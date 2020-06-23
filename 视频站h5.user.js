@@ -25,9 +25,9 @@
 // @include    https://m.fun.tv/*
 // @include    http://www.fun.tv/vplay/*
 // @include    https://www.fun.tv/vplay/*
-// @version    1.6.7
-// @include    *://*.163.com/*
-// @include    *://*.icourse163.org/*
+// @version    1.6.8
+// @include    https://*.163.com/*
+// @include    https://*.icourse163.org/*
 // @include    https://*.sina.com.cn/*
 // @include    https://video.sina.cn/*
 // @include    https://k.sina.cn/*
@@ -35,18 +35,15 @@
 // @include    https://*.weibo.com/*
 // @include    https://pan.baidu.com/*
 // @include    https://yun.baidu.com/*
-// @include    *://v.yinyuetai.com/video/*
-// @include    *://v.yinyuetai.com/playlist/h5/*
 // @include    http://v.ifeng.com/*
 // @include    https://v.ifeng.com/*
-// @include    *://*.mtime.com/*
+// @include    http://news.mtime.com/*
+// @include    http://video.mtime.com/*
 // @GM_info
 // @include    https://www.youtube.com/watch?v=*
 // @include    https://www.ted.com/talks/*
 // @noframes
-// @include    http://www.yy.com/*
 // @include    https://www.yy.com/*
-// @include    http://v.huya.com/play/*
 // @include    https://v.huya.com/play/*
 // @include    https://www.huya.com/*
 // @include    https://v.douyu.com/*
@@ -58,7 +55,7 @@
 // @include    https://www.yunbtv.com/vodplay/*
 // @include    *://www.dililitv.com/*
 // @include    *://www.dynamicpuer.com/tv-play-*
-// @include    https://www.i6v.cc/*/play/*
+// @include    https://www.yasehezi.com/vod-play-*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -76,7 +73,7 @@ const observeOpt = {childList : true, subtree : true};
 const noopFn = () => {};
 const q = (css, p = d) => p.querySelector(css);
 const delElem = e => e.remove();
-const $$ = (c, cb = delElem, doc = d) => {
+const $$ = function(c, cb = delElem, doc = d) {
 	if (!c || !c.length) return;
 	if (typeof c === 'string') c = doc.querySelectorAll(c);
 	if (!cb) return c;
@@ -134,7 +131,6 @@ const getMainDomain = host => {
 	return a[i];
 };
 const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3626.121 Safari/537.36';
-const ua_ipad2 = 'Mozilla/5.0 (iPad; CPU OS 5_0 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3';
 
 class FullScreen {
 	constructor(e) {
@@ -244,9 +240,10 @@ const app = {
 			this.btnFP = q('.dplayer-full-in-icon > span', this.dpShell);
 			this.btnFS = q('.dplayer-full-icon', this.dpShell);
 			this.btnPlay = this.btnNext = _fs = _fp = null;
+			if (this.nextCSS) this.btnNext = q(this.nextCSS);
 			this.disableSpace = !1;
 			this.dpShell.closest('body > *').classList.add('gm-dp-zTop');
-			v.addEventListener('dblclick', ev => {
+			this.dpShell.addEventListener('dblclick', ev => {
 				this.btnFP.click();
 			}, true);
 		}
@@ -424,7 +421,7 @@ let router = {
 		if (!gmFuncOfCheckMenu('TED强制高清', 'ted_forceHD')) return;
 		const getHDSource = async () => {
 			const pn = r1(/^(\/talks\/\w+)/, path);
-			const resp = await fetch(`https://www.ted.com${pn}/metadata.json`);
+			const resp = await fetch(pn + '/metadata.json');
 			const data = await resp.json();
 			return data.talks[0].downloads.nativeDownloads.high;
 		};
@@ -467,10 +464,10 @@ let router = {
 				w.$('.settings-item.quality-item').remove('[data-val=download]')
 					.removeClass('disable youku_vip_pay_btn login-canuse')
 					.children('span').remove();
+				switchQuality && w.$('.quality-item:first').click();
 			};
 			events.on('canplay', fn);
 			events.on('foundMV',() => {
-				switchQuality && w.$(v).one('play', ev => {w.$('.quality-item:first').click()});
 				by.addEventListener('keyup', e => e.stopPropagation());
 			});
 			GM_registerMenuCommand('解除清晰度选择限制', fn);
@@ -486,15 +483,17 @@ let router = {
 		app.extPlayerCSS = '#playerWrap';
 		const danmu = gmFuncOfCheckMenu('弹幕', 'bili_danmu');
 		const danmuCSS = '.bilibili-player-video-danmaku-switch input';
-		const setPlayer = x => {
-			if (x == v) return; v = x;
+		events.on('foundMV', () => {
 			intervalQuery(e => {if (e.checked != danmu) e.click()}, danmuCSS);
+		});
+
+		const fName= path.startsWith('/bangumi/') ? 'replaceState' : 'pushState';
+		const rawFn = history[fName]; //二方法不触发onpopstate事件
+		history[fName] = function (...args) {
+			rawFn.apply(history, args);
+			events.foundMV();
 			app.btnNext = app.btnFP = app.btnFS = null;
 		};
-		events.on('foundMV', () => {
-			if (!danmu) intervalQuery(doClick, danmuCSS);
-			intervalQuery(setPlayer, app.findMV, !1);
-		});
 	},
 	pptv() {
 		app.fullCSS = '.w-zoom-container > div';
@@ -519,9 +518,6 @@ let router = {
 		app.fullCSS = '.zoom-btn';
 		app.webfullCSS = '.page-zoom-btn';
 		app.nextCSS = '.next-btn';
-	},
-	sina() {
-		fakeUA(ua_ipad2);
 	},
 	weibo() {
 		app.multipleV = path.startsWith('/u/');
@@ -559,41 +555,18 @@ let router = {
 		app.fullCSS = '.x-fullscreen-btn';
 		app.webfullCSS = '.x-pagefs-btn';
 	},
-	mtime() {
-		fakeUA(ua_ipad2);
-		events.on('foundMV', () => {
-			v.preload = 'auto';
-			v.autoplay = true;
-		});
-	},
 	fun() {
-		if (host.startsWith('m.')) {
-			if (!path.includes('play')) return true;//非播放页，不执行init()
-			/^\/[mv]/.test(path) && location.assign(path.replace('/', '/i') + location.search);
-			app.nextCSS = 'a.btn.next-btn';
-			app.fullCSS = 'a.btn.full-btn';
-			GM_addStyle('div.p-ip-wrap{overflow-y: auto !important;}');
-			return;
-		}
-		let vid = r1(/\bv-(\d+)/, path);
-		let mid = r1(/\bg-(\d+)/, path);
-		//剧集path: /implay/，单视频path: /ivplay/
-		if (vid) {
-			mid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
-			location.assign('//m.fun.tv/ivplay/?vid='+vid);
-		}
-		mid && setTimeout(() => {
-			vid = w.vplay.videoid;
-			vid && location.assign(`//m.fun.tv/implay/?mid=${mid}&vid=${vid}`);
-		}, 99);
-		r1(/\bt-(\d+)/, path) && setTimeout(() => {
-			vid = w.vplay.videoid;
-			location.assign('//m.fun.tv/ivplay/?vid='+vid);
-		}, 99);
-		return true;
+		app.nextCSS = '.btn-item.btn-next';
+	},
+	yasehezi() {
+		app.nextCSS = 'a#ff-next';
+		events.on('canplay', () => {
+			$('body').unbind('keydown');
+			$('a.disabled').remove();
+		});
 	}
 };
-app.disableSpace = /youtube|ixigua|qq|pptv/.test(u);
+app.disableSpace = /^(youtube|ixigua|qq|pptv|fun)$/.test(u);
 
 if (!router[u]) { //直播站点
 	router = {
@@ -625,8 +598,11 @@ if (!router[u]) { //直播站点
 			app.webfullCSS = '.player-fullpage-btn';
 			app.fullCSS = '.player-fullscreen-btn';
 			app.playCSS = '#player-btn';
-			app.adsCSS = '#player-subscribe-wap,#wrap-income,#hy-ad,#hy-ab';
+			app.adsCSS = '#player-subscribe-wap,#wrap-income';
 			intervalQuery(doClick, '.login-tips-close');
+			localStorage['sidebar/ads'] = '{}';
+			localStorage['sidebar/state'] = 0;
+			localStorage.TT_ROOM_SHIELD_CFG_0_ = '{"10000":1,"20001":1,"20002":1,"20003":1,"30000":1}';
 		},
 		longzhu() {
 			app.fullCSS = 'a.ya-screen-btn';

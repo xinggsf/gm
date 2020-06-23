@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         最大化缓存视频
 // @namespace    videoChache.xinggsf
-// @version      0.1
+// @version      0.1.1
 // @description  最大化缓存视频
 // @author       xinggsf
 // @match        https://v.youku.com/v_show/id_*
@@ -10,6 +10,7 @@
 // @match        http://www.le.com/ptv/vplay/*
 // @match        https://www.le.com/ptv/vplay/*
 // @match        https://v.7cyd.com/*
+// @match        https://yun.tv920.com/?url=*
 // @match        https://jx.iztyy.com/?url=*
 // @grant        GM_registerMenuCommand
 // ==/UserScript==
@@ -34,24 +35,30 @@ const finish = () => {
 	v.removeEventListener('canplaythrough', onChache);
 	v.currentTime = playPos;
 	chached = !1;
-	v.pause();
+	setTimeout(x => v.pause(), 99);
 	HTMLVideoElement.prototype.play = rawPlay;
 };
 const onChache = ev => {
 	if (check()) finish();
 	else v.currentTime = iEnd;
 };
-GM_registerMenuCommand('开始缓存视频', () => {
+
+const onload = ev => {
 	v = find();
-	if (!v && chached) return;
-	chached = true; //正在缓存
-	v.pause();
-	disablePlay();
-	playPos = v.currentTime;
-	v.addEventListener('canplaythrough', onChache);
-	check();
-	v.currentTime = iEnd;
-});
-GM_registerMenuCommand('停止缓存视频', () => {
-	if (chached) finish();
-});
+	if (v) {
+		//if (self != top) v.playbackRate = 1.4;
+		GM_registerMenuCommand('开始缓存视频', () => {
+			if (chached) return;
+			chached = true; //正在缓存
+			v.pause();
+			disablePlay();
+			playPos = v.currentTime;
+			v.addEventListener('canplaythrough', onChache);
+			check();
+			v.currentTime = iEnd;
+		});
+		GM_registerMenuCommand('停止缓存视频', () => chached && finish());
+	}
+	else setTimeout(onload, 900);
+};
+onload();

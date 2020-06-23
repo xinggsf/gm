@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Youku视频去广告 by ylcs006
 // @namespace    ylcs006.Youku.com
-// @version      0.1
+// @version      0.1.1
 // @description  Youku视频去广告及其黑屏倒计时
 // @match        https://v.youku.com/v_show/*
 // @run-at       document-start
@@ -23,7 +23,7 @@ const rules = [{
 		async callback(url) {
 			const resp = await fetch(url, { credentials: 'include' });
 			const val = await resp.text();
-			const cb = r1(/(mtopjsonp\d*)/, url);
+			const cb = r1(/callback=(mtopjsonp\d*)/, url);
 			if (!cb) return;
 			const i = val.indexOf(cb);
 			if (i < 2) {
