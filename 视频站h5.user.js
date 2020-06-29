@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       视频网HTML5播放小工具
-// @description 三大功能 。启用HTML5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @description 三大功能 。启用HTML5播放；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
 // @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
 // @include    https://*.qq.com/*
 // @exclude    https://user.qzone.qq.com/*
@@ -118,6 +118,7 @@ const intervalQuery = (cb, condition, stop = true) => {
 	}, 300);
 };
 const firefoxVer = r1(/Firefox\/(\d+)/, navigator.userAgent);
+const isEdge = / Edge?\//.test(navigator.userAgent);
 const fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 	value: ua,
 	writable: false,
@@ -614,7 +615,7 @@ if (!router[u]) { //直播站点
 	};
 	if (router[u]) {
 		app.isLive = app.isLive || !host.startsWith('v.');
-		!w.chrome && fakeUA(ua_chrome);
+		(!w.chrome || isEdge) && fakeUA(ua_chrome);
 	}
 }
 

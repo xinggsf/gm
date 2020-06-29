@@ -4,6 +4,7 @@
 // @version      0.1.1
 // @description  最大化缓存视频
 // @author       xinggsf
+// @match        https://www.youtube.com/watch?v=*
 // @match        https://v.youku.com/v_show/id_*
 // @match        http://v.pptv.com/show/*
 // @match        https://v.pptv.com/show/*
@@ -11,6 +12,7 @@
 // @match        https://www.le.com/ptv/vplay/*
 // @match        https://v.7cyd.com/*
 // @match        https://yun.tv920.com/?url=*
+// @match        https://video.tv920.com/api/*
 // @match        https://jx.iztyy.com/?url=*
 // @grant        GM_registerMenuCommand
 // ==/UserScript==

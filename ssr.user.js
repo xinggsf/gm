@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         膜法小工具
-// @version      0.7.1
+// @version      0.7.2
 // @description  方便生活，快乐分享
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
@@ -9,12 +9,10 @@
 // @resource     country_code https://gist.githubusercontent.com/dolaCmeo/f1810f8ceddf25880c6ae14e8dbc23d5/raw/cd3ab8280a2e6cb4decf3bab705d759e7c98deab/country_code.json
 // @include      https://free-ss.*
 // @include      https://www.youneed.win/free-ssr
-// @grant        GM_registerMenuCommand
 // @grant        GM_info
 // @grant        GM_addStyle
 // @grant        GM_setClipboard
 // @grant        GM_getResourceText
-// @grant        GM_xmlhttpRequest
 // @connect      www.youneed.win
 // @grant        GM_openInTab
 // @grant        unsafeWindow
@@ -22,30 +20,24 @@
 // @updateURL    https://raw.githubusercontent.com/xinggsf/gm/master/ssr.user.js
 // ==/UserScript==
 
-const { encodeURI: enb64, decode: deb64 } = Base64;
-const xfetch = (url) => new Promise((success, fail) => {
-	GM_xmlhttpRequest({
-		method: 'GET',
-		url: url,
-		onload: success,
-		onerror: fail,
-		ontimeout: fail
-	});
-});
-
-//host文件添加  104.31.74.55  www.youneed.win youneed.win
-GM_registerMenuCommand('读取www.youneed.win的ssr列表到剪贴板', async () => {
-	// const resp = await xfetch('https://www.youneed.win/free-ssr');
-	// const m = resp.responseText.match(/\bssr:\/\/\w+/g);
-	const m = [].map.call(document.querySelectorAll('table:first-child a[data]'),
-		e => e.getAttribute('data'));
-	if (!m.length) alert('站点未提供ssr://链接列表！');
-	else {
-		GM_setClipboard(m.join('\n'));
-		alert('ssr://链接列表已经拷贝到剪贴板');
-	}
-});
-if (!location.host.startsWith('free-ss.')) return;
+//host文件添加一行：  104.31.74.55  www.youneed.win youneed.win
+if (location.host.endsWith('youneed.win')) {
+	const n = setInterval(() => {
+		'use strict';
+		const $ = unsafeWindow.jQuery;
+		if ($ && $('section.context tr').length > 1) clearInterval(n);
+		else return;
+		const table = $('section.context tbody');
+		const p = $('<p><a href="javascript:void(0);">读取SSR列表到剪贴板</a></p>');
+		table.closest('div').before(p);
+		p.children('a').click(() => {
+			const m = table.find('a[data]').get().map(e => e.getAttribute('data'));
+			GM_setClipboard(m.join('\n'));
+			alert('ssr://链接列表已经拷贝到剪贴板');
+		});
+	}, 900);
+	return;
+}
 
 const t = setInterval(() => {
 	'use strict';
@@ -54,6 +46,7 @@ const t = setInterval(() => {
 	clearInterval(t);
 
 	const ssTable = $("table:last"),
+	{ encodeURI: enb64, decode: deb64 } = Base64,
 	date_str = new Date().toISOString().slice(0, 10) + '_',
 	country_code = JSON.parse("" + GM_getResourceText('country_code')),
 	areas = new Set(),
@@ -67,7 +60,6 @@ const t = setInterval(() => {
 		globe: 6,
 		qrcode: 7
 	},
-	xyz = "http://" + deb64("c3NyLjEyMzQ1NjYueHl6"),
 	ok_method = [
 		'aes-128-cfb', 'aes-128-ctr', 'aes-192-cfb', 'aes-192-ctr', 'aes-256-cfb', 'aes-256-ctr',
 		'camellia-128-cfb', 'camellia-192-cfb', 'camellia-256-cfb',
@@ -158,36 +150,11 @@ const t = setInterval(() => {
 		},
 		ssr() {
 			return this.datas().map(data => this._ssr(data));
-		},
-		upload(URL) {
-			if (URL) GM_xmlhttpRequest({
-				method: 'POST',
-				url: URL,
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded"
-				},
-				data: 'ssr=' + enb64(this.ssr().join('\n')) + 'ver=' + GM_info.script.version.replace('.', '_'),
-				onloadstart: function () {
-					layer.load(2, { time: 9999 });
-				},
-				onload: function (r) {
-					layer.closeAll();
-					layer.msg(`POST:${URL}<br>${r.status}:${r.statusText}`);
-				},
-				onerror: onload,
-				ontimeout: onload
-			});
 		}
 	};
 
 	const onSelectRow = num => {
 		$("#sel").html(num ? `，已选 ${num} 条` : '');
-	};
-
-	document.onkeydown = ev => {
-		if (ev.ctrlKey && 81 == ev.keyCode) { // Ctrl+q
-			tools.upload(prompt("POST-URL:", xyz));
-		}
 	};
 
 	function make_area() {
@@ -379,4 +346,4 @@ const t = setInterval(() => {
 		unsafeWindow.start = start;
 		ssTable.on('init.dt', start).on('error.dt', failed);
 	}
-}, 300);
+}, 600);

@@ -243,7 +243,7 @@ const router = {
 		</div>`);
 		this.wait = el => {
 			$(posCSS).append(iqiyi_jiexi)
-			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);
+			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);\
 		};
 	},
 	["v.qq.com"]() {
