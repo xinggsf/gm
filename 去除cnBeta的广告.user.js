@@ -9,16 +9,16 @@
 // ==/UserScript==
 
 'use strict';
-const p = HTMLElement.prototype,
-ib = p.appendChild;
-p.appendChild = function(t) {
+const p = HTMLElement.prototype;
+const ib = p.insertBefore;
+p.insertBefore = function(...a) {
 	if (
-		(this.tagName === 'SCRIPT' || t.tagName === 'SCRIPT')
-		&& t.textContent.includes('广告屏蔽插件')
+		(this.tagName === 'BODY' || a[0].tagName === 'DIV')
+		&& a[0].textContent.includes('广告屏蔽插件')
 	) {
-		p.appendChild = ib;
+		p.insertBefore = ib;
 	} else {
-		ib.call(this, t);
+		return ib.apply(this, a);
 	}
 };
 console.log('Kill anti-AD');

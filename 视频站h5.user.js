@@ -67,6 +67,7 @@
 
 'use strict';
 const w = unsafeWindow || window;
+const { host, pathname: path } = location;
 const d = document, find = [].find;
 let v, _fp, _fs, by; // document.body
 const observeOpt = {childList : true, subtree : true};
@@ -163,7 +164,7 @@ class FullPage {
 				position: relative !important;
 				z-index: 2147483647 !important;
 			}
-			.gm-fp-wrapper, .gm-fp-body{ overflow:hidden !important; }
+			.gm-fp-wrapper, .gm-fp-body, html{ overflow:auto !important; }
 			.gm-fp-wrapper .gm-fp-innerBox {
 				width: 100% !important;
 				height: 100% !important;
@@ -220,7 +221,6 @@ class FullPage {
 	}
 }
 
-const { host, pathname: path } = location;
 const u = getMainDomain(host);
 const events = {
 	on(name, fn) {
@@ -490,8 +490,8 @@ let router = {
 
 		const fName= path.startsWith('/bangumi/') ? 'replaceState' : 'pushState';
 		const rawFn = history[fName]; //二方法不触发onpopstate事件
-		history[fName] = function (...args) {
-			rawFn.apply(history, args);
+		history[fName] = function(...args) {
+			rawFn.apply(this, args);
 			events.foundMV();
 			app.btnNext = app.btnFP = app.btnFS = null;
 		};
@@ -525,17 +525,17 @@ let router = {
 	},
 	baidu() {
 		events.on('keydown', e => {
-			if (!videojs) return;
-			let n, p = videojs.getPlayers("video-player").html5player;
+			if (!w.videojs) return;
+			let n, p = w.videojs.getPlayers("video-player").html5player.tech_;
 			switch (e.keyCode) {
 			case 67: n = 0.1;
 			case 88:
 				n = n || -0.1;
-				n += + p.tech_.playbackRate().toFixed(1);
-				if (0 < n && n <= 16) p.tech_.setPlaybackRate(n);
+				n += p.playbackRate().toFixed(2);
+				if (0 < n && n <= 16) p.setPlaybackRate(+n);
 				return true;
 			case 90:
-				p.tech_.setPlaybackRate(1);
+				p.setPlaybackRate(1);
 				return true;
 			}
 		});

@@ -5,7 +5,7 @@
 // @namespace    dolacmeo-xinggsf
 // @supportURL   https://github.com/xinggsf/gm/issues
 // @require      https://cdn.jsdelivr.net/npm/js-base64@2.4.3/base64.min.js
-// @require      https://cdn.jsdelivr.net/npm/fingerprintjs2@1.8.0/dist/fingerprint2.min.js
+// require      https://cdn.jsdelivr.net/npm/fingerprintjs2@1.8.0/dist/fingerprint2.min.js
 // @resource     country_code https://gist.githubusercontent.com/dolaCmeo/f1810f8ceddf25880c6ae14e8dbc23d5/raw/cd3ab8280a2e6cb4decf3bab705d759e7c98deab/country_code.json
 // @include      https://free-ss.*
 // @include      https://www.youneed.win/free-ssr
@@ -13,7 +13,6 @@
 // @grant        GM_addStyle
 // @grant        GM_setClipboard
 // @grant        GM_getResourceText
-// @connect      www.youneed.win
 // @grant        GM_openInTab
 // @grant        unsafeWindow
 // @run-at       document-idle
@@ -69,7 +68,6 @@ const t = setInterval(() => {
 	let dataTable;
 	layer.load(0, { shade: false, time: 900 });
 	ssTable.before("<ul id='tools'></ul>");
-	$('#qrcode').after('<div style="display:none" id="qrcode0"></div>');
 	GM_addStyle(
 		`body{margin:0;}
 		h2 small a{font-weight:bold;color:#4CAF50;font-size:10px;text-decoration:none;}

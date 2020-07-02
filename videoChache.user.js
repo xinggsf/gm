@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         最大化缓存视频
+// @name         缓存视频
 // @namespace    videoChache.xinggsf
 // @version      0.1.1
 // @description  最大化缓存视频

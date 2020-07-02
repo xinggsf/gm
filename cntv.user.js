@@ -3,9 +3,9 @@
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
 // @version          0.0.7
-// @include          http://tv.cntv.cn/video/*
-// @include          http://*.cctv.com/*
-// @exclude          http://tv.cctv.com/live/*
+// @include          *://tv.cntv.cn/video/*
+// @include          *://*.cctv.com/*
+// @exclude          *://tv.cctv.com/live/*
 // @noframes
 // @grant      		 GM_addStyle
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
