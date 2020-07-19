@@ -39,19 +39,18 @@ const videoPlayer =
 </div>`;
 let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
-	{name:"66",type:3,url:"https://vip.66parse.club/?url="},
 	{name:"m1907",type:2,url:"https://z1.m1907.cn/?jx="},
 	{name:"七彩云",type:3,url:"https://v.7cyd.com/vip/?url="},
+	{name:"927",type:1,url:"https://api.927jx.com/vip/?url="},
+	// {name:"思古",type:3,url:"https://api.sigujx.com/?url="},
 	{name:"猪蹄",type:3,url:"https://jx.iztyy.com/svip/?url="},
+	{name:"66",type:3,url:"https://vip.66parse.club/?url="},
+	{name:"beac",type:3,url:"https://beaacc.com/api.php?url="},
 	{name:"tv920",type:3,url:"https://api.tv920.com/jx/?url="},
-	{name:"思古",type:3,url:"https://api.sigujx.com/v.php?url="},
-	{name:"明日",type:3,url:"https://jx.yingxiangbao.cn/vip.php?url="},
+	//{name:"明日",type:3,url:"https://jx.yingxiangbao.cn/vip.php?url="},
 	{name:"盘古",type:3,url:"https://www.pangujiexi.cc/jiexi.php?url="},
 	{name:"黑云",type:3,url: "https://jiexi.380k.com/?url="},
-	//{name:"乐博",type:3,url:"https://sjjx.leboop.com/jiexi/?url="},
-	{name:"927",type:1,url:"https://api.927jx.com/vip/?url="},
 	{name:"ab33",type:1,url:"https://jx.ab33.top/vip/?url="},
-	{name:"beac",type:3,url:"https://beaacc.com/api.php?url="},
 	{name:"fwwmy",type:3,url:"https://jx.fwwmy1.cn/mingri/ming_2.php?url="},
 	{name:"菜鸟",type:3,url: "https://jiexi.bm6ig.cn/?url="},
 	//{name:"义气猫",type:3,url: "https://jx.yqmao.cn/369/?url="},
@@ -243,7 +242,7 @@ const router = {
 		</div>`);
 		this.wait = el => {
 			$(posCSS).append(iqiyi_jiexi)
-			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);\
+			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);
 		};
 	},
 	["v.qq.com"]() {

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         缓存视频
 // @namespace    videoChache.xinggsf
-// @version      0.1.1
+// @version      0.2.1
 // @description  最大化缓存视频
 // @author       xinggsf
 // @match        https://www.youtube.com/watch?v=*
@@ -14,6 +14,7 @@
 // @match        https://yun.tv920.com/?url=*
 // @match        https://video.tv920.com/api/*
 // @match        https://jx.iztyy.com/?url=*
+// @match        https://vip.iztyy.com/jx.php?url=*
 // @grant        GM_registerMenuCommand
 // ==/UserScript==
 
@@ -28,8 +29,10 @@ const disablePlay = () => {
 	}
 };
 const check = () => {
-	const buf = v.buffered;
-	const i = buf.length - 1;
+	let i, buf = v.buffered;
+	for (i = buf.length - 1; i <= 0; i--) {
+		if (buf.start(i) <= playPos && buf.end(i) > playPos) break;
+	}
 	iEnd = buf.end(i);
 	return buf.start(i) >= playPos || iEnd > v.duration -55;
 };
@@ -37,7 +40,7 @@ const finish = () => {
 	v.removeEventListener('canplaythrough', onChache);
 	v.currentTime = playPos;
 	chached = !1;
-	setTimeout(x => v.pause(), 99);
+	setTimeout(x => v.pause(), 233);
 	HTMLVideoElement.prototype.play = rawPlay;
 };
 const onChache = ev => {
@@ -50,7 +53,8 @@ const onload = ev => {
 	if (v) {
 		//if (self != top) v.playbackRate = 1.4;
 		GM_registerMenuCommand('开始缓存视频', () => {
-			if (chached) return;
+			v = find();
+			if (!v || chached) return;
 			chached = true; //正在缓存
 			v.pause();
 			disablePlay();

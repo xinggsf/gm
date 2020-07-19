@@ -25,7 +25,7 @@
 // @include    https://m.fun.tv/*
 // @include    http://www.fun.tv/vplay/*
 // @include    https://www.fun.tv/vplay/*
-// @version    1.6.8
+// @version    1.6.9
 // @include    https://*.163.com/*
 // @include    https://*.icourse163.org/*
 // @include    https://*.sina.com.cn/*
@@ -55,7 +55,6 @@
 // @include    https://www.yunbtv.com/vodplay/*
 // @include    *://www.dililitv.com/*
 // @include    *://www.dynamicpuer.com/tv-play-*
-// @include    https://www.yasehezi.com/vod-play-*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -118,6 +117,11 @@ const intervalQuery = (cb, condition, stop = true) => {
 		}
 	}, 300);
 };
+const goNextMV = () => {
+	const m = path.match(/^(.+)(\d+)(\D*)$/);
+	const d = +m[2] + 1;
+	location.assign(m[1] + d + m[3]);
+};
 const firefoxVer = r1(/Firefox\/(\d+)/, navigator.userAgent);
 const isEdge = / Edge?\//.test(navigator.userAgent);
 const fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
@@ -164,7 +168,7 @@ class FullPage {
 				position: relative !important;
 				z-index: 2147483647 !important;
 			}
-			.gm-fp-wrapper, .gm-fp-body, html{ overflow:auto !important; }
+			.gm-fp-wrapper, .gm-fp-body{ overflow:hidden !important; }
 			.gm-fp-wrapper .gm-fp-innerBox {
 				width: 100% !important;
 				height: 100% !important;
@@ -231,6 +235,7 @@ const app = {
 	isLive: !1,
 	disableSpace: !1,
 	multipleV: !1, //多视频页面
+	isNumURL: !1, //网址数字分集
 	checkMV() {
 		if (!v || !v.offsetWidth) v = this.findMV();
 		return v;
@@ -278,7 +283,8 @@ const app = {
 			v.currentTime += n;
 			break;
 		case 78: // N 下一首
-			this.btnNext && doClick(this.btnNext);
+			if (this.btnNext) doClick(this.btnNext);
+			else if (this.isNumURL) goNextMV();
 			break;
 		case 38: n = 0.1; //加音量
 		case 40: //降音量
@@ -558,13 +564,6 @@ let router = {
 	},
 	fun() {
 		app.nextCSS = '.btn-item.btn-next';
-	},
-	yasehezi() {
-		app.nextCSS = 'a#ff-next';
-		events.on('canplay', () => {
-			$('body').unbind('keydown');
-			$('a.disabled').remove();
-		});
 	}
 };
 app.disableSpace = /^(youtube|ixigua|qq|pptv|fun)$/.test(u);
@@ -574,16 +573,15 @@ if (!router[u]) { //直播站点
 		douyu() {
 			const inRoom = host.startsWith('www.');
 			events.on('foundMV', () => {
-				if (!inRoom) w.$(d).unbind('keydown');
-				else if (path != '/') {
+				if (inRoom && path != '/') {
 					intervalQuery(doClick, '.roomSmallPlayerFloatLayout-closeBtn');
 					q('#js-player-aside-state').checked = true;
 				}
 			});
 			app.cssMV = '[src^=blob]';
-			app.playCSS = inRoom ? 'div[class|=play]' : 'input[class|=play]';
-			app.webfullCSS = inRoom ? 'div[class|=wfs]' : 'input[title="进入网页全屏"]';
-			app.fullCSS = inRoom ? 'div[class|=fs]' : 'input[title="进入全屏"]';
+			app.playCSS = inRoom ? 'div[class|=play]' : '.play-a473b6';
+			app.webfullCSS = inRoom ? 'div[class|=wfs]' : '.pagefull1-cd359b';
+			if (inRoom) app.fullCSS = 'div[class|=fs]'; // '.windowfull1-228321'
 			app.adsCSS = 'a[href*="wan.douyu.com"]';
 		},
 		yy() {
@@ -633,3 +631,4 @@ C：加速0.1倍播放       X：减速0.1倍播放       Z：正常速度播放
 D：上一帧        F：下一帧`
 ));
 if (!router[u] || !router[u]()) app.init();
+if (!router[u] && !app.isNumURL) app.isNumURL = /\d+(\.[a-z]{3,8})?$/.test(path);
