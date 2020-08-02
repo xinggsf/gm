@@ -29,10 +29,8 @@ const disablePlay = () => {
 	}
 };
 const check = () => {
-	let i, buf = v.buffered;
-	for (i = buf.length - 1; i <= 0; i--) {
-		if (buf.start(i) <= playPos && buf.end(i) > playPos) break;
-	}
+	const buf = v.buffered;
+	const i = buf.length - 1;
 	iEnd = buf.end(i);
 	return buf.start(i) >= playPos || iEnd > v.duration -55;
 };

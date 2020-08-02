@@ -55,6 +55,7 @@
 // @include    https://www.yunbtv.com/vodplay/*
 // @include    *://www.dililitv.com/*
 // @include    *://www.dynamicpuer.com/tv-play-*
+// @include    http://www.kalidm.com/bangumi/v_*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -564,6 +565,13 @@ let router = {
 	},
 	fun() {
 		app.nextCSS = '.btn-item.btn-next';
+	},
+	kalidm() {
+		app.nextCSS = `a[href="${path}"]+a`;
+		events.on('foundMV', () => {
+			v.closest('#player').removeEventListener('dblclick', test);
+		});
+		GM_addStyle('.dplayer-loaded{ background-color:orange !important; }');
 	}
 };
 app.disableSpace = /^(youtube|ixigua|qq|pptv|fun)$/.test(u);
@@ -617,7 +625,7 @@ if (!router[u]) { //直播站点
 	}
 }
 
-Object.defineProperty(navigator, 'plugins', {
+Reflect.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });
 GM_registerMenuCommand('脚本功能快捷键表' , alert.bind(w,
@@ -631,4 +639,4 @@ C：加速0.1倍播放       X：减速0.1倍播放       Z：正常速度播放
 D：上一帧        F：下一帧`
 ));
 if (!router[u] || !router[u]()) app.init();
-if (!router[u] && !app.isNumURL) app.isNumURL = /\d+(\.[a-z]{3,8})?$/.test(path);
+if (!router[u] && !app.isNumURL) app.isNumURL = /\W\d+(\.[a-z]{3,8})?$/.test(path);
