@@ -2,11 +2,12 @@
 // @name             CCAV启用html5
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
-// @version          0.0.7
+// @version          0.0.8
 // @include          *://tv.cntv.cn/video/*
 // @include          *://*.cctv.com/*
 // @exclude          *://tv.cctv.com/live/*
 // @noframes
+// @grant      		 GM_addStyle
 // @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
 // @grant            GM_xmlhttpRequest
@@ -56,7 +57,7 @@ class App {
 	}
 
 	createH5Player(url) {
-		const e = $('.flash');
+		const e = $('#myFlash,.flash');
 		const hi = (e[0].clientHeight || 500) + 'px';
 		e.empty().css('height', hi).parent().css('height', '100%');
 		new Clappr.Player({
@@ -70,4 +71,5 @@ class App {
 	}
 }
 
+GM_addStyle('#myFlash, #myFlash > div:first-child{height:100% !important}');
 new App().run();
