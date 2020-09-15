@@ -25,7 +25,7 @@
 // @include    https://m.fun.tv/*
 // @include    http://www.fun.tv/vplay/*
 // @include    https://www.fun.tv/vplay/*
-// @version    1.6.9
+// @version    1.7.0
 // @include    https://*.163.com/*
 // @include    https://*.icourse163.org/*
 // @include    https://*.sina.com.cn/*
@@ -459,6 +459,11 @@ let router = {
 		app.webfullCSS = '.txp_btn_fake';
 		app.fullCSS = '.txp_btn_fullscreen';
 		app.extPlayerCSS = '#mod_player';
+		events.on('canplay', () => {
+			let e, a = [...app.vList];
+			a.shift();
+			while (e = a.pop()) e.playbackRate = 16;
+		});
 	},
 	youku() {
 		if (host.startsWith('vku.')) {

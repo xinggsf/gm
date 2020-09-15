@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        VIP视频解析
 // @namespace   mofiter.xinngsf
-// @version     1.6.4
+// @version     1.6.5
 // @description 添加的解析按钮样式与原站一致，不会产生突兀感，支持多个解析接口切换，支持自定义接口，支持站内站外解析，支持 Tampermonkey、Violentmonkey、Greasemonkey
 // @require     https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -41,8 +41,9 @@ let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
 	{name:"m1907",type:2,url:"https://z1.m1907.cn/?jx="},
 	{name:"七彩云",type:3,url:"https://v.7cyd.com/vip/?url="},
+	{name:"久播",type:3,url:"https://jx.jiubojx.com/vip.php?url="},
 	{name:"927",type:1,url:"https://api.927jx.com/vip/?url="},
-	// {name:"思古",type:3,url:"https://api.sigujx.com/?url="},
+	{name:"思古",type:3,url:"https://api.sigujx.com/?url="},
 	{name:"猪蹄",type:3,url:"https://jx.iztyy.com/svip/?url="},
 	{name:"66",type:3,url:"https://vip.66parse.club/?url="},
 	{name:"beac",type:3,url:"https://beaacc.com/api.php?url="},

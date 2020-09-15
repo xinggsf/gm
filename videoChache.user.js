@@ -49,7 +49,7 @@ const onChache = ev => {
 const onload = ev => {
 	v = find();
 	if (v) {
-		//if (self != top) v.playbackRate = 1.4;
+		//v.playbackRate = 1.4;
 		GM_registerMenuCommand('开始缓存视频', () => {
 			v = find();
 			if (!v || chached) return;

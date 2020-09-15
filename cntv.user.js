@@ -66,7 +66,7 @@ class App {
 			width: '100%',
 			height: hi,
 			parent: e[0],
-			plugins: [LevelSelector],
+			plugins: [LevelSelector]
 		});
 	}
 }
