@@ -119,9 +119,9 @@ const intervalQuery = (cb, condition, stop = true) => {
 	}, 300);
 };
 const goNextMV = () => {
-	const m = path.match(/^(.+)(\d+)(\D*)$/);
-	const d = +m[2] + 1;
-	location.assign(m[1] + d + m[3]);
+	const m = path.match(/(\d+)(\D*)$/);
+	const d = +m[1] + 1;
+	location.assign(path.slice(0, m.index) + d + m[2]);
 };
 const firefoxVer = r1(/Firefox\/(\d+)/, navigator.userAgent);
 const isEdge = / Edge?\//.test(navigator.userAgent);
