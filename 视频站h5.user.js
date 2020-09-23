@@ -54,7 +54,7 @@
 // @run-at     document-start
 // @include    https://www.yunbtv.com/vodplay/*
 // @include    *://www.dililitv.com/*
-// @include    *://www.dynamicpuer.com/tv-play-*
+// @include    *://www.tomisun.net/tv-play-*
 // @include    http://www.kalidm.com/bangumi/v_*
 // @grant      unsafeWindow
 // @grant      GM_addStyle

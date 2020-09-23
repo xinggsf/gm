@@ -32,7 +32,7 @@ const check = () => {
 	const buf = v.buffered;
 	const i = buf.length - 1;
 	iEnd = buf.end(i);
-	return buf.start(i) >= playPos || iEnd > v.duration -55;
+	return buf.start(0) >= playPos || iEnd > v.duration -55;
 };
 const finish = () => {
 	v.removeEventListener('canplaythrough', onChache);
