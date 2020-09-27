@@ -644,4 +644,4 @@ C：加速0.1倍播放       X：减速0.1倍播放       Z：正常速度播放
 D：上一帧        F：下一帧`
 ));
 if (!router[u] || !router[u]()) app.init();
-if (!router[u] && !app.isNumURL) app.isNumURL = /\W\d+(\.[a-z]{3,8})?$/.test(path);
+if (!router[u] && !app.isNumURL) app.isNumURL = /\W\d+(\/|\.[a-z]{3,8})?$/.test(path);

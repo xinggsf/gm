@@ -2,7 +2,7 @@
 // @name             CCAV启用html5
 // @namespace        xinggsf_CCAV
 // @description      CCAV视频启用html5
-// @version          0.0.8
+// @version          0.0.9
 // @include          *://tv.cntv.cn/video/*
 // @include          *://*.cctv.com/*
 // @exclude          *://tv.cctv.com/live/*
@@ -71,5 +71,7 @@ class App {
 	}
 }
 
-GM_addStyle('#myFlash, #myFlash > div:first-child{height:100% !important}');
+GM_addStyle(
+`#myFlash, #myFlash > div:first-child,.vo_nr,.vo_nr>div{height:100% !important}
+.jscroll-e{height:460px!important}`);
 new App().run();
