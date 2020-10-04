@@ -28,13 +28,15 @@
 // @updateURL   https://raw.githubusercontent.com/xinggsf/gm/master/jx-mv-vip.user.js
 // ==/UserScript==
 
+//原版：https://greasyfork.org/scripts/373063
+
 'use strict';
 let { host, href: url } = location;
 let l = url.indexOf('?',19);
 if (l > 0) url = url.slice(0, l);
 const vs = document.getElementsByTagName('video');
 const videoPlayer =
-`<div id="iframe-div" style="width:100%;height:100%;z-index:2147483647;">
+`<div id="iframe-div" style="width:100%;height:100%;z-index:2147483646;">
 	<iframe id="iframe-player" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
 </div>`;
 let playerCSS, posCSS, jiexiDIV, userIntfs;
@@ -93,7 +95,9 @@ class TaskPool { //简易任务池
 					a = $(i);
 					ret = cb(a);
 					if (i.split(',').length > a.length) continue;
-				} else ret = cb($(i));
+				}
+				else if (typeof i == 'object') ret = cb($(i));
+				else ret = cb(i);
 				if (!ret) tasks.delete(i);
 			}
 			if (isFree && !tasks.size) {
@@ -292,7 +296,7 @@ const router = {
 				qq_jiexi.toggleClass("open");
 			})
 			.find(".fn-qq-jiexi-text, li[data-url]").click(ev => {
-				unsafeWindow.fetch = x => new Promise((_, fail) => fail());
+				unsafeWindow.fetch = x => new Promise((_, fail) => fail(new Error('Duplicate network request')));
 				innerParse(ev.target);
 			});
 		};
@@ -319,6 +323,7 @@ const router = {
 			<div class="fn-panel">${jiexiDIV}</div>
 		</li>`);
 		this.wait = el => {
+			$('li.fn-phonewatch').remove();
 			el.filter(posCSS).append(youku_jiexi)
 			.find(".fn-youku-jiexi-text, li[data-url]").click(innerParse);
 		};
