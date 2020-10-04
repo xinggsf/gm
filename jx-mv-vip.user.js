@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        VIP视频解析
 // @namespace   mofiter.xinngsf
-// @version     1.6.5
+// @version     1.6.6
 // @description 添加的解析按钮样式与原站一致，不会产生突兀感，支持多个解析接口切换，支持自定义接口，支持站内站外解析，支持 Tampermonkey、Violentmonkey、Greasemonkey
 // @require     https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -63,29 +63,38 @@ const interfaces = [
 	{name:"大亨影院",type:2,url:"http://jx.oopw.top/?url="}
 ];
 
+const rawPlay = HTMLVideoElement.prototype.play;
+HTMLVideoElement.prototype.play = function() {
+	return this.ownerDocument ? rawPlay() : new Promise((_, fail) => fail())
+};
 const hasDOM = css => $(css).length > 0;
 const delayReload = () => {
 	setTimeout(location.reload.bind(location), 1000);
 };
 const innerParse = function(li) {
+	vs[0] && vs[0].pause();
 	$(vs).remove();
 	if (this instanceof Node) li = this;
 	const e = $(playerCSS).empty().append(videoPlayer);
 	const s = li.getAttribute('data-url') || interfaces[0].url + url;
 	e.find("#iframe-player").attr("src", s);
 };
-
+const hideElements = el => {
+	el.hide();
+	return true;
+};
 class TaskPool { //简易任务池
 	constructor(isFree) {
 		const tasks = new Map();
 		const timer = setInterval(() => {
 			for (let [i, cb] of tasks) {
-				let a = i;
+				let ret, a = i;
 				if (typeof i == 'string') {
 					a = $(i);
+					ret = cb(a);
 					if (i.split(',').length > a.length) continue;
-				}
-				if (!cb(a)) tasks.delete(i);
+				} else ret = cb($(i));
+				if (!ret) tasks.delete(i);
 			}
 			if (isFree && !tasks.size) {
 				clearInterval(timer);
@@ -94,8 +103,8 @@ class TaskPool { //简易任务池
 		}, 500);
 		this._tasks = tasks;
 	}
-	//wait for do something. Key = css | number; cb = function($el) { return true: wait again }
-	add(cb, key) {
+	//wait for do something. Key = css selector or element or number; cb = function($el) { return true: wait again }
+	add(key, cb = hideElements) {
 		if (!key) key = this._tasks.size + 1;
 		this._tasks.set(key, cb);
 	}
@@ -244,6 +253,8 @@ const router = {
 			$(posCSS).append(iqiyi_jiexi)
 			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);
 		};
+		tasks.add(".qy-player-vippay-popup, .black-screen");
+		// if ($(".cupid-public-time")[0]) $(".skippable-after").show().click();
 	},
 	["v.qq.com"]() {
 		playerCSS = "#mod_player";
@@ -280,12 +291,12 @@ const router = {
 			.on("mouseover mouseout", () => {
 				qq_jiexi.toggleClass("open");
 			})
-			.find(".fn-qq-jiexi-text, li[data-url]").click(innerParse);
+			.find(".fn-qq-jiexi-text, li[data-url]").click(ev => {
+				unsafeWindow.fetch = x => new Promise((_, fail) => fail());
+				innerParse(ev.target);
+			});
 		};
-		tasks.add(el => {
-			el.hide();
-			return true;
-		}, ".mod_vip_popup,#mask_layer");
+		tasks.add(".mod_vip_popup,.tvip_layer,#mask_layer");
 	},
 	["v.youku.com"]() {
 		playerCSS = '#ykPlayer';
@@ -373,8 +384,8 @@ const router = {
 			playerCSS = el.filter(playerCSS);
 			el.filter(posCSS).prepend(sohu_jiexi)
 			.find("li[data-url]").click(innerParse);
-			$("#player_vipTips").hide();
 		};
+		tasks.add(".x-video-adv,.x-player-mask,#player_vipTips");
 	},
 	["film.sohu.com"]() {
 		playerCSS = "#playerWrap";
@@ -481,7 +492,7 @@ const init = () => {
 		</div>
 	</div>`;
 	router[host] && router[host]();
-	tasks.add(router.wait, `${playerCSS},${posCSS}`);
+	tasks.add(`${playerCSS},${posCSS}`, router.wait);
 };
 
 init();

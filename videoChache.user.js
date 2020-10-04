@@ -25,7 +25,7 @@ const find = [].find.bind(vs, e => e.clientWidth > 200);
 const rawPlay = HTMLVideoElement.prototype.play;
 const disablePlay = () => {
 	HTMLVideoElement.prototype.play = function() {
-		return chached ? new Promise((x, fail) => fail()) : rawPlay()
+		return chached ? new Promise((_, fail) => fail()) : rawPlay()
 	}
 };
 const check = () => {

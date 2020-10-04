@@ -21,7 +21,7 @@
 			"name": "ccav字体测速",
 			"ruleType": "modifyReceiveHeader",
 			"matchType": "regexp",
-			"pattern": "^http://[\\w\\.]+(cctvpic\\.com|cntv\\.cn)/.+\\.ttf$",
+			"pattern": "^https?://[^/]+(cctvpic\\.com|cntv\\.cn)/.+\\.ttf$",
 			"exclude": "",
 			"isFunction": false,
 			"action": {

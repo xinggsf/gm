@@ -472,18 +472,9 @@ let router = {
 			});
 			app.fullCSS = '.live_icon_full';
 		} else {
-			const switchQuality = gmFuncOfCheckMenu('自动切换最高清晰度', 'yk_switchQuality', !1);
-			const fn = () => {
-				w.$('.settings-item.quality-item').remove('[data-val=download]')
-					.removeClass('disable youku_vip_pay_btn login-canuse')
-					.children('span').remove();
-				switchQuality && w.$('.quality-item:first').click();
-			};
-			events.on('canplay', fn);
 			events.on('foundMV',() => {
 				by.addEventListener('keyup', e => e.stopPropagation());
 			});
-			GM_registerMenuCommand('解除清晰度选择限制', fn);
 			app.webfullCSS = '.control-webfullscreen-icon';
 			app.fullCSS = '.control-fullscreen-icon';
 			app.nextCSS = 'span.icon-next';
