@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        VIP视频解析
 // @namespace   mofiter.xinngsf
-// @version     1.6.6
+// @version     1.6.7
 // @description 添加的解析按钮样式与原站一致，不会产生突兀感，支持多个解析接口切换，支持自定义接口，支持站内站外解析，支持 Tampermonkey、Violentmonkey、Greasemonkey
 // @require     https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
@@ -31,9 +31,8 @@
 //原版：https://greasyfork.org/scripts/373063
 
 'use strict';
-let { host, href: url } = location;
-let l = url.indexOf('?',19);
-if (l > 0) url = url.slice(0, l);
+const { protocol, hostname:host, pathname } = location;
+const url = `${protocol}//${host}${pathname}`;
 const vs = document.getElementsByTagName('video');
 const videoPlayer =
 `<div id="iframe-div" style="width:100%;height:100%;z-index:2147483646;">
@@ -51,12 +50,10 @@ const interfaces = [
 	{name:"诺讯",type:3,url:"https://www.nxflv.com/?url="},
 	{name:"菜鸟",type:3,url: "https://jiexi.bm6ig.cn/?url="},
 	{name:"tv920",type:3,url:"https://api.tv920.com/jx/?url="},
-	//{name:"明日",type:3,url:"https://jx.yingxiangbao.cn/vip.php?url="},
 	{name:"盘古",type:3,url:"https://www.pangujiexi.cc/jiexi.php?url="},
 	{name:"黑云",type:3,url: "https://jiexi.380k.com/?url="},
 	{name:"ab33",type:1,url:"https://jx.ab33.top/vip/?url="},
 	//{name:"义气猫",type:3,url: "https://jx.yqmao.cn/369/?url="},
-	//{name:"9ki",type:3,url: "https://www.9ki.cc/jx.php?url="},
 	{name:"rdhk",type:3,url: "https://api.rdhk.net/?url="},
 	{name:"石头云",type:3,url:"https://jiexi.071811.cc/jx.php?url="},
 	{name:"1717yun",type:3,url:"https://www.1717yun.com/jx/ty.php?url="},
@@ -67,24 +64,23 @@ const interfaces = [
 
 const rawPlay = HTMLVideoElement.prototype.play;
 HTMLVideoElement.prototype.play = function() {
-	return this.ownerDocument ? rawPlay() : new Promise((_, fail) => fail())
+	return this.clientWidth > 99 ? rawPlay.call(this) : new Promise((_, fail) => fail())
 };
 const hasDOM = css => $(css).length > 0;
 const delayReload = () => {
 	setTimeout(location.reload.bind(location), 1000);
 };
 const innerParse = function(li) {
-	vs[0] && vs[0].pause();
+	const audioCtx = new AudioContext();
+	audioCtx.close();
 	$(vs).remove();
 	if (this instanceof Node) li = this;
 	const e = $(playerCSS).empty().append(videoPlayer);
 	const s = li.getAttribute('data-url') || interfaces[0].url + url;
 	e.find("#iframe-player").attr("src", s);
 };
-const hideElements = el => {
-	el.hide();
-	return true;
-};
+const hideElements = el => !!el.hide();
+
 class TaskPool { //简易任务池
 	constructor(isFree) {
 		const tasks = new Map();
@@ -93,8 +89,8 @@ class TaskPool { //简易任务池
 				let ret, a = i;
 				if (typeof i == 'string') {
 					a = $(i);
-					ret = cb(a);
 					if (i.split(',').length > a.length) continue;
+					ret = cb(a);
 				}
 				else if (typeof i == 'object') ret = cb($(i));
 				else ret = cb(i);
@@ -258,7 +254,6 @@ const router = {
 			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);
 		};
 		tasks.add(".qy-player-vippay-popup, .black-screen");
-		// if ($(".cupid-public-time")[0]) $(".skippable-after").show().click();
 	},
 	["v.qq.com"]() {
 		playerCSS = "#mod_player";
@@ -296,7 +291,9 @@ const router = {
 				qq_jiexi.toggleClass("open");
 			})
 			.find(".fn-qq-jiexi-text, li[data-url]").click(ev => {
-				unsafeWindow.fetch = x => new Promise((_, fail) => fail(new Error('Duplicate network request')));
+				unsafeWindow.fetch = x => new Promise((_, fail) => fail());
+				$('.txp_btn_play[data-status=pause]').click();
+				$("body").unbind('keydown keyup');
 				innerParse(ev.target);
 			});
 		};
@@ -323,9 +320,12 @@ const router = {
 			<div class="fn-panel">${jiexiDIV}</div>
 		</li>`);
 		this.wait = el => {
-			$('li.fn-phonewatch').remove();
+			$('li.fn-phonewatch').hide();
 			el.filter(posCSS).append(youku_jiexi)
-			.find(".fn-youku-jiexi-text, li[data-url]").click(innerParse);
+			.find(".fn-youku-jiexi-text, li[data-url]").click(function() {
+				$('.control-play-icon.control-pause-icon').click();
+				innerParse(this);
+			});
 		};
 	},
 	["www.mgtv.com"]() {

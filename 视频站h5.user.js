@@ -250,9 +250,10 @@ const app = {
 			if (this.nextCSS) this.btnNext = q(this.nextCSS);
 			this.disableSpace = !1;
 			this.dpShell.closest('body > *').classList.add('gm-dp-zTop');
-			this.dpShell.addEventListener('dblclick', ev => {
+			v.parentNode.addEventListener('dblclick', ev => {
 				this.btnFP.click();
-			}, true);
+				ev.stopPropagation();
+			});
 		}
 		return !!this.dpShell;
 	},
@@ -564,13 +565,12 @@ let router = {
 	},
 	kalidm() {
 		app.nextCSS = `a[href="${path}"]+a`;
-		events.on('foundMV', () => {
-			v.closest('#player').removeEventListener('dblclick', test);
-		});
 		GM_addStyle('.dplayer-loaded{ background-color:orange !important; }');
 	}
 };
 app.disableSpace = /^(youtube|ixigua|qq|pptv|fun)$/.test(u);
+// www.dililitv.com,www.hmtv.me,imeiju.io,www.kalidm.com,www.zxfun.net,www.lzvod.net
+router.dililitv = router.lzvod = router.hmtv = router.imeiju = router.zxfun = router.kalidm;
 
 if (!router[u]) { //直播站点
 	router = {
