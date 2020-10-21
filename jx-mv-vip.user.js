@@ -42,7 +42,7 @@ let playerCSS, posCSS, jiexiDIV, userIntfs;
 const interfaces = [
 	{name:"m1907",type:2,url:"https://z1.m1907.cn/?jx="},
 	{name:"七彩云",type:3,url:"https://v.7cyd.com/vip/?url="},
-	{name:"久播",type:3,url:"https://jx.jiubojx.com/vip.php?url="},
+	{name:"久播",type:1,url:"https://jx.jiubojx.com/vip.php?url="},
 	{name:"思古",type:3,url:"https://api.sigujx.com/?url="},
 	{name:"猪蹄",type:3,url:"https://jx.iztyy.com/svip/?url="},
 	{name:"66",type:3,url:"https://vip.66parse.club/?url="},
@@ -52,7 +52,6 @@ const interfaces = [
 	{name:"tv920",type:3,url:"https://api.tv920.com/jx/?url="},
 	{name:"盘古",type:3,url:"https://www.pangujiexi.cc/jiexi.php?url="},
 	{name:"黑云",type:3,url: "https://jiexi.380k.com/?url="},
-	{name:"ab33",type:1,url:"https://jx.ab33.top/vip/?url="},
 	//{name:"义气猫",type:3,url: "https://jx.yqmao.cn/369/?url="},
 	{name:"rdhk",type:3,url: "https://api.rdhk.net/?url="},
 	{name:"石头云",type:3,url:"https://jiexi.071811.cc/jx.php?url="},
@@ -71,8 +70,8 @@ const delayReload = () => {
 	setTimeout(location.reload.bind(location), 1000);
 };
 const innerParse = function(li) {
-	const audioCtx = new AudioContext();
-	audioCtx.close();
+	// const audioCtx = new AudioContext();
+	// audioCtx.close();
 	$(vs).remove();
 	if (this instanceof Node) li = this;
 	const e = $(playerCSS).empty().append(videoPlayer);

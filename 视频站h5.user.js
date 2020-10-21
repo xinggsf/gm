@@ -280,8 +280,8 @@ const app = {
 			e.preventDefault();
 			break;
 		case 37: n = e.shiftKey ? -20 : -5; //left  快退5秒,shift加速
-		case 39: //right
-			n = n || (e.shiftKey ? 20 : 5); //快进5秒,shift加速
+		//right  快进5秒,shift加速
+		case 39: n = n || (e.shiftKey ? 20 : 5);
 			v.currentTime += n;
 			break;
 		case 78: // N 下一首
@@ -289,11 +289,9 @@ const app = {
 			else if (this.isNumURL) goNextMV();
 			break;
 		case 38: n = 0.1; //加音量
-		case 40: //降音量
-			n = n || -0.1;
+		case 40: n = n || -0.1; //降音量
 			n += v.volume;
-			n = + n.toFixed(1);
-			if (0 <= n && n <= 1) v.volume = n;
+			if (0 <= n && n <= 1) v.volume = +n.toFixed(1);
 			e.preventDefault();
 			break;
 		case 13: //回车键。 全屏
@@ -312,20 +310,17 @@ const app = {
 			}
 			break;
 		case 67: n = 0.1; //按键C：加速播放 +0.1
-		case 88: //按键X：减速播放 -0.1
-			n = n || -0.1;
+		case 88: n = n || -0.1; //按键X：减速播放 -0.1
 			n += v.playbackRate;
-			n = + n.toFixed(2);
-			if (0 < n && n <= 16) v.playbackRate = n;
+			if (0 < n && n <= 16) v.playbackRate = +n.toFixed(2);
 			break;
 		case 90: //按键Z：正常速度播放
 			v.playbackRate = 1;
 			break;
 		case 70: n = 0.03; //按键F：下一帧
-		case 68: //按键D：上一帧
-			n = n || -0.03;
-			if (!v.paused) v.pause();
+		case 68: n = n || -0.03; //按键D：上一帧
 			v.currentTime += n;
+			v.pause();
 			break;
 		default: return;
 		}
@@ -533,10 +528,9 @@ let router = {
 			let n, p = w.videojs.getPlayers("video-player").html5player.tech_;
 			switch (e.keyCode) {
 			case 67: n = 0.1;
-			case 88:
-				n = n || -0.1;
-				n += p.playbackRate().toFixed(2);
-				if (0 < n && n <= 16) p.setPlaybackRate(+n);
+			case 88: n = n || -0.1;
+				n += p.playbackRate();
+				p.setPlaybackRate(n);
 				return true;
 			case 90:
 				p.setPlaybackRate(1);
