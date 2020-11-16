@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name       搜索结果双栏显示
-// @description 搜索结果双栏显示
+// @description 双栏显示搜索结果
 // @namespace  search.xinngsf
 // @version    1.0
 // @include    https://ipv6.baidu.com/*
