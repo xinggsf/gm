@@ -35,7 +35,7 @@ const { protocol, hostname:host, pathname } = location;
 const url = `${protocol}//${host}${pathname}`;
 const vs = document.getElementsByTagName('video');
 const videoPlayer =
-`<div id="iframe-div" style="width:100%;height:100%;z-index:2147483646;">
+`<div id="iframe-div" style="width:100%;height:100%;">
 	<iframe id="iframe-player" frameborder="0" allowfullscreen width="100%" height="100%"></iframe>
 </div>`;
 let playerCSS, posCSS, jiexiDIV, userIntfs;
@@ -220,7 +220,7 @@ const showSetting = () => {
 const router = {
 	["www.iqiyi.com"]() {
 		playerCSS = "#flashbox";
-		posCSS = ".qy-flash-func:first";
+		posCSS = ".func-item.func-like-v1";
 		GMaddStyle(
 		`.fn-iqiyi-jiexi li {
 			color: #ccc; text-align: center; width: 60px; cursor: pointer;
@@ -249,8 +249,14 @@ const router = {
 			</div>
 		</div>`);
 		this.wait = el => {
-			$(posCSS).append(iqiyi_jiexi)
-			.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);
+			$(posCSS).replaceWith(iqiyi_jiexi)[0].addEventListener('click', ev => {
+				const e = ev.target;
+				if (e.matches('li[data-url]')) {
+					ev.stopPropagation();
+					innerParse(e);
+				}
+			});
+			//.find("li[data-url], .fn-iqiyi-jiexi-text").click(innerParse);
 		};
 		tasks.add(".qy-player-vippay-popup, .black-screen");
 	},
@@ -304,12 +310,12 @@ const router = {
 		GMaddStyle(
 		`.fn-youku-jiexi li {
 			text-align:center;width:60px;line-height:20px;
-			float:left;border:1px solid gray;border-radius:5px;
+			float:left;border:1px solid gray;border-radius:3px;
 			padding:0 4px;margin:4px 2px; cursor: pointer;
 		}
 		#_gm__vipJX a {color:#ccc}
 		.fn-youku-jiexi > .fn-panel {
-			border:1px solid gray; min-width:190px;
+			border:1px solid gray; min-width:100%;
 		}
 		#_gm__vipJX li:hover, #_gm__vipJX a:hover {color:#2592ff}`
 		);
@@ -329,7 +335,7 @@ const router = {
 	},
 	["www.mgtv.com"]() {
 		playerCSS ="#mgtv-player-wrap";
-		posCSS = ".v-panel-box";
+		posCSS = ".logolist";
 		GMaddStyle(
 		`.fn-mgtv-jiexi:hover > .extend { display: block }
 		.fn-mgtv-jiexi li {
@@ -356,7 +362,7 @@ const router = {
 		</div>`);
 		this.wait = el => {
 			$(".aside-tabbox li").click(delayReload);
-			el.filter(posCSS).append(mgtv_jiexi)
+			el.filter(posCSS).empty().append(mgtv_jiexi)
 			.find(".fn-mgtv-jiexi-text, li[data-url]").click(innerParse);
 		};
 	},
@@ -372,7 +378,7 @@ const router = {
 		/* .vBox.vBox-play:hover > div {display: block} */
 		.fn-sohu-jiexi {
 			display: none;background-color:#2e2e2e;border:1px solid gray;
-			padding:0;margin:0 0 0 0;line-height:25px;min-width:180px important;
+			padding:0;margin:0 0 0 0;line-height:25px;min-width:100% important;
 		}
 		#_gm__vipJX li:hover {color:#e33c30}`
 		);
@@ -487,14 +493,12 @@ const init = () => {
 		if (k.type & 1) inLi += `<li data-url="${addr}">${k.name}</li>`;
 		if (k.type & 2) outLi += `<li><a target="_blank" href="${addr}">${k.name}</a></li>`;
 	}
-	jiexiDIV = `<div style="display:flex;">
-		<div style="width:188px;padding:10px 0;" id="_gm__vipJX">
-			<div style="text-align:center;line-height:20px;">站内解析</div>
-			<ul style="margin:0 10px;">${inLi}<div style="clear:both;"></div></ul>
-			<div style="text-align:center;line-height:20px;">站外解析</div>
-			<ul style="margin:0 10px;">${outLi}<div style="clear:both;"></div></ul>
-		</div>
-	</div>`;
+	jiexiDIV = `<div style="display:inline-grid"><div style="width:488px;padding:10px 0;" id="_gm__vipJX">
+		<div style="text-align:center;line-height:20px;">站内解析</div>
+		<ul style="margin:0 10px;">${inLi}<div style="clear:both;"></div></ul>
+		<div style="text-align:center;line-height:20px;">站外解析</div>
+		<ul style="margin:0 10px;">${outLi}<div style="clear:both;"></div></ul>
+	</div></div>`;
 	router[host] && router[host]();
 	tasks.add(`${playerCSS},${posCSS}`, router.wait);
 };

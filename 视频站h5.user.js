@@ -55,7 +55,7 @@
 // @include    https://www.yunbtv.com/vodplay/*
 // @include    *://www.dililitv.com/*
 // @include    *://www.tomisun.net/tv-play-*
-// @include    http://www.kalidm.com/bangumi/v_*
+// @include    https://www.mkvdo.com/play/*
 // @grant      unsafeWindow
 // @grant      GM_addStyle
 // @grant      GM_registerMenuCommand
@@ -134,7 +134,7 @@ const fakeUA = ua => Object.defineProperty(navigator, 'userAgent', {
 const getMainDomain = host => {
 	const a = host.split('.');
 	let i = a.length - 2;
-	if (/^(com|tv|net|org|gov|edu)$/.test(a[i])) i--;
+	if (/^(com?|cc|tv|net|org|gov|edu)$/.test(a[i])) i--;
 	return a[i];
 };
 const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3626.121 Safari/537.36';
@@ -557,14 +557,14 @@ let router = {
 	fun() {
 		app.nextCSS = '.btn-item.btn-next';
 	},
-	kalidm() {
+	mkvdo() {
 		app.nextCSS = `a[href="${path}"]+a`;
 		GM_addStyle('.dplayer-loaded{ background-color:orange !important; }');
 	}
 };
 app.disableSpace = /^(youtube|ixigua|qq|pptv|fun)$/.test(u);
-// www.dililitv.com,www.hmtv.me,imeiju.io,www.kalidm.com,www.zxfun.net,www.lzvod.net
-router.dililitv = router.lzvod = router.hmtv = router.imeiju = router.zxfun = router.kalidm;
+// www.dililitv.com,www.hmtv.me,imeiju.io,www.mkvdo.com,www.zxfun.net,www.lzvod.net
+router.dililitv = router.lzvod = router.hmtv = router.imeiju = router.zxfun = router.mkvdo;
 
 if (!router[u]) { //直播站点
 	router = {
