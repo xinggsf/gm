@@ -31,7 +31,7 @@ log = console.log.bind(console, '%c脚本[%s]\n%s %s',
 
 class App {
 	constructor() {
-		this.plid = r1(/\/([A-Z\d]{9})_([A-Z\d]{9})/, location.pathname);
+		this.plid = r1(/\/([A-Z\d]{9})_([^_\W]{9})/, location.pathname);
 		if (!this.plid) throw new Error('非视频播放页，中止脚本执行');
 		this.mid = RegExp.$2;
 		this.subtitleNum = this.qualityNum = 0; //字幕数；清晰度计数

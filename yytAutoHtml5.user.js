@@ -15,10 +15,9 @@
 // ==/UserScript==
 "use strict";
 //由jQuery.cookie.js改写 http://blog.wpjam.com/m/jquery-cookies/
-function cookie(name, value, options) {
+function cookie(name, value, options = {}) {
 	let k, s;
-	if (typeof value != 'undefined') {
-		options = options || {};
+	if (value !== void 0) {
 		if (value == null) {
 			value = '';
 			options.expires = -1;
@@ -36,23 +35,19 @@ function cookie(name, value, options) {
 			}
 			s += '; expires=' + date.toUTCString();
 		}
-		//options: expires,path,domain,secure
 		delete options.expires;
 		for (k in options) s += '; ' + k + '=' + options.k;
 		document.cookie = s;
 	} else {
-		let cookieValue = null;
 		if (document.cookie && document.cookie != '') {
 			let cookies = document.cookie.split(';');
 			for (k of cookies) {
 				s = k.trim();
 				if (s.startsWith(name + '=')) {
-					cookieValue = decodeURIComponent(s.substring(name.length + 1));
-					break;
+					return decodeURIComponent(s.substring(name.length + 1));
 				}
 			}
 		}
-		return cookieValue;
 	}
 }
 const cVp = {'sh': '1080','he': '超清','hd': '高清','hc': '流畅'};

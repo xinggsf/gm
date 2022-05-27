@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name           去除百度、搜狗、360搜索等的重定向
 // @author         xinggsf
-// @updateURL      https://raw.githubusercontent.com/xinggsf/gm/master/Restore-search-results.user.js
+// @updateURL      https://gitee.com/xinggsf/gm/raw/master/Restore-search-results.user.js
 // @namespace      Restore-search-results
 // @description    去除百度、搜狗、360搜索等的重定向
-// @version        2019.11.11
+// @version        2021.5.29
 // @include        https://www.baidu.com/s?*
 // @include        https://www.so.com/s?*
 // @include        https://www.sogou.com/web?*
@@ -14,7 +14,7 @@
 // ==/UserScript==
 
 const host = location.host,
-each = [].forEach,
+r1 = (regp, s) => regp.test(s) && RegExp.$1,
 links = new WeakMap(),
 css = {
 	'www.baidu.com': 'h3.t>a',
@@ -24,25 +24,22 @@ css = {
 doXhr = (a, isBaidu) => {
 	const xhr = GM_xmlhttpRequest({
 		url: a.href,
-		headers: {
-			"Accept": "text/html"
-		},
+		headers: { "Accept": "text/html" },
 		method: isBaidu ? "HEAD" : "GET",
 		onreadystatechange: r => {
 			let s;
 			if (isBaidu) {
 				s = r.finalUrl;
 				if (!s || a.href === s) return;
+				// xhr.abort();
 				const e = a.closest('div').querySelector('a.c-showurl'); //快照
 				if (e) e.href = s;
 			} else {
-				s = r.responseText;
-				if (s.length<11 || !/URL='([^']+)'/.test(s)) return;
-				s = RegExp.$1;
+				s = r1(/URL='([^']+)/, r.responseText);
+				if (!s) return;
 			}
 			links.set(a, s);
 			a.href = s;
-			xhr.abort();
 		}
 	});
 },
@@ -59,17 +56,14 @@ resetURL = a => {
 	case 'www.sogou.com':
 		let s = a.closest('div').querySelector('div.fb a');
 		if (!s) doXhr(a, !1);
-		else {
-			s = s.href.match(/\burl=([^&]+)/)[1];
-			a.href = decodeURIComponent(s);
-		}
+		else a.href = decodeURIComponent(r1(/\burl=([^&]+)/,s.search));
 		break;
 	case 'www.baidu.com':
 		doXhr(a, true);
 	}
 },
 checkDom = () => {
-	each.call(document.querySelectorAll(css[host]), resetURL);
+	[].forEach.call(document.querySelectorAll(css[host]), resetURL);
 },
 mo = new MutationObserver(checkDom);
 setTimeout(() => {

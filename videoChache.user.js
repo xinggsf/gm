@@ -1,33 +1,24 @@
 // ==UserScript==
 // @name         缓存视频
 // @namespace    videoChache.xinggsf
-// @version      0.2.1
+// @version      0.2.3
 // @description  最大化缓存视频
 // @author       xinggsf
-// @match        https://www.youtube.com/watch?v=*
-// @match        https://v.youku.com/v_show/id_*
-// @match        http://v.pptv.com/show/*
-// @match        https://v.pptv.com/show/*
-// @match        http://www.le.com/ptv/vplay/*
-// @match        https://www.le.com/ptv/vplay/*
-// @match        https://v.7cyd.com/*
-// @match        https://yun.tv920.com/?url=*
-// @match        https://video.tv920.com/api/*
-// @match        https://jx.iztyy.com/?url=*
-// @match        https://vip.iztyy.com/jx.php?url=*
+// @include      http*
+// @exclude    https://www.yy.com/*
+// @exclude    https://www.huya.com/*
+// @exclude    https://m.huya.com/*
+// @exclude    https://www.douyu.com/*
+// @exclude    https://www.longzhu.com/*
+// @exclude    https://www.zhanqi.tv/*
 // @grant        GM_registerMenuCommand
 // ==/UserScript==
 
 'use strict';
 let v, chached, iEnd, playPos;
 const vs = document.getElementsByTagName('video');
-const find = [].find.bind(vs, e => e.clientWidth > 200);
+const find = [].find.bind(vs, e => e.offsetParent);
 const rawPlay = HTMLVideoElement.prototype.play;
-const disablePlay = () => {
-	HTMLVideoElement.prototype.play = function() {
-		return chached ? new Promise((_, fail) => fail()) : rawPlay()
-	}
-};
 const check = () => {
 	const buf = v.buffered;
 	const i = buf.length - 1;
@@ -38,7 +29,7 @@ const finish = () => {
 	v.removeEventListener('canplaythrough', onChache);
 	v.currentTime = playPos;
 	chached = !1;
-	setTimeout(x => v.pause(), 233);
+	setTimeout(_ => v.pause(), 99);
 	HTMLVideoElement.prototype.play = rawPlay;
 };
 const onChache = ev => {
@@ -48,14 +39,14 @@ const onChache = ev => {
 
 const onload = ev => {
 	v = find();
-	if (v) {
+	if (v && v.played.length) {
 		//v.playbackRate = 1.4;
 		GM_registerMenuCommand('开始缓存视频', () => {
 			v = find();
 			if (!v || chached) return;
 			chached = true; //正在缓存
 			v.pause();
-			disablePlay();
+			HTMLVideoElement.prototype.play = () => new Promise(() => {});
 			playPos = v.currentTime;
 			v.addEventListener('canplaythrough', onChache);
 			check();
