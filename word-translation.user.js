@@ -12,7 +12,7 @@
 // @run-at       document-body
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
-// @require      https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js
+// @require      https://cdn.staticfile.org/vue/2.6.11/vue.min.js
 // @connect      fanyi.youdao.com
 // @connect      translate.google.com
 // ==/UserScript==
