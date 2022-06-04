@@ -31,8 +31,8 @@
 // @grant    GM_addStyle
 // @grant    GM_openInTab
 // @run-at   document-body
-// @require  https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js
-// @require  https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js
+// @require    https://cdn.staticfile.org/vue/2.6.11/vue.min.js
+// @require    https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js
 // @updateURL   https://gitee.com/xinggsf/gm/raw/master/gf-27530.user.js
 // ==/UserScript==
 

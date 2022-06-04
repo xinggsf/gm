@@ -48,8 +48,8 @@
 // @match    https://www.longzhu.com/*
 // @match    https://www.zhanqi.tv/*
 // @run-at     document-start
-// @require    https://cdn.jsdelivr.net/npm/vue@2.6.11/dist/vue.min.js
-// @require    https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js
+// @require    https://cdn.staticfile.org/vue/2.6.11/vue.min.js
+// @require    https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js
 // @grant      GM_addStyle
 // @include    */play*
 // @include    *play/*
