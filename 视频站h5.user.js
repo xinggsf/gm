@@ -859,7 +859,7 @@ let router = {
 		GM_addStyle('.plyr__video-wrapper{ height:100%!important; padding-bottom:0!important;}');
 	}
 };
-router.nnyy6 = router.dandanzan10;
+router.nunuyy1 = router.dandanzan10;
 
 if (!router[u]) { //直播站点
 	router = {
