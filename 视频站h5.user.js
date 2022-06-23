@@ -53,8 +53,6 @@
 // @grant      GM_addStyle
 // @include    */play*
 // @include    *play/*
-// @exclude    *olevod.com/index.php/vod/play/id/*
-// @exclude    *olevod.tv/index.php/vod/play/id/*
 // @grant      window.onurlchange
 // @grant      unsafeWindow
 // @grant      GM_registerMenuCommand
