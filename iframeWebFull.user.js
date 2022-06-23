@@ -1,15 +1,10 @@
 // ==UserScript==
 // @name         框架网页全屏
 // @namespace    iframeWebFull.xinggsf
-// @version      0.2
+// @version      0.3
 // @description  iframe网页全屏
 // @author       xinggsf
-// @include      https://www.imeiju.pro/Play/*
-// @include      https://www.imeiju.pro/new/Play/*
-// @include      http://www.hanjutvaa.com/player/*
-// @include      https://www.hanjutvaa.com/player/*
-// @include      *olevod.com/index.php/vod/play/id/*
-// @include      *olevod.tv/index.php/vod/play/id/*
+// @match        https://www.zhenbuka5.com/vodplay/*
 // @noframes
 // @run-at       document-body
 // @grant        GM_addStyle
