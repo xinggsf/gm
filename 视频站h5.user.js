@@ -704,6 +704,7 @@ let router = {
 		cfg.nextCSS = '.txp_btn_next';
 		cfg.webfullCSS = '.txp_btn_fake';
 		cfg.fullCSS = '.txp_btn_fullscreen';
+		/* 
 		bus.$on('canplay', () => {
 			// if (v.muted) $('.txp_icon_volume:visible').click().next().hide();
 			if (w.__PLAYER__) w.__PLAYER__.corePlayer.volume = 1;
@@ -719,7 +720,7 @@ let router = {
 			})
 			.set(88, _ => p.setSpeed(v.playbackRate - 0.1))
 			.set(67, _ => p.setSpeed(v.playbackRate + 0.1));
-		});
+		}); */
 		// app.rawProps.set('playbackRate', 1);
 	},
 	youku() {
@@ -768,7 +769,6 @@ let router = {
 	},
 	iqiyi() {
 		cfg.fullCSS = '.iqp-btn-fullscreen:not(.fake__click)';
-		cfg.webfullCSS = '.iqp-btn-webscreen:not(.fake__click)';
 		cfg.nextCSS = '.iqp-btn-next';
 	},
 	pptv() {
