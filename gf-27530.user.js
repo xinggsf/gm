@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name     解析VIP视频集合
 // @namespace  https://greasyfork.org/zh-CN/users/104201
-// @version    6.0.5
+// @version    6.0.6
 // @description  破解VIP或会员视频，原作者：黄盐
 // @author     xinggsf
 // @noframes
@@ -22,7 +22,6 @@
 // @match    https://v.pptv.com/show/*
 // @match    https://m.fun.tv/vplay/*
 // @match    https://www.fun.tv/vplay/*
-// match    https://www.wasu.cn/Play/show/*
 // @exclude  https://*.bilibili.com/blackboard/*
 // @grant    window.onurlchange
 // @grant    unsafeWindow
@@ -33,7 +32,7 @@
 // @run-at   document-body
 // @require    https://cdn.staticfile.org/vue/2.6.11/vue.min.js
 // @require    https://cdn.staticfile.org/jquery/3.6.0/jquery.min.js
-// @updateURL   https://gitee.com/xinggsf/gm/raw/master/gf-27530.user.js
+// @updateURL   https://raw.githubusercontent.com/xinggsf/gm/master/gf-27530.user.js
 // ==/UserScript==
 
 // 加上广告过滤规则~白名单： #@##intabPlayer > iframe
@@ -72,11 +71,13 @@ function getSet(name, defaultValue) {
 	const thisSet = GM_getValue(name, {});
 	return thisSet[site] || defaultValue;
 }
-
+​
 const APIS = [
-	{name: "parwix", url: "https://jx.parwix.com:4433/player/analysis.php?v=", title: "全网解析"},
-	// 88看 必须修改请求头referer为https://www.mgtv1.tv/ 	示例网址：https://vip.shankuwang.com:8443/?url=https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
+	{name: "parwix", url: "https://jx.bozrc.com:4433/player/?url=", title: "全网解析"},
+	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/ 	示例网址：https://vip.shankuwang.com:8443/?url=https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
 	{name: "88看", url: "https://vip.shankuwang.com:8443/?url=", title: "除B站外~全网解析"},
+	// 88TV 必须修改请求头referer为 https://www.agemys.cc/
+	{name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	{name:"高速接口",url: "https://jsap.attakids.com/?url="},
 	{name: "虾米", url: "https://jx.xmflv.com/?url="},
 	{name: "M1907", url: "https://z1.m1907.cn/?jx=", title: "全网VIP接口"},
