@@ -71,11 +71,11 @@ function getSet(name, defaultValue) {
 	const thisSet = GM_getValue(name, {});
 	return thisSet[site] || defaultValue;
 }
-
+// 解析引擎。 去除原bad字符，以适应git
 const APIS = [
 	{name: "parwix", url: "https://jx.bozrc.com:4433/player/?url=", title: "全网解析"},
 	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/ 	示例网址：https://vip.shankuwang.com:8443/?url=https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
-	{name: "88看", url: "https://vip.shankuwang.com:8443/?url=", title: "除B站外~全网解析"},
+	{name: "88看", url: "https://vip.shankuwang.com:8443/?url=", title: "全网解析"},
 	// 88TV 必须修改请求头referer为 https://www.agemys.cc/
 	{name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	{name:"高速接口",url: "https://jsap.attakids.com/?url="},
