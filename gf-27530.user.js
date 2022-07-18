@@ -71,7 +71,7 @@ function getSet(name, defaultValue) {
 	const thisSet = GM_getValue(name, {});
 	return thisSet[site] || defaultValue;
 }
-​
+
 const APIS = [
 	{name: "parwix", url: "https://jx.bozrc.com:4433/player/?url=", title: "全网解析"},
 	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/ 	示例网址：https://vip.shankuwang.com:8443/?url=https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
