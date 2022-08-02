@@ -13,6 +13,7 @@
 // @match    https://live.bilibili.com/*
 // @match    https://www.bilibili.com/*
 // @match    https://www.ixigua.com/*
+// @match    https://www.toutiao.com/video/*
 // @match    https://www.acfun.cn/*
 // @match    https://live.acfun.cn/live/*
 // @match    http://v.pptv.com/show/*
@@ -857,7 +858,7 @@ let router = {
 		GM_addStyle('.plyr__video-wrapper{ height:100%!important; padding-bottom:0!important;}');
 	}
 };
-router.nunuyy1 = router.dandanzan10;
+router.nunuyy2 = router.dandanzan10;
 
 if (!router[u]) { //直播站点
 	router = {
