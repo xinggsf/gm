@@ -751,8 +751,8 @@ let router = {
 		const isSquirtle = path.startsWith('/bangumi');
 		if (!isSquirtle) actList.delete(32);
 		cfg.nextCSS = isSquirtle ? '.squirtle-video-next' : '.bilibili-player-video-btn-next';
-		cfg.webfullCSS = isSquirtle ? '.squirtle-video-pagefullscreen' : '.bilibili-player-video-web-fullscreen';
-		cfg.fullCSS = isSquirtle ? '.squirtle-video-fullscreen' : '.bilibili-player-video-btn-fullscreen';
+		cfg.webfullCSS = isSquirtle ? '.squirtle-video-pagefullscreen' : '.bpx-player-ctrl-web';
+		cfg.fullCSS = isSquirtle ? '.squirtle-video-fullscreen' : '.bpx-player-ctrl-full';
 		/*
 		const seek = function(step) {
 			const p = this.player;
