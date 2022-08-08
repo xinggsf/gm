@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         disable qq.com beacon
 // @namespace    xinggsf.eif-hill
-// @version      1.3
+// @version      1.2
 // @description  disable qq.com beacon which will cause the CPU is under high load due to continuous reporting of incorrect data
 // @author       xinggsf   eif-hill
 // @license      MIT
@@ -53,7 +53,8 @@ class App {
 		const fetch = window.fetch;
 		window.fetch = (...args) => (async(args) => {
 			const url = args[0];
-			if (url.includes("beacon.")) throw "fuck tencent";
+			const ad_list = ["trace.", "beacon."];
+			if (ad_list.some((e) => url.includes(e))) throw "fuck tencent";
 			return await fetch(...args);
 		})(args);
 	}
@@ -61,7 +62,8 @@ class App {
 		window.XMLHttpRequest = class extends window.XMLHttpRequest {
 			open(...args) {
 				const url = args[1];
-				if (url.includes("beacon.")) throw "fuck tencent";
+				const ad_list = ["trace.", "beacon."];
+				if (ad_list.some((e) => url.includes(e))) throw "fuck tencent";
 				return super.open(...args);
 			}
 		};
