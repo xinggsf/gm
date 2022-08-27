@@ -2,12 +2,12 @@
 // ==UserScript==
 // @name         智能划词翻译
 // @namespace    translate.xinggsf
-// @version      1.6.8
+// @version      1.6.9
 // @description  划词翻译,自动切换谷歌翻译和有道词典
 // @author       xinggsf  田雨菲
 // @include      http*
 // @include      file://*
-// @exclude      https://www.nunuyy1.org/*.html
+// @exclude      https://www.nunuyy2.org/*.html
 // @exclude      https://www.dandanzan1*.html
 // @run-at       document-body
 // @grant        GM_addStyle
@@ -19,8 +19,7 @@
 
 'use strict';
 const youdaoUrl = 'http://fanyi.youdao.com/translate?&doctype=json&type=AUTO&i=';
-// const googleUrl = 'https://translate.google.cn/translate_a/single?client=gtx&dt=t&dt=bd&dj=1&source=input&hl=zh-CN&sl=auto&tl=';
-const googleUrl = 'http://translate.google.com/translate_a/single?client=gtx&dt=t&dj=1&ie=UTF-8&sl=auto&tl=';
+const googleUrl = 'https://translate.googleapis.com/translate_a/single?client=gtx&dt=t&dt=bd&dj=1&source=input&hl=zh-CN&sl=auto&tl=';
 const reHZ = /^[\u4E00-\u9FA5\uFF00-\uFF20\u3000-\u301C]/;
 
 const countOfWord = s => s ? s.split(/\s+/).length : 0;
