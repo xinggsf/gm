@@ -705,24 +705,6 @@ let router = {
 		cfg.nextCSS = '.txp_btn_next_u';
 		cfg.webfullCSS = '.txp_btn_fake';
 		cfg.fullCSS = '.txp_btn_fullscreen';
-		/* 
-		bus.$on('canplay', () => {
-			// if (v.muted) $('.txp_icon_volume:visible').click().next().hide();
-			if (w.__PLAYER__) w.__PLAYER__.corePlayer.volume = 1;
-			if (!w.PLAYER) return;
-			w.PLAYER.setVolume(88);
-			const p = w.PLAYER._UiControl._UiSpeed;
-			actList.set(90, _ => {
-				if (v.playbackRate == 1) p.setSpeed(localStorage.mvPlayRate || 1.3);
-				else {
-					localStorage.mvPlayRate = v.playbackRate;
-					p.setSpeed(1);
-				}
-			})
-			.set(88, _ => p.setSpeed(v.playbackRate - 0.1))
-			.set(67, _ => p.setSpeed(v.playbackRate + 0.1));
-		}); */
-		// app.rawProps.set('playbackRate', 1);
 	},
 	youku() {
 		actList.delete(37);
@@ -851,11 +833,6 @@ let router = {
 	},
 	hanmidy() {
 		cfg.nextCSS = `a[href="${path}"]+a`;
-		// GM_addStyle('.dplayer-loaded{ background-color:orange !important; }');
-	},
-	olevod() {
-		cfg.fullCSS = 'button[data-plyr=fullscreen]';
-		GM_addStyle('.plyr__video-wrapper{ height:100%!important; padding-bottom:0!important;}');
 	}
 };
 router.nunuyy2 = router.dandanzan10;
