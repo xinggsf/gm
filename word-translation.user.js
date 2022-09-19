@@ -3,12 +3,12 @@
 // @name         智能划词翻译
 // @namespace    translate.xinggsf
 // @version      1.6.9
-// @description  划词翻译,自动切换谷歌翻译和有道词典
+// @description  划词翻译。谷歌翻译和有道词典双引擎；CTRL + ?翻译剪贴板
 // @author       xinggsf  田雨菲
 // @include      http*
 // @include      file://*
-// @exclude      https://www.nunuyy2.org/*.html
-// @exclude      https://www.dandanzan1*.html
+// @exclude      https://www.nunuyy*.html
+// @exclude      https://www.dandanzan*.html
 // @run-at       document-body
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
@@ -65,7 +65,7 @@ const comTranslate = {
 
 			xfetch(url).then(r => {
 				const ra = r.response.sentences; // 翻译结果数组
-				if (ra) this.showResult(ra.map(s => s.trans).join(''));
+				if (ra) this.showResult('谷歌翻译：<br><hr>'+ ra.map(s => s.trans).join(''));
 			})
 			.catch (e => {
 				this.showResult('谷歌服务器连接失败');
@@ -77,7 +77,7 @@ const comTranslate = {
 				const html = ro.translateResult.reduce((a, b, i, arr) => {
 					const content = b.map(s => s.tgt).join('<br>');
 					return `${a}<p>${content}</p>`;
-				}, '有道翻译结果：<br><hr>');
+				}, '有道翻译：<br><hr>');
 				this.showResult(html);
 			})
 			.catch (e => {
