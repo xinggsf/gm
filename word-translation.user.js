@@ -14,7 +14,7 @@
 // @grant        GM_xmlhttpRequest
 // @require      https://cdn.staticfile.org/vue/2.6.11/vue.min.js
 // @connect      fanyi.youdao.com
-// @connect      translate.google.com
+// @connect      translate.googleapis.com
 // ==/UserScript==
 
 'use strict';
