@@ -42,10 +42,14 @@
 // @GM_info
 // @match    https://www.youtube.com/watch*
 // @match    https://www.ted.com/talks/*
+
 // @match    https://www.yy.com/*
 // @match    https://www.huya.com/*
 // @match    https://v.douyu.com/*
 // @match    https://www.douyu.com/*
+// @match    https://live.douyin.com/*
+// @match    https://www.douyin.com/video/*
+
 // @match    https://www.longzhu.com/*
 // @match    https://www.zhanqi.tv/*
 // @run-at     document-start
