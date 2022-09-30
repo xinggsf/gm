@@ -377,7 +377,7 @@ const actList = new Map();
 actList.set(90, _ => { //按键Z: 切换加速状态
 	if (v.playbackRate == 1) v.playbackRate = localStorage.mvPlayRate || 1.3;
 	else {
-		localStorage.mvPlayRate = v.playbackRate;
+		// localStorage.mvPlayRate = v.playbackRate;
 		v.playbackRate = 1;
 	}
 })
