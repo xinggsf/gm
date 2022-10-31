@@ -48,7 +48,7 @@
 // @match    https://v.douyu.com/*
 // @match    https://www.douyu.com/*
 // @match    https://live.douyin.com/*
-// @match    https://www.douyin.com/video/*
+// @match    https://www.douyin.com/*
 
 // @match    https://www.longzhu.com/*
 // @match    https://www.zhanqi.tv/*
@@ -839,7 +839,7 @@ let router = {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
 };
-router.nunuyy2 = router.dandanzan10;
+router.nunuyy3 = router.dandanzan10;
 
 if (!router[u]) { //直播站点
 	router = {
