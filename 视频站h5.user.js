@@ -709,6 +709,8 @@ let router = {
 		cfg.nextCSS = '.txp_btn_next_u';
 		cfg.webfullCSS = '.txp_btn_fake';
 		cfg.fullCSS = '.txp_btn_fullscreen';
+		// w.__PLAYER__ || w.PLAYER
+		app.rawProps.set('playbackRate', 1);
 	},
 	youku() {
 		actList.delete(37);
