@@ -10,16 +10,20 @@
 // @compatiable  chrome; just test on chrome 80+
 // @noframes
 // @run-at       document-start
+// @grant      unsafeWindow
 // ==/UserScript==
 
 "use strict";
+const w = unsafeWindow;
+
 class App {
 	constructor() {
 		this.anti_image();
 		//this.anti_xmlHTTP(); 和anti_fecth 都由广告过滤规则实现了，故注释掉
 		if (location.host !== 'v.qq.com') {
 			this.antiObserver(); // anti Observer 代替anti Beacon
-			// this.anti_fecth();
+			this.anti_xmlHTTP();
+			this.anti_fecth();
 			this.anti_interval();
 		}
 	}
@@ -39,19 +43,18 @@ class App {
 		});
 	}
 	anti_interval() {
-		window.setInterval = new Proxy(window.setInterval, {
+		w.setInterval = new Proxy(w.setInterval, {
 			apply(target, thisArg, args) {
 				if (args[1] < 110) { // && !String(args[0]).includes('[native code]')
 					args[0] = function(){};
 				}
-				// args[1] = 9e8;
 				return target.apply(thisArg, args);
 			}
 		});
 	}
 	anti_fecth() {
-		const fetch = window.fetch;
-		window.fetch = (...args) => (async(args) => {
+		const fetch = w.fetch;
+		w.fetch = (...args) => (async(args) => {
 			const url = args[0];
 			const ad_list = ["trace.", "beacon."];
 			if (ad_list.some((e) => url.includes(e))) throw "fuck tencent";
@@ -59,7 +62,7 @@ class App {
 		})(args);
 	}
 	anti_xmlHTTP() {
-		window.XMLHttpRequest = class extends window.XMLHttpRequest {
+		w.XMLHttpRequest = class extends w.XMLHttpRequest {
 			open(...args) {
 				const url = args[1];
 				const ad_list = ["trace.", "beacon."];
@@ -69,7 +72,7 @@ class App {
 		};
 	}
 	antiObserver() {
-		const p = window.MutationObserver.prototype;
+		const p = w.MutationObserver.prototype;
 		const observe = p.observe;
 		const disconnect = p.disconnect;
 		p.observe = function(...a) {
