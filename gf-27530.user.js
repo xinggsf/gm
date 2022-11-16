@@ -199,7 +199,8 @@ const comIntabPlayer = {
 //  intabPlayer CSS
 GM_addStyle(`
 	button{cursor:pointer}
-	#intabPlayer{z-index:999999;position:fixed;display:block;overflow:hidden; resize:both!important;box-shadow:0 0 2px 2px #f3c;color:#333!important;}
+	.dplayer-web-fullscreen-fix #intabPlayer{resize:none!important;}
+	#intabPlayer{z-index:999999;position:fixed;display:block;overflow:hidden;resize:both;box-shadow:0 0 2px 2px #f3c;color:#333!important;}
 	#intabPlayer #bar{visibility:hidden;position:absolute;width:366px;top:0;left:calc(50% - 180px);}
 	#intabPlayer:hover #bar{visibility:visible;z-index:999999;cursor:move}
 	#intabPlayer #bar button{background:yellow;padding:0px 10px;font-size:20px;line-height:30px;border:1px solid #3a3a3a}

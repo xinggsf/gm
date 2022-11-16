@@ -700,8 +700,7 @@ let router = {
 		cfg.fullCSS = 'button.ytp-fullscreen-button';
 		cfg.isClickOnVideo = true;
 		actList.delete(32);
-		actList.set(69, actList.get(70)); //F键 >> E键
-		actList.delete(70);
+		actList.set(69, actList.get(70)).delete(70); //F键 >> E键
 	},
 	qq() {
 		if (self != top &&(host == 'v.qq.com' || host == 'video.qq.com') ) throw '只处理主页面';
