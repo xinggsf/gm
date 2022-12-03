@@ -4,7 +4,7 @@
 // @version      0.3
 // @description  iframe网页全屏
 // @author       xinggsf
-// @match        https://www.zhenbuka5.com/vodplay/*
+// @match        https://ikandy.fun/vodplay/*
 // @noframes
 // @run-at       document-body
 // @grant        GM_addStyle
