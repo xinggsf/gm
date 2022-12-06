@@ -840,6 +840,7 @@ let router = {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
 };
+router.sbdm = router.agemys;
 router.nunuyy3 = router.dandanzan10;
 
 if (!router[u]) { //直播站点
