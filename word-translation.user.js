@@ -156,7 +156,7 @@ GM_addStyle(`.gm-gg-yd-translate > .tip {
 const vm = new Vue({
 	render: h => h(comTranslate)
 }).$mount();
-document.body.appendChild(vm.$el);
+document.documentElement.appendChild(vm.$el);
 
 async function readClipboard() {
 	if (!window.isSecureContext) {
