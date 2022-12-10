@@ -631,7 +631,7 @@ const app = {
 		};
 		for (const i of this.rawProps.keys()) this.rawProps.set(i,
 			Reflect.getOwnPropertyDescriptor(HTMLMediaElement.prototype, i));
-		this.vList = d.getElementsByTagName('video');
+		this.vList = d.getElementsByTagName('video'); // B站：bwp-video
 		const fn = e => cfg.cssMV ? e.matches(cfg.cssMV) : e.offsetWidth > 9;
 		this.findMV = find.bind(this.vList, fn);
 		const timer = intervalQuery(e => {
