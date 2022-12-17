@@ -80,7 +80,7 @@ const APIS = [
 	{name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	{name:"高速接口",url: "https://jsap.attakids.com/?url="},
 	{name: "虾米", url: "https://jx.xmflv.com/?url="},
-	{name: "M1907", url: "https://z1.m1907.cn/?jx=", title: "全网VIP接口"},
+	{name: "醉仙", url: "https://jx.zui.cm/?url="},
 	{name:"夜幕",url: "https://www.yemu.xyz/?url="},
 	{name:"乐多",url: "https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
 	{name: "诺讯", url: "https://www.nxflv.com/?url="},
