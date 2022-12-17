@@ -27,10 +27,10 @@
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
 // @match    https://*.icourse163.org/*
-// @match    http://video.sina.*/*
-// @match    https://video.sina.*/*
-// @match    http://k.sina.*/*
-// @match    https://k.sina.*/*
+// @include    http://video.sina.*/*
+// @include    https://video.sina.*/*
+// @include    http://k.sina.*/*
+// @include    https://k.sina.*/*
 // @match    https://weibo.com/*
 // @match    https://*.weibo.com/*
 // @match    https://pan.baidu.com/*
@@ -76,12 +76,6 @@ const noopFn = function(){};
 const validEl = e => e && e.offsetWidth > 1;
 const q = (css, p = d) => p.querySelector(css);
 const delElem = e => e.remove();
-const $$ = function(c, cb = delElem, doc = d) {
-	if (!c || !c.length) return;
-	if (typeof c === 'string') c = doc.querySelectorAll(c);
-	if (!cb) return c;
-	for (let e of c) if (e && cb(e)=== !1) break;
-};
 const r1 = (regp, s) => regp.test(s) && RegExp.$1;
 const log = console.log.bind(
 	console,
@@ -402,7 +396,8 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 	self != top ? top.postMessage({id: 'gm-h5-toggle-iframeWebFull'}, '*')
 	: _fp ? _fp.toggle() : clickDualButton(cfg.btnFP);
 })
-.set(27, _ => {	//按键esc
+.set(27+1024, noopFn)	//忽略按键shift + esc
+.set(27, ev => {	//按键esc
 	if (FullScreen.isFull()) {
 		_fs ? _fs.exit() : clickDualButton(cfg.btnFS);
 	} else if (self != top) {
@@ -530,7 +525,7 @@ const app = {
 			e.stopImmediatePropagation();
 			e.stopPropagation();
 			e.preventDefault();
-			actList.get(key)();
+			actList.get(key)(e);
 		}
 	},
 	checkUI() {
@@ -581,7 +576,7 @@ const app = {
 		for (const [i,k] of this.rawProps) Reflect.defineProperty(HTMLVideoElement.prototype, i, k);
 		this.rawProps.clear();
 		this.rawProps = null;
-		$$(cfg.adsCSS);
+		$(cfg.adsCSS).remove();
 		by = d.body;
 		log('bind event\n', v);
 		bus.$emit('foundMV');
@@ -671,7 +666,7 @@ let router = {
 			if (!v.src || v.src.startsWith('http')) return;
 			try {
 				const s = await getHDSource();
-				$$(app.vList, e => e.removeAttribute('src')); // 取消多余的媒体资源请求
+				$(app.vList).removeAttr('src'); // 取消多余的媒体资源请求
 				v.src = s;
 			} catch(ex) {
 				alert('高清媒体不存在！');
@@ -822,7 +817,7 @@ let router = {
 	agemys() {
 		actList.set(78, _ => { location.href = location.href.replace(/\d+$/, s => ++s) });
 	},
-	dandanzan10() {
+	dandanzan() {
 		GM_registerMenuCommand('视频卡顿', () => {
 			'use strict';
 			v.pause();
@@ -841,7 +836,7 @@ let router = {
 	}
 };
 router.sbdm = router.agemys;
-router.nunuyy3 = router.dandanzan10;
+router.nunuyy5 = router.dandanzan10 = router.dandanzan;
 
 if (!router[u]) { //直播站点
 	router = {
@@ -854,8 +849,8 @@ if (!router[u]) { //直播站点
 				cfg.webfullCSS = '.wfs-2a8e83';
 				cfg.fullCSS = '.fs-781153';
 				cfg.playCSS = 'div[class|=play]';
-				path != '/' && document.addEventListener('DOMContentLoaded', ev => {
-					$$('.u-specialStateInput', e => {e.checked = true;})
+				path != '/' && $(ev => {
+					q('.u-specialStateInput').checked = true;
 				});
 			} else bus.$on('addShadowRoot', function(r) {
 				if (r.host.matches('#demandcontroller-bar')) {
