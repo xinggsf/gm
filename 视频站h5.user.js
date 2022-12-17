@@ -654,32 +654,6 @@ const app = {
 let router = {
 	ted() {
 		cfg.fullCSS = 'button[title=Fullscreen]';
-		if (!gmFuncOfCheckMenu('TED强制高清', 'ted_forceHD')) return;
-		const getHDSource = async () => {
-			const pn = r1(/^(\/talks\/\w+)/, path);
-			const resp = await fetch(pn + '/metadata.json');
-			const data = await resp.json();
-			return data.talks[0].downloads.nativeDownloads?.high
-			  || data.talks[0].player_talks[0].resources.h264[0].file;
-		};
-		const check = async (rs) => {
-			if (!v.src || v.src.startsWith('http')) return;
-			try {
-				const s = await getHDSource();
-				$(app.vList).removeAttr('src'); // 取消多余的媒体资源请求
-				v.src = s;
-			} catch(ex) {
-				alert('高清媒体不存在！');
-			}
-		};
-		bus.$on('foundMV', () => {
-			v.setAttribute('crossorigin', "anonymous");
-			new MutationObserver(check).observe(v, {
-				attributes: true,
-				attributeFilter: ['src']
-			});
-			check();
-		});
 	},
 	youtube() {
 		GM_addStyle(
