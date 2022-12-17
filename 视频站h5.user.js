@@ -27,10 +27,10 @@
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
 // @match    https://*.icourse163.org/*
-// @include    http://video.sina.*/*
-// @include    https://video.sina.*/*
-// @include    http://k.sina.*/*
-// @include    https://k.sina.*/*
+// @match    http://video.sina.*/*
+// @match    https://video.sina.*/*
+// @match    http://k.sina.*/*
+// @match    https://k.sina.*/*
 // @match    https://weibo.com/*
 // @match    https://*.weibo.com/*
 // @match    https://pan.baidu.com/*
