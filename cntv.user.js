@@ -80,7 +80,7 @@ class App {
 		let hi, p;
 		if (this.is1P) {
 			p = e[0];
-			hi = (e[0].clientHeight || 500) + 'px';
+			hi = (p.clientHeight || 500) + 'px';
 			e.empty().css('height', hi).parent().css('height', hi);
 		} else {
 			hi = '97%';
