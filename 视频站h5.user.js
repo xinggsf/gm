@@ -455,11 +455,14 @@ const app = {
 			actList.get(1037)(); //web全屏
 		};
 		const e = cfg.isClickOnVideo ? v : cfg.mvShell;
-		!cfg.isLive && e.addEventListener('mousedown', ev => {
+		e.addEventListener('mousedown', ev => {
 			if (1 == ev.button) {
+				ev.preventDefault();
 				ev.stopPropagation();
 				ev.stopImmediatePropagation();
-				actList.has(39) ? actList.get(39)() : v.currentTime += 5;
+				if (!cfg.isLive) {
+					actList.has(39) ? actList.get(39)() : v.currentTime += 5;					
+				}
 			}
 		});
 		!cfg.disableDBLClick && e.addEventListener('dblclick', fn);
