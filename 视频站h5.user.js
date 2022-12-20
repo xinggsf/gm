@@ -22,7 +22,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.1
+// @version    1.9.2
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
