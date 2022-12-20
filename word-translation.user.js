@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name         智能划词翻译
 // @namespace    translate.xinggsf
-// @version      1.6.9
+// @version      1.7.0
 // @description  划词翻译。谷歌翻译和有道词典双引擎；CTRL + ?翻译剪贴板
 // @author       xinggsf  田雨菲
 // @include      http*
