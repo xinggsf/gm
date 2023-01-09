@@ -41,7 +41,6 @@ class App {
 		try {
 			this.getVid();
 			const data = await this.fetchSrc();
-			console.log(data.hls_url);
 			if (!data.hls_url) return;
 			if (this.is1P && !unsafeWindow.vodh5player) await sleep(300);
 			if (this.is1P && unsafeWindow.vodh5player) return;
