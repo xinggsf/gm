@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name         Youku视频去广告、黑屏
 // @namespace    ylcs006.Youku.com
-// @version      0.3.0
+// @version      0.3.1
 // @description  Youku视频去广告及其黑屏倒计时
-// @match        https://v.youku.com/v_show/*
+// @match        https://v.youku.com/v_play/*
 // @run-at       document-start
 // @grant        GM_addStyle
 // ==/UserScript==
