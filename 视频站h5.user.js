@@ -6,7 +6,7 @@
 // @match    https://*.qq.com/*
 // @exclude    https://user.qzone.qq.com/*
 // @match    https://www.weiyun.com/video_*
-// @match    https://v.youku.com/v_show/id_*
+// @match    https://v.youku.com/v_play/*
 // @match    https://vku.youku.com/live/*
 // @match    https://video.tudou.com/v/*
 // @match    https://www.iqiyi.com/*
@@ -812,7 +812,6 @@ let router = {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
 };
-router.sbdm = router.agemys;
 router.nunuyy5 = router.dandanzan10 = router.dandanzan;
 
 if (!router[u]) { //直播站点
