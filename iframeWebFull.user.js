@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         框架网页全屏
 // @namespace    iframeWebFull.xinggsf
-// @version      0.3
+// @version      0.3.1
 // @description  iframe网页全屏
 // @author       xinggsf
 // @match        https://ikandy.fun/vodplay/*
@@ -69,12 +69,11 @@ class FullPage {
 }
 
 const config = {
-	hanjutvaa: {
-		nextCSS: 'a.playLink.active + a',
-		origin: 'https://ww4.hanjutvaa.com:443' //必须带端口号
-	},
 	olevod: {
 		nextCSS: 'i.next-p'
+	},
+	ikandy: {
+		nextCSS: 'ul.more-btn li:last-child a'
 	}
 };
 // const origin = config[u]?.origin || '/';
