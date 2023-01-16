@@ -4,6 +4,7 @@
 // @version      0.3.1
 // @description  Youku视频去广告及其黑屏倒计时
 // @match        https://v.youku.com/v_play/*
+// @match        https://v.youku.com/v_show/id_*
 // @run-at       document-start
 // @grant        GM_addStyle
 // ==/UserScript==
