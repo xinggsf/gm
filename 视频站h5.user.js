@@ -7,6 +7,7 @@
 // @exclude    https://user.qzone.qq.com/*
 // @match    https://www.weiyun.com/video_*
 // @match    https://v.youku.com/v_play/*
+// @match    https://v.youku.com/v_show/id_*
 // @match    https://vku.youku.com/live/*
 // @match    https://video.tudou.com/v/*
 // @match    https://www.iqiyi.com/*
