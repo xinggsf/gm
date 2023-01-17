@@ -678,6 +678,7 @@ let router = {
 	qq() {
 		if (self != top &&(host == 'v.qq.com' || host == 'video.qq.com') ) throw '只处理主页面';
 		actList.delete(32);
+		cfg.shellCSS = '#player';
 		cfg.nextCSS = '.txp_btn_next_u';
 		cfg.webfullCSS = '.txp_btn_fake';
 		cfg.fullCSS = '.txp_btn_fullscreen';
