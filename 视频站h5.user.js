@@ -23,7 +23,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.2
+// @version    1.9.3
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -577,9 +577,14 @@ const app = {
 		bus.$emit('switchMV');
 	},
 	bindEvent() {
-		for (const [i,k] of this.rawProps) Reflect.defineProperty(HTMLVideoElement.prototype, i, k);
-		this.rawProps.clear();
-		this.rawProps = null;
+		if (!v.src && u=='bilibili') {
+			this.vList = d.getElementsByTagName('bwp-video');
+			v = this.vList[0];
+		} else {
+			for (const [i,k] of this.rawProps) Reflect.defineProperty(HTMLVideoElement.prototype, i, k);
+			this.rawProps.clear();
+			this.rawProps = null;
+		}
 		$(cfg.adsCSS).remove();
 		by = d.body;
 		log('bind event\n', v);
@@ -630,7 +635,7 @@ const app = {
 		};
 		for (const i of this.rawProps.keys()) this.rawProps.set(i,
 			Reflect.getOwnPropertyDescriptor(HTMLMediaElement.prototype, i));
-		this.vList = d.getElementsByTagName('video'); // B站：bwp-video
+		this.vList = d.getElementsByTagName('video');
 		const fn = e => cfg.cssMV ? e.matches(cfg.cssMV) : e.offsetWidth > 9;
 		this.findMV = find.bind(this.vList, fn);
 		const timer = intervalQuery(e => {
@@ -704,9 +709,6 @@ let router = {
 		}
 	},
 	bilibili() {
-		app.rawProps.set('playbackRate', 1)
-		  .set('currentTime', 1)
-		  .set('volume', 1);
 		cfg.isLive = host.startsWith('live.');
 		if (cfg.isLive) return;
 		const isSquirtle = path.startsWith('/bangumi');
