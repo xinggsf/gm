@@ -711,7 +711,7 @@ let router = {
 		if (cfg.isLive) return;
 		const isSquirtle = path.startsWith('/bangumi');
 		if (!isSquirtle) actList.delete(32);
-		cfg.nextCSS = isSquirtle ? '.squirtle-video-next' : '.bilibili-player-video-btn-next';
+		cfg.nextCSS = isSquirtle ? '.squirtle-video-next' : '.bpx-player-ctrl-next';
 		cfg.webfullCSS = isSquirtle ? '.squirtle-video-pagefullscreen' : '.bpx-player-ctrl-web';
 		cfg.fullCSS = isSquirtle ? '.squirtle-video-fullscreen' : '.bpx-player-ctrl-full';
 		/*
