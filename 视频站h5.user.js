@@ -629,8 +629,8 @@ const app = {
 	init() {
 		const rawAel = EventTarget.prototype.addEventListener;
 		EventTarget.prototype.addEventListener = function(...args) {
-			let block = (args[0] == 'dblclick' && !args[1].toString().includes('actList.get(1037)'))
-				|| (args[0] == 'ratechange' && /bilibili|baidu/.test(u) && !args[1].toString().includes('localStorage.mvPlayRate'));
+			const block = (args[0] == 'dblclick' && !args[1].toString().includes('actList.get(1037)'))
+				|| (args[0] == 'ratechange' && 'baidu'== u && !args[1].toString().includes('localStorage.mvPlayRate'));
 			if (!block) return rawAel.apply(this, args);
 		};
 		for (const i of this.rawProps.keys()) this.rawProps.set(i,
