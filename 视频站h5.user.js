@@ -589,10 +589,11 @@ const app = {
 		by = d.body;
 		log('bind event\n', v);
 		bus.$emit('foundMV');
+		const bRate = gmFuncOfCheckMenu('记忆播放速度','remberRate');
 		window.addEventListener('urlchange', async (info) => { //TM event: info.url
 			await sleep(300);
 			this.checkMV();
-			v.playbackRate = localStorage.mvPlayRate || 1.3;
+			if (bRate) v.playbackRate = localStorage.mvPlayRate || 1.3;
 			bus.$emit('urlchange');
 		});
 		if (top != self) {
@@ -607,7 +608,7 @@ const app = {
 			}, false);
 		}
 		$(v).one('canplaythrough', ev => {
-			if (!cfg.isLive) {
+			if (!cfg.isLive && bRate) {
 				v.playbackRate = localStorage.mvPlayRate || 1;
 				v.addEventListener('ratechange', ev => {
 					if (v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
@@ -700,8 +701,6 @@ let router = {
 			cfg.fullCSS = '.live_icon_full';
 		} else {
 			bus.$on('foundMV',() => { $(document).unbind('keyup') });
-			// localStorage.removeItem('cna');
-			// delete cookie.cna;  //全部清除: cookie(); 写入cookie： cookie.cna = 'xxxxx---xxx';
 			cfg.shellCSS = '#ykPlayer';
 			cfg.webfullCSS = '.kui-webfullscreen-icon-0';
 			cfg.fullCSS = '.kui-fullscreen-icon-0';
