@@ -43,6 +43,7 @@
 // @GM_info
 // @match    https://www.youtube.com/watch*
 // @match    https://www.ted.com/talks/*
+// @match    https://www.twitch.tv/*
 
 // @match    https://www.yy.com/*
 // @match    https://www.huya.com/*
@@ -462,7 +463,7 @@ const app = {
 				ev.stopPropagation();
 				ev.stopImmediatePropagation();
 				if (!cfg.isLive) {
-					actList.has(39) ? actList.get(39)() : v.currentTime += 5;					
+					actList.has(39) ? actList.get(39)() : v.currentTime += 5;
 				}
 			}
 		});
@@ -858,6 +859,12 @@ if (!router[u]) { //直播站点
 			localStorage['sidebar/ads'] = '{}';
 			localStorage['sidebar/state'] = 0;
 			localStorage.TT_ROOM_SHIELD_CFG_0_ = '{"10000":1,"20001":1,"20002":1,"20003":1,"30000":1}';
+		},
+		twitch() {
+			cfg.isLive = !path.startsWith('/videos/');
+			cfg.fullCSS = 'button[data-a-target=player-fullscreen-button]';
+			cfg.webfullCSS = 'button[data-a-target=player-theatre-mode-button]';
+			cfg.playCSS = 'button[data-a-target=player-play-pause-button]';
 		},
 		longzhu() {
 			cfg.fullCSS = 'a.ya-screen-btn';
