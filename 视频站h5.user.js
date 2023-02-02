@@ -682,6 +682,15 @@ let router = {
 		actList.delete(32);
 		actList.set(69, actList.get(70)).delete(70); //F键 >> E键
 	},
+	douyin() {
+		cfg.isLive = host.startsWith('live.');
+		GM_addStyle('.xgplayer-progress-cache{background-color:green!important}');
+		// cfg.webfullCSS = cfg.isLive ? '.xgplayer-fullscreen + xg-icon' : '.xgplayer-page-full-screen';
+		cfg.fullCSS = '.xgplayer-fullscreen';
+		actList.set(65, actList.get(90)).delete(90); //Z键 >> A键
+		actList.set(83, actList.get(88)).delete(88); //X键 >> S键
+		actList.set(86, actList.get(67)).delete(67); //C键 >> V键
+	},
 	qq() {
 		if (self != top &&(host == 'v.qq.com' || host == 'video.qq.com') ) throw '只处理主页面';
 		actList.delete(32);
@@ -892,7 +901,7 @@ P：视频截图        i：切换画中画        M：(停止)缓存视频
 ↑ ↓方向键：音量调节   ESC：退出（网页）全屏
 空格键：暂停/播放      N：播放下一集
 回车键：切换全屏;      回车键 + shift: 切换网页全屏
-C：加速0.1倍播放       X：减速0.1倍播放       Z：切换加速状态
+C(抖音V)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
 D：上一帧     F：下一帧(youtube.com用E键)`
 ));
 if (!router[u] || !router[u]()) app.init();
