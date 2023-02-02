@@ -77,11 +77,13 @@ const APIS = [
 	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/ 	示例网址：https://vip.shankuwang.com:8443/?url=https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
 	{name: "88看", url: "https://vip.shankuwang.com:8443/?url=", title: "全网解析"},
 	// 88TV 必须修改请求头referer为 https://www.agemys.cc/
-	{name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
+	// {name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	{name:"高速接口",url: "https://jsap.attakids.com/?url="},
 	{name: "虾米", url: "https://jx.xmflv.com/?url="},
 	{name: "醉仙", url: "https://jx.zui.cm/?url="},
 	{name:"夜幕",url: "https://www.yemu.xyz/?url="},
+	{ url: "https://yparse.jn1.cc/index.php?url=", name: "云解析" },
+	{ url: "https://vip.bljiex.cc/?v=", name: "BL解析" },
 	{name:"乐多",url: "https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
 	{name: "诺讯", url: "https://www.nxflv.com/?url="},
 	{name:"m3u8.tv",url: "https://jx.m3u8.tv/jiexi/?url="},
