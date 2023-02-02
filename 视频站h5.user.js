@@ -684,12 +684,14 @@ let router = {
 	},
 	douyin() {
 		cfg.isLive = host.startsWith('live.');
-		GM_addStyle('.xgplayer-progress-cache{background-color:green!important}');
-		// cfg.webfullCSS = cfg.isLive ? '.xgplayer-fullscreen + xg-icon' : '.xgplayer-page-full-screen';
 		cfg.fullCSS = '.xgplayer-fullscreen';
-		actList.set(65, actList.get(90)).delete(90); //Z键 >> A键
-		actList.set(83, actList.get(88)).delete(88); //X键 >> S键
-		actList.set(86, actList.get(67)).delete(67); //C键 >> V键
+		// cfg.webfullCSS = cfg.isLive ? '.xgplayer-fullscreen + xg-icon' : '.xgplayer-page-full-screen';
+		if (!cfg.isLive) {				
+			GM_addStyle('.xgplayer-progress-cache{background-color:green!important}');
+			actList.set(65, actList.get(90)).delete(90); //Z键 >> A键
+			actList.set(83, actList.get(88)).delete(88); //X键 >> S键
+			actList.set(86, actList.get(67)).delete(67); //C键 >> V键
+		}
 	},
 	qq() {
 		if (self != top &&(host == 'v.qq.com' || host == 'video.qq.com') ) throw '只处理主页面';
