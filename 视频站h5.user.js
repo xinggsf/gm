@@ -23,7 +23,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.3
+// @version    1.9.4
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -219,7 +219,9 @@ const getMainDomain = host => {
 const inRange = (n, min, max) => Math.max(min, n) == Math.min(n, max);
 const adjustRate = n => {
 	n += v.playbackRate;
-	if (inRange(n, 0.1, 16)) v.playbackRate = +n.toFixed(2);
+	if (n < 0.1) v.playbackRate = .1;
+	else if (n > 16) v.playbackRate = 16;
+	else v.playbackRate = +n.toFixed(2);
 };
 const adjustVolume = n => {
 	n += v.volume;
@@ -484,10 +486,10 @@ const app = {
 			if (e && e != v) {
 				v = e;
 				cfg.btnPlay = cfg.btnNext = cfg.btnFP = cfg.btnFS = _fs = _fp = null;
-				if (!cfg.isLive) {
+				if (!cfg.isLive && bRate) {
 					v.playbackRate = localStorage.mvPlayRate || 1;
 					v.addEventListener('ratechange', ev => {
-						localStorage.mvPlayRate = v.playbackRate;
+						if (v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 					});
 				}
 				this.setShell();
@@ -686,7 +688,7 @@ let router = {
 		cfg.isLive = host.startsWith('live.');
 		cfg.fullCSS = '.xgplayer-fullscreen';
 		// cfg.webfullCSS = cfg.isLive ? '.xgplayer-fullscreen + xg-icon' : '.xgplayer-page-full-screen';
-		if (!cfg.isLive) {				
+		if (!cfg.isLive) {
 			GM_addStyle('.xgplayer-progress-cache{background-color:green!important}');
 			actList.set(65, actList.get(90)).delete(90); //Z键 >> A键
 			actList.set(83, actList.get(88)).delete(88); //X键 >> S键

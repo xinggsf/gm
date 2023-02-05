@@ -73,28 +73,25 @@ function getSet(name, defaultValue) {
 }
 // 解析引擎。 去除原bad字符，以适应git
 const APIS = [
-	{name: "parwix", url: "https://jx.bozrc.com:4433/player/?url=", title: "全网解析"},
-	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/ 	示例网址：https://vip.shankuwang.com:8443/?url=https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
-	{name: "88看", url: "https://vip.shankuwang.com:8443/?url=", title: "全网解析"},
+	{name:"parwix", url:"https://jx.bozrc.com:4433/player/?url=", title:"全网解析"},
+	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/ 	示例网址： https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
+	{name:"88看", url:"https://vip.shankuwang.com:8443/?url=", title:"全网解析"},
 	// 88TV 必须修改请求头referer为 https://www.agemys.cc/
 	// {name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
-	{name:"高速接口",url: "https://jsap.attakids.com/?url="},
-	{name: "虾米", url: "https://jx.xmflv.com/?url="},
-	{name: "醉仙", url: "https://jx.zui.cm/?url="},
-	{name:"夜幕",url: "https://www.yemu.xyz/?url="},
-	{ url: "https://yparse.jn1.cc/index.php?url=", name: "云解析" },
-	{ url: "https://vip.bljiex.cc/?v=", name: "BL解析" },
-	{name:"乐多",url: "https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
-	{name: "诺讯", url: "https://www.nxflv.com/?url="},
-	{name:"m3u8.tv",url: "https://jx.m3u8.tv/jiexi/?url="},
-	{name:"OK云",url: "https://api.okjx.cc:3389/m33/?url="},
-	{name:"猪蹄",url: "https://jx.iztyy.com/svip/?url="},
-	{name:"盘古",url: "https://www.pangujiexi.cc/jiexi.php?url="},
-	{name:"黑云",url: "https://jiexi.380k.com/?url="},
-	{name:"爱豆",url: "https://jx.aidouer.net/?url="},
-	{name:"sugan",url: "https://api.suganjx.com/index/?url="}, // Youku
-	{name:"ergan",url: "https://jx.ergan.top/?url="},
-	{name:"代代",url: "https://api.daidaitv.com/index/?url="}
+	// {name:"高速接口", url:"https://jsap.attakids.com/?url="},
+	{name:"虾米", url:"https://jx.xmflv.com/?url="},
+	{name:"OK云", url:"https://api.okjx.cc:3389/jx.php?url="},
+	{name:"诺讯", url:"https://www.nxflv.com/?url="},
+	{name:"爱豆", url:"https://jx.aidouer.net/?url="},
+	{name:"醉仙", url:"https://jx.zui.cm/?url="},
+	{name:"夜幕", url:"https://www.yemu.xyz/?url="},
+	{name:"乐多", url:"https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
+	{name:"m3u8云", url:"https://jx.m3u8.tv/jiexi/?url="},
+	{name:"猪蹄", url:"https://jx.iztyy.com/svip/?url="},
+	{name:"盘古", url:"https://www.pangujiexi.cc/jiexi.php?url="},
+	{name:"黑云", url:"https://jiexi.380k.com/?url="},
+	{name:"云解析", url:"https://yparse.jn1.cc/index.php?url="},
+	{name:"BL解析", url:"https://vip.bljiex.cc/?v="}
 ];
 
 const siteCfg = {
