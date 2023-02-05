@@ -185,7 +185,7 @@ const doClick = e => {
 const clickDualButton = btn => { // 2合1 按钮
 	!btn.nextSibling || getStyle(btn, 'display') !== 'none' ? doClick(btn) : doClick(btn.nextSibling);
 };
-const intervalQuery = (cb, condition, stop = true) => {
+const polling = (cb, condition, stop = true) => {
 	const fn = typeof condition === 'string' ? q.bind(null, condition) : condition;
 	const t = setInterval(() => {
 		const r = fn();
@@ -642,7 +642,7 @@ const app = {
 		this.vList = d.getElementsByTagName('video');
 		const fn = e => cfg.cssMV ? e.matches(cfg.cssMV) : e.offsetWidth > 9;
 		this.findMV = find.bind(this.vList, fn);
-		const timer = intervalQuery(e => {
+		const timer = polling(e => {
 			v = e;
 			this.bindEvent();
 		}, this.findMV);
@@ -657,8 +657,8 @@ const app = {
 				clearInterval(timer);
 				this.bindEvent();
 
-				this.vList = null;
-				this.findMV = noopFn;
+				this.vList = shadowRoot.getElementsByTagName('video');
+				this.findMV = find.bind(this.vList, fn);
 			}
 		});
 	}
@@ -868,7 +868,7 @@ if (!router[u]) { //直播站点
 			cfg.fullCSS = '.player-fullscreen-btn';
 			cfg.playCSS = '#player-btn';
 			cfg.adsCSS = '#player-subscribe-wap,#wrap-income';
-			intervalQuery(doClick, '.login-tips-close');
+			polling(doClick, '.login-tips-close');
 			localStorage['sidebar/ads'] = '{}';
 			localStorage['sidebar/state'] = 0;
 			localStorage.TT_ROOM_SHIELD_CFG_0_ = '{"10000":1,"20001":1,"20002":1,"20003":1,"30000":1}';
