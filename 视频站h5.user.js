@@ -373,8 +373,9 @@ cacheMV.onChache = cacheMV.onChache.bind(cacheMV);
 
 const actList = new Map();
 actList.set(90, _ => { //按键Z: 切换加速状态
-	if (v.playbackRate == 1) v.playbackRate = localStorage.mvPlayRate || 1.3;
-	else {
+	if (v.playbackRate == 1) {
+		v.playbackRate = +localStorage.mvPlayRate || 1.3;
+	} else {
 		// localStorage.mvPlayRate = v.playbackRate;
 		v.playbackRate = 1;
 	}
@@ -487,7 +488,7 @@ const app = {
 				v = e;
 				cfg.btnPlay = cfg.btnNext = cfg.btnFP = cfg.btnFS = _fs = _fp = null;
 				if (!cfg.isLive && bRate) {
-					v.playbackRate = localStorage.mvPlayRate || 1;
+					v.playbackRate = +localStorage.mvPlayRate || 1;
 					v.addEventListener('ratechange', ev => {
 						if (v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 					});
@@ -608,7 +609,7 @@ const app = {
 		}
 		$(v).one('canplaythrough', ev => {
 			if (!cfg.isLive && bRate) {
-				v.playbackRate = localStorage.mvPlayRate || 1;
+				v.playbackRate = +localStorage.mvPlayRate || 1;
 				v.addEventListener('ratechange', ev => {
 					if (v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
