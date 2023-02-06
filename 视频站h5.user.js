@@ -580,14 +580,10 @@ const app = {
 		bus.$emit('switchMV');
 	},
 	bindEvent() {
-		if (!v.src && u=='bilibili') {
-			this.vList = d.getElementsByTagName('bwp-video');
-			v = this.vList[0];
-		} else {
-			for (const [i,k] of this.rawProps) Reflect.defineProperty(HTMLVideoElement.prototype, i, k);
-			this.rawProps.clear();
-			this.rawProps = null;
-		}
+		clearInterval(this.timer);
+		for (const [i,k] of this.rawProps) Reflect.defineProperty(HTMLVideoElement.prototype, i, k);
+		this.rawProps.clear();
+		this.rawProps = null;
 		$(cfg.adsCSS).remove();
 		by = d.body;
 		log('bind event\n', v);
@@ -642,19 +638,18 @@ const app = {
 		this.vList = d.getElementsByTagName('video');
 		const fn = e => cfg.cssMV ? e.matches(cfg.cssMV) : e.offsetWidth > 9;
 		this.findMV = find.bind(this.vList, fn);
-		const timer = polling(e => {
+		this.timer = polling(e => {
 			v = e;
 			this.bindEvent();
 		}, this.findMV);
 
 		hookAttachShadow(async shadowRoot => {
-			await sleep(600);
 			bus.$emit('addShadowRoot', shadowRoot);
+			await sleep(600);
 			if (v) return;
 			if (v = q('video', shadowRoot)) { // v.getRootNode() == shadowRoot
 				log('Found MV in ShadowRoot\n', v, shadowRoot);
 				if (!cfg.shellCSS) cfg.mvShell = shadowRoot.host;
-				clearInterval(timer);
 				this.bindEvent();
 
 				this.vList = shadowRoot.getElementsByTagName('video');
@@ -726,6 +721,16 @@ let router = {
 		if (cfg.isLive) return;
 		const isSquirtle = path.startsWith('/bangumi');
 		if (!isSquirtle) actList.delete(32);
+
+		bus.$on('addShadowRoot', r => {
+			if (r.host.nodeName === 'BWP-VIDEO') {
+				app.vList = d.getElementsByTagName('bwp-video');
+				app.findMV = find.bind(app.vList, e => e.offsetWidth > 9);
+				v = r.host;
+				app.bindEvent();
+			}
+		});
+		cfg.shellCSS = 'div[aria-label="哔哩哔哩播放器"]';
 		cfg.nextCSS = isSquirtle ? '.squirtle-video-next' : '.bpx-player-ctrl-next';
 		cfg.webfullCSS = isSquirtle ? '.squirtle-video-pagefullscreen' : '.bpx-player-ctrl-web';
 		cfg.fullCSS = isSquirtle ? '.squirtle-video-fullscreen' : '.bpx-player-ctrl-full';
