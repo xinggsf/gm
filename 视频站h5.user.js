@@ -225,7 +225,7 @@ const adjustRate = n => {
 };
 const adjustVolume = n => {
 	n += v.volume;
-	if (inRange(n, 0, 1)) v.volume = +n.toFixed(1);
+	if (inRange(n, 0, 1)) v.volume = +n.toFixed(2);
 };
 const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3626.121 Safari/537.36';
 const u = getMainDomain(host);
