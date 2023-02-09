@@ -591,9 +591,9 @@ const app = {
 		bus.$emit('foundMV');
 		const bRate = gmFuncOfCheckMenu('记忆播放速度','remberRate');
 		window.addEventListener('urlchange', async (info) => { //TM event: info.url
-			await sleep(300);
+			await sleep(600);
 			this.checkMV();
-			if (bRate) v.playbackRate = localStorage.mvPlayRate || 1.3;
+			if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1.3;
 			bus.$emit('urlchange');
 		});
 		if (top != self) {
