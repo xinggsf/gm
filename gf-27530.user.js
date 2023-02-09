@@ -74,7 +74,7 @@ function getSet(name, defaultValue) {
 // 解析引擎。 去除原bad字符，以适应git
 const APIS = [
 	{name:"盒子", url:"https://jx.jsonplayer.com/player/?url=", title:"全网解析"}, // ​https://jiexi.4050v.cn/url.php?url=
-	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/ 	示例网址： https://v.youku.com/v_show/id_XNTg2NDQ0NDg0NA==.html
+	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/
 	{name:"88看", url:"https://vip.shankuwang.com:8443/?url=", title:"全网解析"},
 	// 88TV 必须修改请求头referer为 https://www.agemys.cc/
 	// {name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
@@ -86,7 +86,7 @@ const APIS = [
 	{name:"BL解析", url:"https://vip.bljiex.cc/?v="},
 	{name:"醉仙", url:"https://jx.zui.cm/?url="},
 	{name:"夜幕", url:"https://www.yemu.xyz/?url="},
-	{name:"乐多", url:"https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
+	// {name:"乐多", url:"https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
 	{name:"m3u8云", url:"https://jx.m3u8.tv/jiexi/?url="},
 	{name:"猪蹄", url:"https://jx.iztyy.com/svip/?url="},
 	{name:"盘古", url:"https://www.pangujiexi.cc/jiexi.php?url="},
