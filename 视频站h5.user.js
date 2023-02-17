@@ -487,7 +487,7 @@ const app = {
 			if (e && e != v) {
 				v = e;
 				cfg.btnPlay = cfg.btnNext = cfg.btnFP = cfg.btnFS = _fs = _fp = null;
-				if (!cfg.isLive && bRate) {
+				if (!cfg.isLive && GM_getValue('remberRate', true)) {
 					v.playbackRate = +localStorage.mvPlayRate || 1;
 					v.addEventListener('ratechange', ev => {
 						if (v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
@@ -593,7 +593,7 @@ const app = {
 		window.addEventListener('urlchange', async (info) => { //TM event: info.url
 			await sleep(600);
 			this.checkMV();
-			if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1.3;
+			if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
 			bus.$emit('urlchange');
 		});
 		if (top != self) {
