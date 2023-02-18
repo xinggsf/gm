@@ -835,7 +835,7 @@ let router = {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
 };
-router.nunuyy5 = router.dandanzan10 = router.dandanzan;
+router.nunuyingyuan = router.dandanzan10 = router.dandanzan;
 
 if (!router[u]) { //直播站点
 	router = {
