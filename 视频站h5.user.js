@@ -306,9 +306,9 @@ class FullPage {
 		do {
 			e = p;
 			p = e.parentNode;
-		} while (p !== by && p.clientWidth-wid < 5 && p.clientHeight-h < 5);
+		} while (p && p !== by && p.clientWidth-wid < 5 && p.clientHeight-h < 5);
 		//e 为返回值，在此之后不能变了
-		while (p !== by) p = p.parentNode || p.host;
+		// while (p !== by) p = p.parentNode || p.host;
 		return e;
 	}
 	static isFull(e) {
