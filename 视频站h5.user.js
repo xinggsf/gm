@@ -293,6 +293,7 @@ class FullPage {
 				position: fixed !important;
 				width: 100% !important;
 				height: 100% !important;
+				padding: 0 !important;
 				top: 0 !important;
 				left: 0 !important;
 				background: #000 !important;
@@ -817,7 +818,7 @@ let router = {
 	agemys() {
 		actList.set(78, _ => { location.href = location.href.replace(/\d+$/, s => ++s) });
 	},
-	dandanzan() {
+	dandanzan10() {
 		GM_registerMenuCommand('视频卡顿', () => {
 			'use strict';
 			v.pause();
@@ -835,7 +836,7 @@ let router = {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
 };
-router.nunuyingyuan = router.nunuyy5 = router.dandanzan10 = router.dandanzan;
+router.nunuyy5 = router.dandanzan10;
 
 if (!router[u]) { //直播站点
 	router = {
