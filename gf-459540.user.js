@@ -9,18 +9,16 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui/+esm
-// @require     https://unpkg.com/artplayer@4.6.2/dist/artplayer.js
-// @require     https://unpkg.com/hls.js@1.2.9/dist/hls.min.js
-// @require     https://unpkg.com/artplayer-plugin-hls-quality/dist/artplayer-plugin-hls-quality.js
+// @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
+// @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
+// @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
 // @version     1.16
-// @author      liuser
+// @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
 // ==/UserScript==
 
 (function () {
-    window.artplayerPluginHlsQuality = artplayerPluginHlsQuality;
-
     const _debug = !1;
     let videoName = "";
     let art = {}; //播放器
@@ -207,7 +205,7 @@
     }
 
     //播放按钮
-    class playButtonv3 {
+    class PlayBtn {
         constructor() {
             this.element = htmlToElement(`<xy-button type="primary">一键播放</xy-button>`);
             this.element.onclick = async () => {
@@ -238,7 +236,7 @@
             this.element.onclick = () => {
                 switchUrl(item.playList[seriesNum].url);
                 document.querySelector(".series-select-space").remove();
-                new seriesContainer(item.playList).init();
+                new SeriesContainer(item.playList).init();
             };
         }
         //sources 是[{name:"..资源",playList:[{name:"第一集",url:""}]}]
@@ -306,7 +304,7 @@
     }
 
     //剧集选择器
-    class seriesButton {
+    class SeriesButton {
         constructor(name, url, index) {
             this.element = htmlToElement(`<xy-button style="color:#a3a3a3" type="flat">${name}</xy-button>`);
             this.element.onclick = () => {
@@ -318,7 +316,7 @@
     }
 
     //剧集选择器的container
-    class seriesContainer {
+    class SeriesContainer {
         constructor(playList) {
             this.element = htmlToElement(`<div class="series-select-space" style="display:flex;flex-wrap:wrap;overflow:scroll;align-content: start;"></div>`);
             this.playList = playList;
@@ -326,7 +324,7 @@
 
         init() {
             for (let [index, item] of this.playList.entries()) {
-                let button = new seriesButton(item.name, item.url, index);
+                let button = new SeriesButton(item.name, item.url, index);
                 this.element.appendChild(button.element);
             }
             document.querySelector(".playSpace").appendChild(this.element);
@@ -359,7 +357,7 @@
             //第n集开始播放
             log(this.playList[seriesNum].url);
             initArt(this.playList[seriesNum].url);
-            new seriesContainer(this.playList).init();
+            new SeriesContainer(this.playList).init();
             new SourceListContainer(searchSource).renderList();
         }
     }
@@ -374,14 +372,10 @@
             playbackRate: true,
             autoSize: true,
             customType: {
-                m3u8(video, url) {
-                    if (art.hls) art.hls.destroy();
-                    art.hls = new Hls();
-                    art.hls.loadSource(url);
-                    art.hls.attachMedia(video);
-                    if (!video.src) {
-                        video.src = url;
-                    }
+                m3u8(e, url) {
+					if (!this.shaka) this.shaka = new shaka.Player(e);
+					this.shaka.load(url);
+					log(this, 'load:\n'+ url);
                 }
             }
         });
@@ -390,6 +384,7 @@
 			html: "分辨率",
 			position: "right",
 		});
+		art.once('destroy', () => art.shaka.destroy());
         art.on("video:loadedmetadata", () => {
             art.controls["resolution"].innerText = art.video.videoHeight + "P";
         });
@@ -588,11 +583,10 @@
         });
     }
 
-    async function main() {
+    function main() {
 		// addScript();
         GM_addStyle(css);
-        let playbuttonv3 = new playButtonv3();
-        playbuttonv3.mount()
+        new PlayBtn().mount();
     }
 
     main();
