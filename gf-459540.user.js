@@ -168,16 +168,14 @@
     const searchSource = [
         // {"name":"闪电资源","searchUrl":"https://sdzyapi.com/api.php/provide/vod/"},//不太好，格式经常有错
         // { "name": "卧龙资源", "searchUrl": "https://collect.wolongzyw.com/api.php/provide/vod/" }, 非常恶心的广告
-        { "name": "红牛资源", "searchUrl": "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
-        { "name": "光速资源", "searchUrl": "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
-        { "name": "ikun资源", "searchUrl": "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
-        // {"name":"天空资源","searchUrl":"https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},//有防火墙，垃圾
-        { "name": "非凡资源", "searchUrl": "http://cj.ffzyapi.com/api.php/provide/vod/" },
-        // { "name": "飞速资源", "searchUrl": "https://www.feisuzyapi.com/api.php/provide/vod/" },//经常作妖或者没有资源
-
-        { "name": "高清资源", "searchUrl": "https://api.1080zyku.com/inc/apijson.php/" },
-
         { "name": "量子资源", "searchUrl": "https://cj.lziapi.com/api.php/provide/vod/" },
+        { "name": "非凡资源", "searchUrl": "http://cj.ffzyapi.com/api.php/provide/vod/" },
+        { "name": "ikun资源", "searchUrl": "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
+        { "name": "光速资源", "searchUrl": "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
+        { "name": "高清资源", "searchUrl": "https://api.1080zyku.com/inc/apijson.php/" },
+        // { "name": "飞速资源", "searchUrl": "https://www.feisuzyapi.com/api.php/provide/vod/" },//经常作妖或者没有资源
+        { "name": "红牛资源", "searchUrl": "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
+        // {"name":"天空资源","searchUrl":"https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},//有防火墙，垃圾
         // { "name": "8090资源", "searchUrl": "https://api.yparse.com/api/json/m3u8/" },垃圾 可能有墙
         { "name": "百度云资源", "searchUrl": "https://api.apibdzy.com/api.php/provide/vod/" },
         // { "name": "酷点资源", "searchUrl": "https://kudian10.com/api.php/provide/vod/" },
@@ -200,7 +198,6 @@
     })();
 
     function tip(message) {
-        // unsafeWindow.XyMessage.info(message)
         XyMessage.info(message)
     }
 
@@ -292,7 +289,7 @@
                 } else {
                     speed = await testSpeed(tsList);
                 }
-                sortedSource.push({ ...item, "speed": speed });
+                sortedSource.push({...item, speed});
             }
 			sortedSource.sort((a, b) => b.speed > a.speed );
             log("排序完成...");
@@ -393,9 +390,6 @@
 
     function switchUrl(url) {
         art.switchUrl(url);
-        if (art.video.src != url) {
-            art.video.src = url;
-        }
     }
 
     //获取豆瓣影片名称
