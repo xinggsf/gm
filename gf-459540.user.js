@@ -194,8 +194,8 @@
 					<div class="artplayer-app"></div>
 				  </div>
 				<div class="show-series" style="color:#a3a3a3"></div>
-				<p style="color:#a3a3a3">默认会播放第一个搜索到的资源，如果无法播放请尝试切换其他资源，与此同时脚本正在疯狂测速，测速完成后排序第一的资源即为最快。</p>
-				<p style="color:#a3a3a3" >部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
+				<p style="color:#a3a3a3">默认会播放第一个搜索到的资源，如果无法播放请尝试切换其他资源。</p>
+				<p style="color:#a3a3a3">部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 				<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
 			</div>`
 			)).querySelector(".liu-closePlayer").onclick = function() {
