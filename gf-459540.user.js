@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
-// @version     1.16
+// @version     1.18
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -127,13 +127,22 @@
 	class PlayBtn {
 		constructor() {
 			const e = htmlToElement(`<xy-button type="primary">一键播放</xy-button>`);
-			$(isMobile ? ".sub-original-title" : "h1").appendChild(e)
-			.onclick = async () => {
+			$(isMobile ? ".sub-original-title" : "h1").appendChild(e);
+			const render = async (item) => {
+				const playList = await search(item.searchUrl);
+				if (playList == 0) return;
+				if (e.loading) {
+					e.loading = false;
+					new UI(playList);
+				}
+				//渲染资源列表
+				const btn = new SourceButton({ name: item.name, playList }).element;
+				$(".sourceButtonList").appendChild(btn);
+			};
+			e.onclick = function() {
 				e.loading = true;
 				tip("正在搜索");
-				const playList = await Promise.any(searchSource.map(item => search(item.searchUrl)));
-				e.loading = false;
-				new UI(playList);
+				searchSource.forEach(render);
 			};
 		}
 	}
@@ -149,20 +158,6 @@
 			};
 		}
 		//sources 是[{name:"..资源",playList:[{name:"第一集",url:""}]}]
-	}
-
-	//资源列表的container
-	class SourceListContainer {
-		constructor() {
-			searchSource.forEach(this.render);
-		}
-
-		//渲染资源列表
-		async render(item) {
-			const playList = await search(item.searchUrl);
-			const e = new SourceButton({ name: item.name, playList }).element;
-			$(".sourceButtonList").appendChild(e);
-		}
 	}
 
 	//剧集选择器
@@ -212,7 +207,6 @@
 			log(playList[seriesNum].url);
 			initArt(playList[seriesNum].url);
 			new SeriesContainer(playList);
-			new SourceListContainer();
 		}
 	}
 
