@@ -190,9 +190,9 @@
 			`<div class="liu-playContainer">
 				<a class="liu-closePlayer">关闭界面</a>
 				<div class="sourceButtonList"></div>
-				  <div class="playSpace" style="margin-top:1em;width:100%">
+				<div class="playSpace" style="margin-top:1em;width:100%">
 					<div class="artplayer-app"></div>
-				  </div>
+				</div>
 				<div class="show-series" style="color:#a3a3a3"></div>
 				<p style="color:#a3a3a3">默认会播放第一个搜索到的资源，如果无法播放请尝试切换其他资源。</p>
 				<p style="color:#a3a3a3">部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
