@@ -22,8 +22,7 @@
 	let videoName = "";
 	let art = {}; //播放器
 	let seriesNum = 0;
-	const $ = Artplayer.utils.query;
-	const isMobi = Artplayer.utils.isMobile;
+	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
 	const tip = (message) => XyMessage.info(message);
 
 	const log = (function() {
@@ -131,7 +130,7 @@
 	class PlayBtn {
 		constructor() {
 			const e = htmlToElement(`<xy-button type="primary">一键播放</xy-button>`);
-			$(isMobi ? ".sub-original-title" : "h1").appendChild(e)
+			$(isMobile ? ".sub-original-title" : "h1").appendChild(e)
 			.onclick = async () => {
 				e.loading = true;
 				tip("正在搜索");
@@ -213,7 +212,7 @@
 				<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
 			</div>`
 			)).querySelector(".liu-closePlayer").onclick = function() {
-				this.remove();
+				this.parentNode.remove();
 				document.body.style.overflow = 'auto';
 			};
 			document.body.style.overflow = 'hidden';
@@ -243,8 +242,8 @@
 				position: "right"
 			}],
 			customType: {
-				m3u8(e, url) {
-					if (!this.shaka) this.shaka = new shaka.Player(e);
+				m3u8(v, url) {
+					if (!this.shaka) this.shaka = new shaka.Player(v);
 					this.shaka.load(url);
 					log(this, 'load:\n'+ url);
 				}
@@ -259,12 +258,12 @@
 
 	//获取豆瓣影片名称
 	function getVideoNamev2() {
-		videoName = isMobi ? $(".sub-title").innerText : document.title.slice(0, -5);
+		videoName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
 		return videoName;
 	}
 
 	function getVideoYear(outYear) {
-		const e = $(isMobi ? ".sub-original-title" : ".year");
+		const e = $(isMobile ? ".sub-original-title" : ".year");
 		if (!e) {
 			log("获取年份失败，请检查！");
 			return 0;
