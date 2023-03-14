@@ -19,11 +19,12 @@
 
 (function () {
 	const _debug = !1;
-	let videoName = "";
 	let art = {}; //播放器
 	let seriesNum = 0;
 	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
 	const tip = (message) => XyMessage.info(message);
+	//获取豆瓣影片名称
+	const videoName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
 
 	const log = (function() {
 		if (_debug) return console.log.bind(console);
@@ -114,15 +115,11 @@
 				} catch (e) {
 					log("垃圾资源，解析失败了，可能有防火墙");
 					log(e);
-					resolve(0)
+					reject()
 				}
 			},
-			onerror(error) {
-				resolve(0)
-			},
-			ontimeout(out) {
-				resolve(0)
-			}
+			onerror: reject,
+			ontimeout: reject
 		});
 	});
 
@@ -134,14 +131,9 @@
 			.onclick = async () => {
 				e.loading = true;
 				tip("正在搜索");
-				for (let item of searchSource) {
-					let playList = await search(item.searchUrl, getVideoNamev2());
-					if (playList != 0) {
-						e.loading = false;
-						new UI(playList);
-						break
-					}
-				}
+				const playList = await Promise.any(searchSource.map(item => search(item.searchUrl)));
+				e.loading = false;
+				new UI(playList);
 			};
 		}
 	}
@@ -167,9 +159,9 @@
 
 		//渲染资源列表
 		async render(item) {
-			let playList = await search(item.searchUrl);
-			if (playList !== 0) $(".sourceButtonList")
-				.appendChild(new SourceButton({ name: item.name, playList }).element);
+			const playList = await search(item.searchUrl);
+			const e = new SourceButton({ name: item.name, playList }).element;
+			$(".sourceButtonList").appendChild(e);
 		}
 	}
 
@@ -254,12 +246,6 @@
 			art.controls.resolution.innerText = art.video.videoHeight + "P";
 		});
 		log(art)
-	}
-
-	//获取豆瓣影片名称
-	function getVideoNamev2() {
-		videoName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
-		return videoName;
 	}
 
 	function getVideoYear(outYear) {
