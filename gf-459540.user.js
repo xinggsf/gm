@@ -214,7 +214,16 @@
 			}],
 			customType: {
 				m3u8(v, url) {
-					if (!this.shaka) this.shaka = new shaka.Player(v);
+					if (!this.shaka) {
+						this.shaka = new shaka.Player(v);
+						this.shaka.configure({
+							streaming: {
+								bufferingGoal: 170,
+								// rebufferingGoal: 15,
+								bufferBehind: 150,
+							}
+						});
+					}
 					this.shaka.load(url);
 					log(this, 'load:\n'+ url);
 				}
