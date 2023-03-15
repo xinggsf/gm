@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
-// @version     1.18
+// @version     2.2
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -25,6 +25,7 @@
 	const tip = (message) => XyMessage.info(message);
 	//获取豆瓣影片名称
 	const videoName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
+	const videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
 
 	const log = (function() {
 		if (_debug) return console.log.bind(console);
@@ -68,38 +69,26 @@
 
 	//处理搜索到的结果:从返回结果中找到对应片子
 	function handleResponse(r) {
-		if (!r || r.list.length == 0) {
+		if (!r?.list?.length) {
 			log("未搜索到结果");
 			return 0
 		}
-		let video, found = false;
-		for (let item of r.list) {
-			log("正在对比剧集年份");
-			let yearEqual = getVideoYear(item.vod_year);
-			if (yearEqual === 0) return 0;
-			if (yearEqual) {
-				video = item;
-				found = true;
-				break
-			}
-		}
-		if (found == false) {
+		log("正在对比剧集年份");
+		const video = r.list.find(k => k.vod_year == videoYear && k.vod_play_url);
+		if (!video) {
 			log("没有找到匹配剧集的影片，怎么回事哟！");
 			return 0
 		}
 
-		let playList = video.vod_play_url.split("$$$").filter(str => str.includes("m3u8"));
-		if (playList.length == 0) {
-			log("没有m3u8资源，无法测速，无法播放");
+		const a = video.vod_play_url.split("$$$").filter(str => str.includes(".m3u8"));
+		if (!a.length) {
+			log("没有m3u8资源，无法播放");
 			return 0
 		}
-		playList = playList[0].split("#");
-		playList = playList.map(str => {
+		return a[0].split("#").map(str => {
 			let index = str.indexOf("$");
 			return { "name": str.slice(0, index), "url": str.slice(index + 1) }
 		});
-
-		return playList
 	}
 
 	//到电影网站搜索电影
@@ -110,16 +99,10 @@
 			timeout: 3000,
 			responseType: 'json',
 			onload(r) {
-				try {
-					resolve(handleResponse(r.response, videoName));
-				} catch (e) {
-					log("垃圾资源，解析失败了，可能有防火墙");
-					log(e);
-					reject()
-				}
+				resolve(handleResponse(r.response));
 			},
-			onerror: reject,
-			ontimeout: reject
+			onerror() {resolve(0)},
+			ontimeout() {resolve(0)}
 		});
 	});
 
@@ -130,7 +113,10 @@
 			$(isMobile ? ".sub-original-title" : "h1").appendChild(e);
 			const render = async (item) => {
 				const playList = await search(item.searchUrl);
-				if (playList == 0) return;
+				if (playList == 0) {
+					log(item.name +"获取或解析失败，可能有防火墙");
+					return;
+				}
 				if (e.loading) {
 					e.loading = false;
 					new UI(playList);
@@ -240,15 +226,6 @@
 			art.controls.resolution.innerText = art.video.videoHeight + "P";
 		});
 		log(art)
-	}
-
-	function getVideoYear(outYear) {
-		const e = $(isMobile ? ".sub-original-title" : ".year");
-		if (!e) {
-			log("获取年份失败，请检查！");
-			return 0;
-		}
-		return e.innerText.includes(outYear);
 	}
 
 	GM_addStyle(
