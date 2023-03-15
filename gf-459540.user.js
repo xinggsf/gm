@@ -7,7 +7,7 @@
 // @grant       GM_xmlhttpRequest
 // @connect     *
 // @run-at      document-end
-// @require     https://cdn.jsdelivr.net/npm/xy-ui/+esm
+// @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
@@ -180,8 +180,7 @@
 					<div class="artplayer-app"></div>
 				</div>
 				<div class="show-series" style="color:#a3a3a3"></div>
-				<p style="color:#a3a3a3">默认会播放第一个搜索到的资源，如果无法播放请尝试切换其他资源。</p>
-				<p style="color:#a3a3a3">部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
+				<p style="color:#a3a3a3">默认会播放第一个搜索到的资源，如果无法播放请尝试切换其他资源。<br> 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 				<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
 			</div>`
 			)).querySelector(".liu-closePlayer").onclick = function() {
