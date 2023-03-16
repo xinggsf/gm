@@ -10,7 +10,7 @@
 // @author      ray
 // ==/UserScript==
 
-const buffSize = 180; // 缓存区大小，单位秒
+const buffSize = 80; // 缓存区大小，单位秒
 const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) });
 (async function exec() {
     if ( !unsafeWindow.player ) {
