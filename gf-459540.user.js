@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
-// @version     2.2
+// @version     2.3
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -19,6 +19,7 @@
 
 (function () {
 	const _debug = !1;
+	const skBuffSize = 80; // 视频缓存区大小，单位秒
 	let art = {}; //播放器
 	let seriesNum = 0;
 	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
@@ -218,9 +219,9 @@
 						this.shaka = new shaka.Player(v);
 						this.shaka.configure({
 							streaming: {
-								bufferingGoal: 160,
+								bufferingGoal: skBuffSize +9,
 								// rebufferingGoal: 15,
-								bufferBehind: 150,
+								bufferBehind: skBuffSize,
 							}
 						});
 					}
