@@ -127,7 +127,7 @@
 			};
 			e.onclick = function() {
 				e.loading = true;
-				tip("正在搜索");
+				tip("正在获取影视URL");
 				searchSource.forEach(render);
 			};
 		}
@@ -218,7 +218,7 @@
 						this.shaka = new shaka.Player(v);
 						this.shaka.configure({
 							streaming: {
-								bufferingGoal: 170,
+								bufferingGoal: 160,
 								// rebufferingGoal: 15,
 								bufferBehind: 150,
 							}
