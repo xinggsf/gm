@@ -231,10 +231,14 @@
 			}
 		});
 		art.once('destroy', () => art.shaka.destroy());
-		art.on("video:loadedmetadata", () => {
+		const store = {};
+		art.on("url", () => {
+			Object.assign(store, localStorage);
+		});
+		art.on("video:canplay", () => {
+			Object.assign(localStorage, store);
 			art.controls.resolution.innerText = art.video.videoHeight + "P";
 		});
-		log(art)
 	}
 
 	GM_addStyle(
