@@ -24,6 +24,7 @@
 	let seriesNum = 0;
 	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
 	const tip = (message) => XyMessage.info(message);
+	const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) });
 	//获取豆瓣影片名称
 	const videoName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
 	const videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
@@ -198,6 +199,7 @@
 
 	//初始化播放器
 	function initArt(url) {
+		let playRate;
 		art = new Artplayer({
 			container: ".artplayer-app",
 			url, pip: true,
@@ -225,19 +227,17 @@
 							}
 						});
 					}
+					playRate = v.playbackRate || 1;
 					this.shaka.load(url);
 					log(this, 'load:\n'+ url);
 				}
 			}
 		});
 		art.once('destroy', () => art.shaka.destroy());
-		const store = {};
-		art.on("url", () => {
-			Object.assign(store, localStorage);
-		});
-		art.on("video:canplay", () => {
-			Object.assign(localStorage, store);
+		art.on("video:loadedmetadata", async() => {
 			art.controls.resolution.innerText = art.video.videoHeight + "P";
+			await sleep(1800);
+			art.playbackRate = playRate;
 		});
 	}
 
