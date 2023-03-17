@@ -492,7 +492,7 @@ const app = {
 				if (!cfg.isLive && GM_getValue('remberRate', true)) {
 					v.playbackRate = +localStorage.mvPlayRate || 1;
 					v.addEventListener('ratechange', ev => {
-						if (v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
+						if (v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 					});
 				}
 				this.setShell();
@@ -613,7 +613,7 @@ const app = {
 			if (!cfg.isLive && bRate) {
 				v.playbackRate = +localStorage.mvPlayRate || 1;
 				v.addEventListener('ratechange', ev => {
-					if (v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
+					if (v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
 			}
 			this.checkMV();
