@@ -23,7 +23,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.4
+// @version    1.9.5
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -475,7 +475,7 @@ const app = {
 		!cfg.disableDBLClick && e.addEventListener('dblclick', fn);
 	},
 	setShell() {
-		const e = this.getDPlayer() || this.getVjsPlayer() ||
+		const e = this.getDPlayer() || this.getArtplayer() || this.getVjsPlayer() ||
 			(cfg.shellCSS && q(cfg.shellCSS)) ||
 			(top != self ? by : FullPage.getPlayerContainer(v));
 		if (e && cfg.mvShell !== e) {
@@ -504,6 +504,15 @@ const app = {
 		}
 		this.checkUI();
 		return v;
+	},
+	getArtplayer() {
+		const e = v.closest('.artplayer-app');
+		if (e) {
+			cfg.btnFP = q('.art-control-fullscreenWeb', e);
+			cfg.btnFS = q('.art-control-fullscreen', e);
+			e.closest('body > *').classList.add('gm-dp-zTop');
+		}
+		return e;
 	},
 	getDPlayer() {
 		const e = v.closest('.dplayer');
