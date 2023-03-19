@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
-// @version     2.3
+// @version     2.4
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -127,10 +127,14 @@
 				const btn = new SourceButton({ name: item.name, playList }).element;
 				$(".sourceButtonList").appendChild(btn);
 			};
-			e.onclick = function() {
+			e.onclick = async function() {
 				e.loading = true;
 				tip("正在获取影视URL");
-				searchSource.forEach(render);
+				await Promise.allSettled(searchSource.map(render));
+				if (!$('body > .liu-playContainer')) {
+					e.loading = !1;
+					tip("未能获取影视URL");
+				}
 			};
 		}
 	}
