@@ -506,6 +506,7 @@ const app = {
 		return v;
 	},
 	getArtplayer() {
+		if (!v.matches('.art-video')) return !1;
 		const e = v.closest('.artplayer-app');
 		if (e) {
 			cfg.btnFP = q('.art-control-fullscreenWeb', e);
@@ -515,6 +516,7 @@ const app = {
 		return e;
 	},
 	getDPlayer() {
+		if (!v.matches('.dplayer-video')) return !1;
 		const e = v.closest('.dplayer');
 		if (e) {
 			cfg.btnFP = q('.dplayer-full-in-icon > span', e);
