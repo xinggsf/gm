@@ -186,8 +186,8 @@
 					<div class="artplayer-app"></div>
 				</div>
 				<div class="show-series" style="color:#a3a3a3"></div>
-				<p style="color:#a3a3a3">默认会播放第一个搜索到的资源，如果无法播放请尝试切换其他资源。<br> 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 				<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
+				<p style="color:#a3a3a3">默认播放第一个搜索到的资源，若无法播放请切换其他资源。部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 			</div>`
 			)).querySelector(".liu-closePlayer").onclick = function() {
 				this.parentNode.remove();
@@ -338,7 +338,7 @@ xy-button{
 }
 .playSpace{
 	display: grid;
-	height:500px;
+	height:85vh;
 	grid-template-rows: 1fr;
 	grid-template-columns: 70% 30%;
 	grid-row-gap:0px;
@@ -346,15 +346,15 @@ xy-button{
 }
 .series-select-space::-webkit-scrollbar {display:none}
 .series-select-space{
-	height:500px;
+	height:85vh;
 }
 .artplayer-app{
-	height:500px;
+	height:85vh;
 }
 @media screen and (max-width: 1025px) {
 	.playSpace{
 		display: grid;
-		height:700px;
+		height:85vh;
 		grid-template-rows: 1fr 1fr;
 		grid-template-columns:1fr;
 		grid-row-gap:0px;
@@ -364,7 +364,7 @@ xy-button{
 		height:200px;
 	}
 	.artplayer-app{
-		height:400px;
+		height:85vh;
 	}
 }`
 	);
