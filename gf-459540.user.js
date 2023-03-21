@@ -187,7 +187,7 @@
 				</div>
 				<div class="show-series" style="color:#a3a3a3"></div>
 				<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
-				<p style="color:#a3a3a3">默认播放第一个搜索到的资源，若无法播放请切换其他资源。部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
+				<p style="color:#a3a3a3">默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 			</div>`
 			)).querySelector(".liu-closePlayer").onclick = function() {
 				this.parentNode.remove();
