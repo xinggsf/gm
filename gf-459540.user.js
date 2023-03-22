@@ -209,7 +209,7 @@
 		art = new Artplayer({
 			container: ".artplayer-app",
 			url, pip: true,
-			autoHeight: true,
+			autoSize: true,
 			fullscreen: true,
 			fullscreenWeb: true,
 			screenshot: true,
@@ -342,14 +342,14 @@ xy-button{
 	display: grid;
 	height:85vh;
 	grid-template-rows: 1fr;
-	grid-template-columns: 70% 30%;
+	grid-template-columns: calc(100vw - 468px) 468px;
 	grid-row-gap:0px;
 	grid-column-gap:0px;
 }
 .series-select-space::-webkit-scrollbar {display:none}
 .series-select-space{
 	height:85vh;
-    width:auto;
+    width:468px;
 	display:flex;
 	flex-wrap:wrap;
 	overflow:scroll;
@@ -357,6 +357,7 @@ xy-button{
 }
 .artplayer-app{
 	height:85vh;
+    width:calc(100vw - 468px);
 }
 @media screen and (max-width: 1025px) {
 	.playSpace{
