@@ -168,7 +168,7 @@
 	//剧集选择器的container
 	class SeriesContainer {
 		constructor(playList) {
-			const e = htmlToElement(`<div class="series-select-space" style="display:flex;flex-wrap:wrap;overflow:scroll;align-content: start;"></div>`);
+			const e = htmlToElement(`<div class="series-select-space"></div>`);
 			for (let [index, item] of playList.entries()) {
 				new SeriesButton(e, item.name, item.url, index);
 			}
@@ -185,8 +185,10 @@
 				<div class="playSpace" style="margin-top:1em;width:100%">
 					<div class="artplayer-app"></div>
 				</div>
-				<div class="show-series" style="color:#a3a3a3"></div>
-				<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
+				<div>
+					<span class="show-series" style="color:#a3a3a3"></span>
+					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="float:right;color:#4aa150">❤️支持开发者</a>
+				</div>
 				<p style="color:#a3a3a3">默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 			</div>`
 			)).querySelector(".liu-closePlayer").onclick = function() {
@@ -207,7 +209,7 @@
 		art = new Artplayer({
 			container: ".artplayer-app",
 			url, pip: true,
-			autoSize: true,
+			autoHeight: true,
 			fullscreen: true,
 			fullscreenWeb: true,
 			screenshot: true,
@@ -347,6 +349,11 @@ xy-button{
 .series-select-space::-webkit-scrollbar {display:none}
 .series-select-space{
 	height:85vh;
+    width:auto;
+	display:flex;
+	flex-wrap:wrap;
+	overflow:scroll;
+	align-content:start;
 }
 .artplayer-app{
 	height:85vh;
