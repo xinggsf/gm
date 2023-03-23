@@ -159,6 +159,7 @@
 				`<xy-button type="flat">${name}</xy-button>`
 			));
 			e.onclick = function() {
+				if (this.matches('.play')) return;
 				seriesNum = index;
 				art.switchUrl(url);
 				$('.play', this.parentNode)?.classList.remove('play');
@@ -176,6 +177,7 @@
 				new SeriesButton(e, item.name, item.url, index);
 			}
 			$(".playSpace").appendChild(e);
+			$(".next-series").hidden = playList.length < 2;
 		}
 	}
 
@@ -190,7 +192,8 @@
 				</div>
 				<div>
 					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
-					<a class="next-series" style="float:right;color:#4aa150">下一集</a>
+					<span style="width:58vw; display:inline-block;"></span>
+					<a class="next-series" style="color:#4aa150">下一集</a>
 				</div>
 				<p style="color:#a3a3a3">默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 			</div>`
