@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
-// @version     2.4
+// @version     2.5
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -155,13 +155,16 @@
 	//剧集选择器
 	class SeriesButton {
 		constructor(pNode, name, url, index) {
-			pNode.appendChild(htmlToElement(
-				`<xy-button style="color:#a3a3a3" type="flat">${name}</xy-button>`
-			)).onclick = () => {
+			const e = pNode.appendChild(htmlToElement(
+				`<xy-button type="flat">${name}</xy-button>`
+			));
+			e.onclick = function() {
 				seriesNum = index;
 				art.switchUrl(url);
-				$(".show-series").innerText = `正在播放第${index + 1}集`;
+				$('.play', this.parentNode)?.classList.remove('play');
+				this.classList.add('play');
 			};
+			if (seriesNum == index) e.classList.add('play');
 		}
 	}
 
@@ -186,14 +189,17 @@
 					<div class="artplayer-app"></div>
 				</div>
 				<div>
-					<span class="show-series" style="color:#a3a3a3"></span>
-					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="float:right;color:#4aa150">❤️支持开发者</a>
+					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
+					<a class="next-series" style="float:right;color:#4aa150">下一集</a>
 				</div>
 				<p style="color:#a3a3a3">默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 			</div>`
 			)).querySelector(".liu-closePlayer").onclick = function() {
 				this.parentNode.remove();
 				document.body.style.overflow = 'auto';
+			};
+			$(".next-series").onclick = function() {
+				$('.play + xy-button').click();
 			};
 			document.body.style.overflow = 'hidden';
 			//第n集开始播放
@@ -337,6 +343,13 @@ xy-button{
 	margin:0em 1em 0em 0em;
 	height:1.5em;
 	cursor:pointer;
+}
+
+.series-select-space xy-button.play{
+	color:purple;
+}
+.series-select-space xy-button{
+	color:#a3a3a3;
 }
 .playSpace{
 	display: grid;
