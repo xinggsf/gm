@@ -182,7 +182,7 @@ const doClick = e => {
 	if (typeof e === 'string') e = q(e);
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 };
-const clickDualButton = btn => { // 2合1 按钮
+const clickDualButton = btn => { // 2合1 按钮 Element.previousElementSibling
 	!btn.nextSibling || getStyle(btn, 'display') !== 'none' ? doClick(btn) : doClick(btn.nextSibling);
 };
 const polling = (cb, condition, stop = true) => {
@@ -341,7 +341,7 @@ const cacheMV = {
 		const buf = v.buffered;
 		const i = buf.length - 1;
 		this.iEnd = buf.end(i);
-		return buf.start(0) >= this.playPos || this.iEnd > v.duration -55;
+		return this.mode ? this.iEnd > v.duration -55 : buf.start(0) >= this.playPos || this.iEnd > v.duration -55;
 	},
 	finish() {
 		v.removeEventListener('canplaythrough', this.onChache);
@@ -360,6 +360,7 @@ const cacheMV = {
 			alert('直接媒体类型（如MP4格式）缓存无效果！');
 			return;
 		}
+		this.mode = confirm('视频切片数据能否缓存？合金H5有强制缓存切片数据的功能');
 		this.chached = true; //正在缓存
 		v.pause();
 		this.rawPlay = HTMLMediaElement.prototype.play;
@@ -368,7 +369,6 @@ const cacheMV = {
 		v.addEventListener('canplaythrough', this.onChache);
 		this.check();
 		v.currentTime = this.iEnd;
-		alert('开始缓存');
 	}
 };
 cacheMV.onChache = cacheMV.onChache.bind(cacheMV);
