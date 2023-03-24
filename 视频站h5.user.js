@@ -360,7 +360,7 @@ const cacheMV = {
 			alert('直接媒体类型（如MP4格式）缓存无效果！');
 			return;
 		}
-		this.mode = confirm('视频切片数据能否缓存？合金H5有强制缓存切片数据的功能');
+		this.mode = confirm('视频切片数据能否缓存？检测方法：刷新页面，已观看视频片段不产生网络流量则可缓存。如果能缓存视频切片，选择确认直接缓存全部视频时段；点取消则按默认缓冲区大小进行缓冲。');
 		this.chached = true; //正在缓存
 		v.pause();
 		this.rawPlay = HTMLMediaElement.prototype.play;
@@ -864,8 +864,9 @@ if (!router[u]) { //直播站点
 				path != '/' && $(ev => {
 					q('.u-specialStateInput').checked = true;
 				});
-			} else bus.$on('addShadowRoot', function(r) {
+			} else bus.$on('addShadowRoot', async function(r) {
 				if (r.host.matches('#demandcontroller-bar')) {
+					await sleep(600);
 					cfg.shellCSS = 'div[fullscreen].video';
 					cfg.btnFP = q('.ControllerBar-PageFull', r);
 					cfg.btnFS = q('.ControllerBar-WindowFull', r);
