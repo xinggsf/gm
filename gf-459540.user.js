@@ -264,7 +264,7 @@
 .liu-playContainer{
 	width:100%;
 	height:100%;
-	background-color:#121212;
+	background-color:#222;
 	position:fixed;
 	top:0;
 	z-index:11;
@@ -343,7 +343,6 @@
 	transition: all 0.5s;
 }
 xy-button{
-	margin:0em 1em 0em 0em;
 	height:1.5em;
 	cursor:pointer;
 }
@@ -352,43 +351,25 @@ xy-button{
 	color:purple;
 }
 .series-select-space xy-button{
-	color:#a3a3a3;
+	color:#aaa;
 }
 .playSpace{
 	display: grid;
-	height:85vh;
+	height:86vh;
 	grid-template-rows: 1fr;
-	grid-template-columns: calc(100vw - 468px) 468px;
-	grid-row-gap:0px;
-	grid-column-gap:0px;
+	grid-template-columns: calc(100vw - 28em) 28em;
+	grid-gap:0;
 }
-.series-select-space::-webkit-scrollbar {display:none}
 .series-select-space{
-	height:85vh;
-    width:468px;
-	display:flex;
-	flex-wrap:wrap;
-	overflow:scroll;
-	align-content:start;
-}
-.artplayer-app{
-	height:85vh;
-    width:calc(100vw - 468px);
+	display: grid;
+	grid-gap: 1px;
+	grid-auto-rows: 1.8em;
+	grid-template-columns: auto auto auto auto auto;
 }
 @media screen and (max-width: 1025px) {
 	.playSpace{
-		display: grid;
-		height:85vh;
 		grid-template-rows: 1fr 1fr;
 		grid-template-columns:1fr;
-		grid-row-gap:0px;
-		grid-column-gap:0px;
-	}
-	.series-select-space{
-		height:200px;
-	}
-	.artplayer-app{
-		height:85vh;
 	}
 }`
 	);
