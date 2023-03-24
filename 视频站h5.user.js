@@ -77,7 +77,6 @@ const observeOpt = {childList : true, subtree : true};
 const noopFn = function(){};
 const validEl = e => e && e.offsetWidth > 1;
 const q = (css, p = d) => p.querySelector(css);
-const delElem = e => e.remove();
 const r1 = (regp, s) => regp.test(s) && RegExp.$1;
 const log = console.log.bind(
 	console,
@@ -355,7 +354,7 @@ const cacheMV = {
 		else v.currentTime = this.iEnd;
 	},
 	exec() {
-		if (cfg.isLive || !v || this.chached) return;
+		if (cfg.isLive || !v) return;
 		if (v.src.startsWith('http')) {
 			alert('直接媒体类型（如MP4格式）缓存无效果！');
 			return;
