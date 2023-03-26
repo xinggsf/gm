@@ -362,7 +362,7 @@ xy-button{
 }
 .series-select-space{
 	display: grid;
-	grid-gap: 1px;
+	grid-gap: 0;
 	grid-auto-rows: 1.8em;
 	grid-template-columns: auto auto auto auto auto;
 }
