@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
-// @version     2.6
+// @version     2.7
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -183,7 +183,7 @@
 
 	class UI {
 		constructor(playList) {
-			document.body.appendChild(htmlToElement(
+			const e = document.body.appendChild(htmlToElement(
 			`<div class="liu-playContainer">
 				<a class="liu-closePlayer">关闭界面</a>
 				<div class="sourceButtonList"></div>
@@ -195,16 +195,18 @@
 					<span style="width:58vw; display:inline-block;"></span>
 					<a class="next-series" style="color:#4aa150">下一集</a>
 				</div>
-				<p style="color:#a3a3a3">默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
+				<p style="color:#aaa;margin-block:0;">默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 			</div>`
-			)).querySelector(".liu-closePlayer").onclick = function() {
+			));
+			$(".liu-closePlayer",e).onclick = function() {
 				this.parentNode.remove();
 				document.body.style.overflow = 'auto';
 			};
-			$(".next-series").onclick = function() {
-				$('.play + xy-button').click();
-			};
 			document.body.style.overflow = 'hidden';
+			$(".next-series",e).onclick = function() {
+				$('.play + xy-button',e).click();
+				// art.switchUrl(playList[++seriesNum].url);
+			};
 			//第n集开始播放
 			log(playList[seriesNum].url);
 			initArt(playList[seriesNum].url);
@@ -218,7 +220,6 @@
 		art = new Artplayer({
 			container: ".artplayer-app",
 			url, pip: true,
-			autoSize: true,
 			fullscreen: true,
 			fullscreenWeb: true,
 			screenshot: true,
@@ -228,7 +229,25 @@
 			controls:[{
 				name: "resolution",
 				html: "分辨率",
-				position: "right"
+				position: "right",
+				mounted(el) {
+					log('mounted', this, el);
+					this.proxy(el, 'contextmenu', ev => {
+						log('Disable contextmenu', this, ev);
+						ev.stopPropagation();
+						ev.preventDefault();
+					});
+					this.proxy(el, 'mousedown', ev => {
+						log('mousedown', this, ev);
+						ev.stopPropagation();
+						ev.preventDefault();
+						if (ev.button>0) this.currentTime += ev.button == 1 ? 1 : 20;
+					});
+				},
+				click(controls, ev) {
+					// this.info.show = !this.info.show;
+					this.currentTime += 5;
+				}
 			}],
 			customType: {
 				m3u8(v, url) {
@@ -242,7 +261,7 @@
 							}
 						});
 					}
-					playRate = v.playbackRate || 1;
+					playRate = localStorage.mvPlayRate || 1;
 					this.shaka.load(url);
 					log(this, 'load:\n'+ url);
 				}
@@ -251,7 +270,7 @@
 		art.once('destroy', () => art.shaka.destroy());
 		art.on("video:loadedmetadata", async() => {
 			art.controls.resolution.innerText = art.video.videoHeight + "P";
-			await sleep(1800);
+			await sleep(2800);
 			art.playbackRate = playRate;
 		});
 	}

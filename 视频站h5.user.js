@@ -841,6 +841,9 @@ let router = {
 		});
 		cfg.nextCSS = '.playlist .on + li a';
 	},
+	douban() {
+		cfg.nextCSS = 'a.next-series';
+	},
 	hanmidy() {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
