@@ -232,15 +232,15 @@
 				position: "right",
 				mounted(el) {
 					log('mounted', this, el);
-					this.proxy(el, 'contextmenu', ev => {
-						log('Disable contextmenu', this, ev);
+					const fn = ev => {
 						ev.stopPropagation();
 						ev.preventDefault();
-					});
+					};
+					this.proxy(el, 'contextmenu', fn);
+					this.proxy(el, 'dblclick', fn);
 					this.proxy(el, 'mousedown', ev => {
 						log('mousedown', this, ev);
-						ev.stopPropagation();
-						ev.preventDefault();
+						fn(ev);
 						if (ev.button>0) this.currentTime += ev.button == 1 ? 1 : 20;
 					});
 				},
