@@ -217,7 +217,7 @@
 	const artPlus = (option) => (art) => {
 		// 阻止双击、右键的默认事件
 		const preventEvent = ev => {
-			if (!ev.target.closest('.art-control')) return;
+			if (!ev.originalTarget.closest('.art-control')) return;
 			ev.stopPropagation();
 			ev.preventDefault();
 		};
