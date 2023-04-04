@@ -214,6 +214,62 @@
 		}
 	}
 
+	const artPlus = (option) => (art) => {
+		// 阻止双击、右键的默认事件
+		const preventEvent = ev => {
+			if (!ev.target.closest('.art-control')) return;
+			ev.stopPropagation();
+			ev.preventDefault();
+		};
+		art.controls.add({
+			name: "forward",
+			html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAt0lEQVQ4je3RIW5CQRSF4RGkTTCY2qYJugkOgyZB1SGpRXcFTVCwCBBIwgowaAyOBMMy0F8FnYQ88uY+Udlfn/xzz5mU/gnBEi9BZo9+JIIzPgIRfEWizCIQwRbdSAQnDAqizCQSZWaBCDboRKJ8Xa8gyoxbtePdaKeUnoLMLVd4ZdWg2gFvddWu+Gww9rw09g6v1bsrogtGD+XuAt91A9yJ1niuCx0xLC35K5qWMgnhr+A9yvwZP8M3r9EcsIGfAAAAAElFTkSuQmCC" alt="png">',
+			position: "left",
+			tooltip: "三键快进",
+			mounted(el) {
+				art.proxy(art.template.$controls, 'contextmenu', preventEvent);
+				art.proxy(art.template.$controls, 'dblclick', preventEvent);
+				// el.nextElementSibling.after(el);
+				art.controls.playAndPause.after(el);
+				art.proxy(el, 'mousedown', ev => {
+					if (art.duration && ev.button>0) art.currentTime += ev.button == 1 ? 1 : 20;
+				});
+			},
+			click(controls, ev) {
+				if (art.duration) art.currentTime += 5;
+			}
+		});
+		art.controls.add({
+			name: "rewind",
+			html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAABDElEQVQ4T82ToUpFQRRF1xQFi8UqikUQs8VkEEwWESwqJqsWXxLF5DXYRFAUMRj8ivcR/s+SeQxy370zd0AMnjhs1jn77DmBP6pQ46jrIYSvIZ06MwhST4GDEMJWCaRuA00WpM4Cz8AhMC6B1CvgOjbpgdQd4AFYSVP0QOoi8ALEaSY1BVJvgVHHxhRIPQIegbm2bgJSl4BPYCOzix+Q+gqc5PYV1GPgbSCVMXCRGi2XdBG0n0QlTQSdAR/AWhGUrM2nlCK0W21rN8Bl1lr7UY1xv1eWvQk8dafLxR9jvwP2SvEnF03aXT/+znTnwH3lQ+6mpqu1E4nfoamcyELxRGqHXF32bwDZE/kXoG+X6GpTjAuIwwAAAABJRU5ErkJggg==" alt="png">',
+			position: "left",
+			tooltip: "三键快退",
+			mounted(el) {
+				art.controls.playAndPause.before(el);
+				art.proxy(el, 'mousedown', ev => {
+					if (art.duration && ev.button>0) art.currentTime -= ev.button == 1 ? 1 : 20;
+				});
+			},
+			click(controls, ev) {
+				if (art.duration) art.currentTime -= 5;
+			}
+		});
+		art.controls.add({
+			name: "resolution",
+			html: "分辨率",
+			position: "right",
+			click(controls, ev) {
+				art.info.show = !art.info.show;
+			}
+		});
+
+		art.on("video:loadedmetadata", () => {
+			art.controls.resolution.innerText = art.video.videoHeight + "P";
+		});
+
+		return {name: 'artPlus'};
+	};
+
 	//初始化播放器
 	function initArt(url) {
 		let playRate;
@@ -226,29 +282,7 @@
 			hotkey: true,
 			airplay: true,
 			playbackRate: true,
-			controls:[{
-				name: "resolution",
-				html: "分辨率",
-				position: "right",
-				mounted(el) {
-					log('mounted', this, el);
-					const fn = ev => {
-						ev.stopPropagation();
-						ev.preventDefault();
-					};
-					this.proxy(el, 'contextmenu', fn);
-					this.proxy(el, 'dblclick', fn);
-					this.proxy(el, 'mousedown', ev => {
-						log('mousedown', this, ev);
-						fn(ev);
-						if (ev.button>0) this.currentTime += ev.button == 1 ? 1 : 20;
-					});
-				},
-				click(controls, ev) {
-					// this.info.show = !this.info.show;
-					this.currentTime += 5;
-				}
-			}],
+			plugins: [artPlus()],
 			customType: {
 				m3u8(v, url) {
 					if (!this.shaka) {
@@ -261,16 +295,15 @@
 							}
 						});
 					}
-					playRate = localStorage.mvPlayRate || 1;
+					playRate = +localStorage.mvPlayRate || 1;
 					this.shaka.load(url);
 					log(this, 'load:\n'+ url);
 				}
 			}
 		});
 		art.once('destroy', () => art.shaka.destroy());
-		art.on("video:loadedmetadata", async() => {
-			art.controls.resolution.innerText = art.video.videoHeight + "P";
-			await sleep(2800);
+		// art.plugins.add(artPlus());
+		art.on("video:canplaythrough", () => {
 			art.playbackRate = playRate;
 		});
 	}
