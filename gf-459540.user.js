@@ -303,7 +303,7 @@
 		});
 		art.once('destroy', () => art.shaka.destroy());
 		// art.plugins.add(artPlus());
-		art.on("video:canplaythrough", () => {
+		art.once("video:canplaythrough", () => {
 			art.playbackRate = playRate;
 		});
 	}
