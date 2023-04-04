@@ -532,7 +532,7 @@ const app = {
 	},
 	hotKey(e) {
 		const t = e.target;
-		if (e.ctrlKey || e.altKey || t.contentEditable=='true' ||
+		if (e.isComposing || e.ctrlKey || e.altKey || t.contentEditable=='true' ||
 			/INPUT|TEXTAREA|SELECT/.test(t.nodeName)) return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
 		if (cfg.isLive && [37,39,78,77,88,67,90].includes(e.keyCode)) return;
