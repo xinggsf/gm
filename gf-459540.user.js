@@ -215,9 +215,9 @@
 	}
 
 	const artPlus = (option) => (art) => {
-		// 阻止双击、右键的默认事件
+		// 阻止右键菜单
 		const preventEvent = ev => {
-			if (!ev.originalTarget.closest('.art-control')) return;
+			if (!ev.target.closest('.art-control')) return;
 			ev.stopPropagation();
 			ev.preventDefault();
 		};
@@ -227,9 +227,7 @@
 			position: "left",
 			tooltip: "三键快进",
 			mounted(el) {
-				art.proxy(art.template.$controls, 'contextmenu', preventEvent);
-				art.proxy(art.template.$controls, 'dblclick', preventEvent);
-				// el.nextElementSibling.after(el);
+				art.template.$controls.addEventListener('contextmenu', preventEvent);
 				art.controls.playAndPause.after(el);
 				art.proxy(el, 'mousedown', ev => {
 					if (art.duration && ev.button>0) art.currentTime += ev.button == 1 ? 1 : 20;
