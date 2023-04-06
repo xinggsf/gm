@@ -222,7 +222,7 @@
 			ev.preventDefault();
 		};
 		art.controls.add({
-			name: "forward",
+			name: "forward",//art.icons.forward
 			html: '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAt0lEQVQ4je3RIW5CQRSF4RGkTTCY2qYJugkOgyZB1SGpRXcFTVCwCBBIwgowaAyOBMMy0F8FnYQ88uY+Udlfn/xzz5mU/gnBEi9BZo9+JIIzPgIRfEWizCIQwRbdSAQnDAqizCQSZWaBCDboRKJ8Xa8gyoxbtePdaKeUnoLMLVd4ZdWg2gFvddWu+Gww9rw09g6v1bsrogtGD+XuAt91A9yJ1niuCx0xLC35K5qWMgnhr+A9yvwZP8M3r9EcsIGfAAAAAElFTkSuQmCC" alt="png">',
 			position: "left",
 			tooltip: "三键快进",
@@ -264,6 +264,11 @@
 		art.on("video:loadedmetadata", () => {
 			art.controls.resolution.innerText = art.video.videoHeight + "P";
 		});
+		/*
+		Object.assign(art.option.icons, {
+			forward: '<svg viewBox="0 0 18 18"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg>',
+			rewind: '<svg viewBox="0 0 18 18"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg>',
+		}); */
 
 		return {name: 'artPlus'};
 	};
