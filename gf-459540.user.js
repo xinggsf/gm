@@ -300,8 +300,8 @@
 				}
 			},
 			icons: {
-				forward: '<svg viewBox="-4 -4 28 28"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg>',
-				rewind: '<svg viewBox="-4 -4 28 28"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg>'
+				forward: '<svg viewBox="-8 -8 32 32"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg>',
+				rewind: '<svg viewBox="-8 -8 32 32"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg>'
 			}
 		});
 		art.once('destroy', () => art.shaka.destroy());

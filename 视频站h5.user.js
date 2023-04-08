@@ -454,7 +454,7 @@ const app = {
 	rawProps: new Map(),
 	shellEvent() {
 		const fn = ev => {
-			if (/svg|IMG|BUTTON/.test(ev.target.nodeName) || ev.target.closest('button')) return;
+			if (/svg|path|IMG|BUTTON/.test(ev.target.nodeName) || ev.target.closest('button')) return;
 			ev.stopPropagation(); // preventDefault
 			ev.stopImmediatePropagation();
 			this.checkUI();
