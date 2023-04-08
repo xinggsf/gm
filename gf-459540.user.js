@@ -215,10 +215,6 @@
 	}
 
 	const artPlus = (option) => (art) => {
-		Object.assign(art.icons, {
-			forward: '<i class="art-icon art-icon-forward" style="display: flex;"><svg viewBox="-8 -8 32 32"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg></i>',
-			rewind: '<i class="art-icon art-icon-rewind" style="display: flex;"><svg viewBox="-8 -8 32 32"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg></i>'
-		});
 		// 阻止右键菜单
 		const preventEvent = ev => {
 			if (!ev.target.closest('.art-control')) return;
@@ -227,7 +223,7 @@
 		};
 		art.controls.add({
 			name: "forward",
-			html: art.icons.forward,
+			html: '<i class="art-icon art-icon-forward" style="display: flex;"><svg viewBox="-8 -8 32 32"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg></i>',
 			position: "left",
 			tooltip: "三键快进",
 			mounted(el) {
@@ -244,7 +240,7 @@
 		});
 		art.controls.add({
 			name: "rewind",
-			html: art.icons.rewind,
+			html: '<i class="art-icon art-icon-rewind" style="display: flex;"><svg viewBox="-8 -8 32 32"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg></i>',
 			position: "left",
 			tooltip: "三键快退",
 			mounted(el) {
