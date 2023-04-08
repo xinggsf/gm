@@ -215,7 +215,6 @@
 	}
 
 	const artPlus = (option) => (art) => {
-		// 阻止右键菜单
 		const preventEvent = ev => {
 			if (!ev.target.closest('.art-control')) return;
 			ev.stopPropagation();
@@ -227,8 +226,7 @@
 			position: "left",
 			tooltip: "三键快进",
 			mounted(el) {
-				art.template.$controls.addEventListener('contextmenu', preventEvent);
-				art.template.$controls.addEventListener('mousedown', preventEvent);
+				art.proxy(art.template.$controls,['contextmenu','mousedown','dblclick'],preventEvent);
 				art.controls.playAndPause.after(el);
 				art.proxy(el, 'mousedown', ev => {
 					if (art.duration && ev.button>0) art.currentTime += ev.button == 1 ? 1 : 20;
