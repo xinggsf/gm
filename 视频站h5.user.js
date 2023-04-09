@@ -849,6 +849,7 @@ let router = {
 	}
 };
 router.nunuyy5 = router.dandanzan10;
+if (host.endsWith('.dandanzan.com')) router.dandanzan = router.dandanzan10;
 
 if (!router[u]) { //直播站点
 	router = {
