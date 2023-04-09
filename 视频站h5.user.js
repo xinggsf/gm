@@ -827,7 +827,7 @@ let router = {
 	agemys() {
 		actList.set(78, _ => { location.href = location.href.replace(/\d+$/, s => ++s) });
 	},
-	dandanzan10() {
+	dandanzan() {
 		GM_registerMenuCommand('视频卡顿', () => {
 			'use strict';
 			v.pause();
@@ -848,8 +848,8 @@ let router = {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
 };
-router.nunuyy5 = router.dandanzan10;
-if (host.endsWith('.dandanzan.com')) router.dandanzan = router.dandanzan10;
+router.nunuyy5 = router.dandanzan10 = router.dandanzan;
+if (host.endsWith('dandanzan.cf')) delete router.dandanzan;
 
 if (!router[u]) { //直播站点
 	router = {
