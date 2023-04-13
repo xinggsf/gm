@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/4.6.2/artplayer.min.js
-// @version     2.9
+// @version     3.0
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -19,6 +19,7 @@
 
 (function () {
 	const _debug = !1;
+	const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
 	const skBuffSize = 80; // 视频缓存区大小，单位秒
 	let art = {}; //播放器
 	let seriesNum = 0;
@@ -287,6 +288,11 @@
 			plugins: [artPlus()],
 			customType: {
 				m3u8(v, url) {
+					playRate = +localStorage.mvPlayRate || 1;
+					if (isSafari && url.endsWith('.m3u8')) {
+						v.src = url;
+						return;
+					}
 					if (!this.shaka) {
 						this.shaka = new shaka.Player(v);
 						this.shaka.configure({
@@ -297,13 +303,12 @@
 							}
 						});
 					}
-					playRate = +localStorage.mvPlayRate || 1;
 					this.shaka.load(url);
 					log(this, 'load:\n'+ url);
 				}
 			}
 		});
-		art.once('destroy', () => art.shaka.destroy());
+		art.once('destroy', () => art.shaka?.destroy());
 		art.once("video:canplaythrough", () => {
 			art.playbackRate = playRate;
 		});
