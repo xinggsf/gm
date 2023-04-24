@@ -777,7 +777,7 @@ let router = {
 	ixigua() {
 		cfg.fullCSS = 'div[aria-label="全屏"]';
 		cfg.nextCSS = '.xgplayer-control-item.control_playnext';
-		GM_addStyle('.gm-fp-body .xgplayer{padding-top:0!important}');
+		GM_addStyle('.gm-fp-body .xgplayer{padding-top:0!important} .gm-fp-wrapper #player_default{max-height: 100%!important}');
 	},
 	miguvideo() {
 		cfg.nextCSS = '.next-btn';
@@ -833,7 +833,7 @@ let router = {
 			v.pause();
 			const pos = v.currentTime;
 			const buf = v.buffered;
-			v.currentTime = buf.end(buf.length - 1) + 3;
+			v.currentTime = buf.end(buf.length - 1) + 1;
 			$(v).one('progress', ev => {
 				v.currentTime = pos;
 				v.play();
