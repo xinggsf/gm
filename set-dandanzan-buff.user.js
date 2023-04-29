@@ -2,10 +2,10 @@
 // @name        ray-dandanzan.cf
 // @description 设置缓存区大小
 // @namespace   set-dandanzan-buffSize
-// @match       http://dandanzan.cf/movie/*
-// @match       http://nunuyingyuan.com/movie/*
-// @match       https://dandanzan.cf/movie/*
-// @match       https://nunuyingyuan.com/movie/*
+// @match       http://nunuyy.cf/movie/*
+// @match       http://nunuyingyuan.tk/movie/*
+// @match       https://nunuyy.cf/movie/*
+// @match       https://nunuyingyuan.tk/movie/*
 // @grant       unsafeWindow
 // @run-at      document-end
 // @version     1.1
