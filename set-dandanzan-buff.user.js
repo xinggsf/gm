@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        ray-dandanzan.cf
-// @description 设置缓存区大小
-// @namespace   set-dandanzan-buffSize
+// @name        努努影院-设置缓冲区大小
+// @description 设置缓冲区大小,显示视频分辨率
+// @namespace   set-NN_DDZ-buffSize
 // @match       http://nunuyy.cf/movie/*
 // @match       http://nunuyingyuan.tk/movie/*
 // @match       https://nunuyy.cf/movie/*
