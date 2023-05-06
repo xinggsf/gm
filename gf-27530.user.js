@@ -74,9 +74,9 @@ function getSet(name, defaultValue) {
 // 解析引擎。 去除原bad字符，以适应git
 const APIS = [
 	{name:"盒子", url:"https://jx.jsonplayer.com/player/?url=", title:"全网解析"},
-	// 88看 必须修改请求头referer为 https://www.mgtv1.tv/
-	{name:"88看", url:"https://vip.shankuwang.com:8443/?url=", title:"全网解析"},
-	// 88TV 必须修改请求头referer为 https://www.agemys.cc/
+	// 88看 必须修改请求头referer为 https://www.mgtvyy.com/
+	{name:"88看", url:"https://vip.sp-flv.com:8443/?url=", title:"全网解析"},
+	// 88TV 必须修改请求头referer为 https://www.mgtvyy.com/
 	// {name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	// {name:"高速接口", url:"https://jsap.attakids.com/?url="},
 	{name:"虾米", url:"https://jx.xmflv.com/?url="},
