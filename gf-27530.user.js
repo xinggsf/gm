@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name     解析VIP视频集合
 // @namespace  https://greasyfork.org/zh-CN/users/104201
-// @version    6.0.7
+// @version    6.0.8
 // @description  破解VIP或会员视频，原作者：黄盐
 // @author     xinggsf
 // @noframes
@@ -74,18 +74,18 @@ function getSet(name, defaultValue) {
 // 解析引擎。 去除原bad字符，以适应git
 const APIS = [
 	{name:"盒子", url:"https://jx.jsonplayer.com/player/?url=", title:"全网解析"},
-	// 88看 必须修改请求头referer为 https://www.mgtvyy.com/
+	// 88看 必须修改请求头referer为 https://www.mgtvyy.cc/
 	{name:"88看", url:"https://vip.sp-flv.com:8443/?url=", title:"全网解析"},
-	// 88TV 必须修改请求头referer为 https://www.mgtvyy.com/
-	// {name: "88TV", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
+	// 金福 必须修改请求头referer为 https://www.88hd.com/
+	{name: "金福", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	// {name:"高速接口", url:"https://jsap.attakids.com/?url="},
 	{name:"虾米", url:"https://jx.xmflv.com/?url="},
 	{name:"OK云", url:"https://api.okjx.cc:3389/jx.php?url="},
 	{name:"诺讯", url:"https://www.nxflv.com/?url="},
-	{name:"爱豆", url:"https://jx.aidouer.net/?url="},
+	{name:"爱豆-奇艺", url:"https://jx.aidouer.net/?url="},
 	{name:"BL解析", url:"https://vip.bljiex.cc/?v="},
 	{name:"醉仙", url:"https://jx.zui.cm/?url="},
-	{name:"夜幕", url:"https://www.yemu.xyz/?url="},
+	// {name:"夜幕", url:"https://www.yemu.xyz/?url="},
 	// {name:"乐多", url:"https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
 	{name:"m3u8云", url:"https://jx.m3u8.tv/jiexi/?url="},
 	{name:"猪蹄", url:"https://jx.iztyy.com/svip/?url="},
