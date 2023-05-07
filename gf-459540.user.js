@@ -25,15 +25,12 @@
 	let seriesNum = 0;
 	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
 	const tip = (message) => XyMessage.info(message);
+	const noopFn = function() {};
+	const log = _debug ? console.log.bind(console) : noopFn;
 	const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) });
 	//获取豆瓣影片名称
 	const videoName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
 	const videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
-
-	const log = (function() {
-		if (_debug) return console.log.bind(console);
-		return function() {};
-	})();
 
 	//将html转为element
 	function htmlToElement(html) {
