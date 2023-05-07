@@ -19,7 +19,7 @@
 
 (function () {
 	const _debug = !1;
-	const isSafari = navigator.userAgent.includes('Safari') && !navigator.userAgent.includes('Chrome');
+	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
 	const skBuffSize = 80; // 视频缓存区大小，单位秒
 	let art = {}; //播放器
 	let seriesNum = 0;
