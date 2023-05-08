@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/5.0.6/artplayer.min.js
-// @version     3.0
+// @version     3.1
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -155,12 +155,14 @@
 			const e = pNode.appendChild(htmlToElement(
 				`<xy-button type="flat">${name}</xy-button>`
 			));
-			e.onclick = function() {
+			e.onclick = async function() {
 				if (this.matches('.play')) return;
 				seriesNum = index;
 				art.switchUrl(url);
 				$('.play', this.parentNode)?.classList.remove('play');
 				this.classList.add('play');
+				await sleep(3300);
+				art.playbackRate = +localStorage.mvPlayRate;
 			};
 			if (seriesNum == index) e.classList.add('play');
 		}
