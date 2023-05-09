@@ -155,14 +155,12 @@
 			const e = pNode.appendChild(htmlToElement(
 				`<xy-button type="flat">${name}</xy-button>`
 			));
-			e.onclick = async function() {
+			e.onclick = function() {
 				if (this.matches('.play')) return;
 				seriesNum = index;
 				art.switchUrl(url);
 				$('.play', this.parentNode)?.classList.remove('play');
 				this.classList.add('play');
-				await sleep(3300);
-				art.playbackRate = +localStorage.mvPlayRate;
 			};
 			if (seriesNum == index) e.classList.add('play');
 		}
@@ -286,7 +284,6 @@
 			plugins: [artPlus()],
 			customType: {
 				m3u8(v, url) {
-					playRate = +localStorage.mvPlayRate || 1;
 					if (isSafari && url.endsWith('.m3u8')) {
 						v.src = url;
 						return;
@@ -307,8 +304,9 @@
 			}
 		});
 		art.once('destroy', () => art.shaka?.destroy());
-		art.once("video:canplaythrough", () => {
-			art.playbackRate = playRate;
+		art.on("video:loadedmetadata", async () => {
+			await sleep(2300);
+			art.playbackRate = +localStorage.mvPlayRate || 1;
 		});
 	}
 
