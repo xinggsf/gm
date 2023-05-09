@@ -2,9 +2,9 @@
 // ==UserScript==
 // @name       HTML5视频播放工具
 // @description 启用HTML5播放；视频截图；切换画中画；缓存视频；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
-// @homepage   https://bbs.kafan.cn/thread-2093014-1-1.html
+// @homepage https://bbs.kafan.cn/thread-2093014-1-1.html
 // @match    https://*.qq.com/*
-// @exclude    https://user.qzone.qq.com/*
+// @exclude  https://user.qzone.qq.com/*
 // @match    https://www.weiyun.com/video_*
 // @match    https://v.youku.com/v_play/*
 // @match    https://v.youku.com/v_show/id_*
@@ -23,7 +23,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.5
+// @version    1.9.6
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -72,7 +72,7 @@
 const w = unsafeWindow || window;
 const { host, pathname: path } = location;
 const d = document, find = [].find;
-let v, _fp, _fs, by; // document.body
+let $msg, v, _fp, _fs, by; // document.body
 const observeOpt = {childList : true, subtree : true};
 const noopFn = function(){};
 const validEl = e => e && e.offsetWidth > 1;
@@ -221,10 +221,20 @@ const adjustRate = n => {
 	if (n < 0.1) v.playbackRate = .1;
 	else if (n > 16) v.playbackRate = 16;
 	else v.playbackRate = +n.toFixed(2);
+	tip('播放速度: '+ v.playbackRate);
 };
 const adjustVolume = n => {
 	n += v.volume;
 	if (inRange(n, 0, 1)) v.volume = +n.toFixed(2);
+};
+const tip = (msg) => {
+    if (msg.length === 0) return;
+	const len = msg.length * 15 + 15;
+	$msg.stop(true, true).text(msg)
+		.css({width:`${len}px`,left:`calc(50vw - ${len/2}px)`})
+		.animate({top:'220px',opacity:1})
+		.animate({opacity:0.9},900)
+		.animate({top:0,opacity:0});
 };
 const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3626.121 Safari/537.36';
 const u = getMainDomain(host);
@@ -280,7 +290,7 @@ class FullPage {
 		GM_addStyle(
 			`.gm-fp-body .gm-fp-zTop {
 				position: relative !important;
-				z-index: 2147483647 !important;
+				z-index: 2147483646 !important;
 			}
 			.gm-fp-wrapper, .gm-fp-body{ overflow:hidden !important; }
 			.gm-fp-wrapper .gm-fp-innerBox {
@@ -297,7 +307,7 @@ class FullPage {
 				top: 0 !important;
 				left: 0 !important;
 				background: #000 !important;
-				z-index: 2147483647 !important;
+				z-index: 2147483646 !important;
 			}`
 		);
 	}
@@ -380,6 +390,7 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 		// localStorage.mvPlayRate = v.playbackRate;
 		v.playbackRate = 1;
 	}
+	tip('播放速度: '+ v.playbackRate);
 })
 .set(88, adjustRate.bind(null, -0.1)) //按键X
 .set(67, adjustRate.bind(null, 0.1)) //按键C
@@ -636,6 +647,7 @@ const app = {
 			this.vCount = 0;
 			this.onGrowVList();
 		}
+		$msg = $('<div style="background:#EEE;font-color:#111;opacity:0;height:22px;top:0;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
 	},
 	init() {
 		const rawAel = EventTarget.prototype.addEventListener;
