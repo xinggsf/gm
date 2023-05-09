@@ -610,7 +610,7 @@ const app = {
 		bus.$emit('foundMV');
 		const bRate = gmFuncOfCheckMenu('记忆播放速度','remberRate');
 		window.addEventListener('urlchange', async (info) => { //TM event: info.url
-			await sleep(600);
+			await sleep(1990);
 			this.checkMV();
 			if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
 			bus.$emit('urlchange');
