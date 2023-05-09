@@ -409,7 +409,7 @@ xy-button{
 }
 .playSpace{
 	display: grid;
-	height:90vh;
+	height:93h;
 	grid-template-rows: 1fr;
 	grid-template-columns: calc(100vw - 28em) 28em;
 	grid-gap:0;
