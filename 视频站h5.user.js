@@ -227,7 +227,7 @@ const adjustVolume = n => {
 	if (inRange(n, 0, 1)) v.volume = +n.toFixed(2);
 };
 const tip = (msg) => {
-    if (msg.length === 0) return;
+    if (!$msg || !msg?.length) return;
 	const len = msg.length * 15 + 15;
 	$msg.stop(true, true).text(msg)
 		.css({width:`${len}px`,left:`calc(50vw - ${len/2}px)`})
