@@ -221,7 +221,6 @@ const adjustRate = n => {
 	if (n < 0.1) v.playbackRate = .1;
 	else if (n > 16) v.playbackRate = 16;
 	else v.playbackRate = +n.toFixed(2);
-	tip('播放速度: '+ v.playbackRate);
 };
 const adjustVolume = n => {
 	n += v.volume;
@@ -390,7 +389,6 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 		// localStorage.mvPlayRate = v.playbackRate;
 		v.playbackRate = 1;
 	}
-	tip('播放速度: '+ v.playbackRate);
 })
 .set(88, adjustRate.bind(null, -0.1)) //按键X
 .set(67, adjustRate.bind(null, 0.1)) //按键C
@@ -631,7 +629,9 @@ const app = {
 		$(v).one('canplaythrough', ev => {
 			if (!cfg.isLive && bRate) {
 				v.playbackRate = +localStorage.mvPlayRate || 1;
+				tip('播放速度: '+ v.playbackRate);
 				v.addEventListener('ratechange', ev => {
+					tip('播放速度: '+ v.playbackRate);
 					if (v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
 			}
