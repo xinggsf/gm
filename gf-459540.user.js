@@ -311,11 +311,7 @@
 	}
 
 	GM_addStyle(
-`.TalionNav{
-	z-index:10;
-}
-
-.liu-playContainer{
+`.liu-playContainer{
 	width:100%;
 	height:100%;
 	background-color:#222;
@@ -330,34 +326,6 @@
 	color:white;
 }
 
-.video-selector{
-	display:flex;
-	flex-wrap:wrap;
-	margin-top:1rem;
-}
-
-.liu-selector:hover{
-	color:#aed0ee;
-	background-color:none;
-}
-
-.liu-selector{
-	color:black;
-	cursor:pointer;
-	padding:3px;
-	margin:5px;
-	border-radius:2px;
-}
-.liu-sourceButton{
-	margin-inline:5px;
-}
-.liu-rapidPlay{
-	color: #007722;
-}
-
-.liu-light{
-	background-color:#7bed9f;
-}
 .liu-btn {
 	width: 6.5em;
 	height: 2em;
