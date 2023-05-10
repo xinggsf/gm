@@ -231,9 +231,9 @@ const tip = (msg) => {
 	const len = msg.length * 15 + 15;
 	$msg.stop(true, true).text(msg)
 		.css({width:`${len}px`,left:`calc(50vw - ${len/2}px)`})
-		.animate({top:'220px',opacity:1})
-		.animate({opacity:0.9},900)
-		.animate({top:0,opacity:0});
+		.animate({top:'190px'})
+		.animate({top:'200px'},900)
+		.animate({top:'-30px'});
 };
 const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3626.121 Safari/537.36';
 const u = getMainDomain(host);
@@ -647,7 +647,7 @@ const app = {
 			this.vCount = 0;
 			this.onGrowVList();
 		}
-		$msg = $('<div style="background:#EEE;font-color:#111;opacity:0;height:22px;top:0;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
+		$msg = $('<div style="background:#EEE;font-color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
 	},
 	init() {
 		const rawAel = EventTarget.prototype.addEventListener;
