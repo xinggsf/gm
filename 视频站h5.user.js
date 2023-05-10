@@ -227,7 +227,7 @@ const adjustVolume = n => {
 	if (inRange(n, 0, 1)) v.volume = +n.toFixed(2);
 };
 const tip = (msg) => {
-	if (!$msg) $msg = $('<div style="background:#EEE;font-color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
+	if (!$msg) $msg = $('<div style="background:#EEE;color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
     if (!msg?.length) return;
 	const len = msg.length * 15 + 15;
 	$msg.stop(true, true).text(msg)
@@ -648,7 +648,7 @@ const app = {
 			this.vCount = 0;
 			this.onGrowVList();
 		}
-		$msg = $('<div style="background:#EEE;font-color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
+		$msg = $('<div style="background:#EEE;color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
 	},
 	init() {
 		const rawAel = EventTarget.prototype.addEventListener;
