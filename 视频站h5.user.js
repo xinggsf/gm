@@ -957,7 +957,7 @@ const openVX = () =>
 	GM_openInTab('https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg', !1);
 GM_registerMenuCommand('为爱发电！', openVX);
 GM_getValue('notificationVX', true) && GM_notification({
-  text: '为爱发电！\n点击打开微信图片',
+  text: '为爱发电！点击打开微信图片\n注明H5脚本，并留下email',
   onclick: openVX,
   timeout: 9900,
   image: 'https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg'
