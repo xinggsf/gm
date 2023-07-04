@@ -23,7 +23,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.6
+// @version    1.9.7
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -62,6 +62,8 @@
 // @include    *play/*
 // @grant      window.onurlchange
 // @grant      unsafeWindow
+// @grant      GM_openInTab
+// @grant      GM_notification
 // @grant      GM_registerMenuCommand
 // @grant      GM_setValue
 // @grant      GM_getValue
@@ -790,7 +792,16 @@ let router = {
 	ixigua() {
 		cfg.fullCSS = 'div[aria-label="全屏"]';
 		cfg.nextCSS = '.xgplayer-control-item.control_playnext';
-		GM_addStyle('.gm-fp-body .xgplayer{padding-top:0!important} .gm-fp-wrapper #player_default{max-height: 100%!important}');
+		GM_addStyle('.gm-fp-body .xgplayer{padding-top:0!important} .gm-fp-wrapper #player_default{max-height: 100%!important} h1.title ~a { padding-left:12px; color:blue; }');
+
+		bus.$on('foundMV',() => {
+			const c = w._SSR_HYDRATED_DATA.anyVideo.gidInformation.packerData.videoResource.normal.video_list;
+			const title = document.title.split(' - ')[0];
+			const s = Object.keys(c).map(k =>
+				`<a href="${c[k].main_url}" download="${title}_${c[k].definition}.mp4" target="_blank">${c[k].definition}</a>`
+			).join('');
+			$('h1.title').text('下载：').after(s);
+		});
 	},
 	miguvideo() {
 		cfg.nextCSS = '.next-btn';
@@ -942,5 +953,15 @@ P：视频截图        i：切换画中画        M：(停止)缓存视频
 C(抖音V)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
 D：上一帧     F：下一帧(youtube.com用E键)`
 ));
+const openVX = () =>
+	GM_openInTab('https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg', !1);
+GM_registerMenuCommand('为爱发电！', openVX);
+GM_getValue('notificationVX', true) && GM_notification({
+  text: '为爱发电！\n点击打开微信图片',
+  onclick: openVX,
+  timeout: 9900,
+  image: 'https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg'
+});
+GM_setValue('notificationVX', !1);
 if (!router[u] || !router[u]()) app.init();
 if (!router[u] && !cfg.isNumURL) cfg.isNumURL = /[_\W]\d+(\/|\.[a-z]{3,8})?$/.test(path);
