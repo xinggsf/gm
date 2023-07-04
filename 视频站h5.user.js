@@ -960,7 +960,7 @@ GM_getValue('notificationVX', true) && GM_notification({
   text: '为爱发电！点击打开微信图片\n注明H5脚本，并留下email',
   onclick: openVX,
   timeout: 9900,
-  image: 'https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg'
+  title: 'HTML5视频播放工具--脚本'
 });
 GM_setValue('notificationVX', !1);
 if (!router[u] || !router[u]()) app.init();
