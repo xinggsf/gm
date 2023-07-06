@@ -23,7 +23,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.7
+// @version    1.9.8
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -956,7 +956,7 @@ D：上一帧     F：下一帧(youtube.com用E键)`
 const openVX = () =>
 	GM_openInTab('https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg', !1);
 GM_registerMenuCommand('为爱发电！', openVX);
-GM_getValue('notificationVX', true) && GM_notification({
+GM_getValue('notificationVX', true) && GM_notification?.({
   text: '为爱发电！点击打开微信图片\n注明H5脚本，并留下email',
   onclick: openVX,
   timeout: 9900,
