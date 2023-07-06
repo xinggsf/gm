@@ -1,7 +1,7 @@
 /* globals jQuery, $, Vue */
 // ==UserScript==
 // @name       HTML5视频播放工具
-// @description 启用HTML5播放；视频截图；切换画中画；缓存视频；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @description 启用HTML5播放；视频截图；切换画中画；缓存视频；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：twitch、斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
 // @homepage https://bbs.kafan.cn/thread-2093014-1-1.html
 // @match    https://*.qq.com/*
 // @exclude  https://user.qzone.qq.com/*
@@ -68,6 +68,7 @@
 // @grant      GM_setValue
 // @grant      GM_getValue
 // @namespace  https://greasyfork.org/users/7036
+// @license    MIT
 // ==/UserScript==
 
 'use strict';
@@ -544,7 +545,7 @@ const app = {
 	},
 	hotKey(e) {
 		const t = e.target;
-		if (e.isComposing || e.ctrlKey || e.altKey || t.contentEditable=='true' ||
+		if (e.ctrlKey || e.metaKey || e.altKey || t.contentEditable=='true' || // e.isComposing
 			/INPUT|TEXTAREA|SELECT/.test(t.nodeName)) return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
 		if (cfg.isLive && [37,39,78,77,88,67,90].includes(e.keyCode)) return;
