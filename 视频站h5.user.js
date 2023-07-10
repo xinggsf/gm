@@ -103,7 +103,7 @@ P：视频截图    i：切换画中画   M：(停止)缓存视频(hls.js)
 回车键：切换全屏;      回车键 + shift: 切换网页全屏
 C(抖音V)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
 D：上一帧     F：下一帧(youtube.com用E键)`,
-		'donateMenuOption': '为爱发电！',
+		'donateMenuOption': '(微信)为爱发电！',
 		'donateMessage': '为爱发电！点击打开微信图片\n注明H5脚本，并留下email',
 		'donateTitle': 'HTML5视频播放工具--脚本'
 	},
