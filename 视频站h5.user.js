@@ -78,6 +78,7 @@
 'use strict';
 
 const curLang = navigator.language.slice(0, 2);
+//感谢 Dario Costa 提供的英语和意大利语翻译
 const i18n = {
 	'zh': {
 		'console': '%c脚本[%s] 反馈：%s\n%s',
@@ -95,7 +96,7 @@ const i18n = {
 		'helpMenuOption': '脚本功能快捷键表',
 		'helpBody': `双击：切换（网页）全屏         鼠标中键：快进5秒
 
-P：视频截图        i：切换画中画        M：(停止)缓存视频
+P：视频截图    i：切换画中画   M：(停止)缓存视频(hls.js)
 ← →方向键：快退、快进5秒;   方向键 + shift: 20秒
 ↑ ↓方向键：音量调节   ESC：退出（网页）全屏
 空格键：暂停/播放      N：播放下一集
@@ -125,7 +126,7 @@ Middle mouse button: fast forward 5 seconds
 
 P key： Take a screenshot
 I key： Activate picture-in-picture mode
-M key： Enable/disable caching of video
+M key： Enable/disable caching of video(hls.js)
 
 Arrow keys ← and →： Fast forward or rewind by 5 seconds
 Shift + Arrow keys ← and →： Fast forward or rewind 20 seconds
@@ -166,7 +167,7 @@ Pulsante centrale del mouse: avanzamento rapido di 5 secondi
 
 Tasto P: Esegui uno screenshot
 Tasto I： Attiva modalità picture-in-picture
-Tasto M： Attiva/disattiva memorizzazione del video nella cache
+Tasto M： Attiva/disattiva memorizzazione del video nella cache(hls.js)
 
 Tasti freccia ← e →： Avanza o riavvolgi di 5 secondi
 Shift + Tasti freccia ← e →: Avanza o riavvolgi di 20 secondi
