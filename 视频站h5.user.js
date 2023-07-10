@@ -1,7 +1,11 @@
 /* globals jQuery, $, Vue */
 // ==UserScript==
 // @name       HTML5视频播放工具
+// @name:en	   HTML5 Video Playing Tools
+// @name:it    Strumenti di riproduzione video HTML5
 // @description 启用HTML5播放；视频截图；切换画中画；缓存视频；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：twitch、斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @description:en Enable hotkeys for HTML5 playback: video screenshot; enable/disable picture-in-picture; copy cached video; send any video to full screen or browser window size; fast forward, rewind, pause/play, volume, skip to next video, skip to previous or next frame, set playback speed. Video sites supported: YouTube, TED, Youku.com, tudou.com, QQ.com, bilibili.com, ixigua.com, iQiyi, www.acfun.cn, PPTV, mgtv.com, miguvideo.com, Sina, Weibo, Netease [Entertainment, Cloud Classroom, News], Sohu, fun.tv, Baidu Cloud Video, etc.; Live broadcasts: Twitch, Douyu.com, YY.com, Huya.com, longzhu.com, zhanqi.tv. Custom sites can be added
+// @description:it Abilita tasti di scelta rapida per riproduzione HTML5: screenshot del video; abilita/disabilita picture-in-picture; copia il video nella cache; manda qualsiasi video a schermo intero o a dimensione finestra del browser; avanzamento veloce, riavvolgimento, pausa/riproduzione, volume, passa all'episodio successivo, passa al fotogramma precedente o successivo, imposta velocità di riproduzione. Siti video supportati: YouTube, TED, Youku.com, tudou.com, QQ.com, bilibili.com, ixigua.com, iQiyi, www.acfun.cn, PPTV, mgtv.com, miguvideo.com, Sina, Weibo, Netease [Entertainment, Cloud Classroom, News], Sohu, fun.tv, Baidu Cloud Video, ecc.; Trasmissioni in diretta: Twitch, Douyu.com, YY.com, Huya.com, longzhu.com, zhanqi.tv. È possibile aggiungere siti personalizzati
 // @homepage https://bbs.kafan.cn/thread-2093014-1-1.html
 // @match    https://*.qq.com/*
 // @exclude  https://user.qzone.qq.com/*
@@ -72,6 +76,120 @@
 // ==/UserScript==
 
 'use strict';
+
+const curLang = navigator.language.slice(0, 2);
+const i18n = {
+	'zh': {
+		'console': '%c脚本[%s] 反馈：%s\n%s',
+		'cacheStoringError': '直接媒体类型（如MP4格式）缓存无效果！',
+		'cacheStoringConfirm': '视频切片数据能否缓存？检测方法：刷新页面，已观看视频片段不产生网络流量则可缓存。如果能缓存视频切片，选择确认直接缓存全部视频时段；点取消则按默认缓冲区大小进行缓冲。',
+		'cantOpenPIP': '无法进入画中画模式!错误:\n',
+		'cantExitPIP': '无法退出画中画模式!错误：\n',
+		'rememberRateMenuOption': '记忆播放速度',
+		'speedRate': '播放速度 ',
+		'ready': '准备就绪！ 待命中.',
+		'mainPageOnly': '只处理主页面',
+		'download': '下载: ',
+		'videoLag': '视频卡顿',
+		'fullScreen': '全屏',
+		'helpMenuOption': '脚本功能快捷键表',
+		'helpBody': `双击：切换（网页）全屏         鼠标中键：快进5秒
+
+P：视频截图        i：切换画中画        M：(停止)缓存视频
+← →方向键：快退、快进5秒;   方向键 + shift: 20秒
+↑ ↓方向键：音量调节   ESC：退出（网页）全屏
+空格键：暂停/播放      N：播放下一集
+回车键：切换全屏;      回车键 + shift: 切换网页全屏
+C(抖音V)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
+D：上一帧     F：下一帧(youtube.com用E键)`,
+		'donateMenuOption': '为爱发电！',
+		'donateMessage': '为爱发电！点击打开微信图片\n注明H5脚本，并留下email',
+		'donateTitle': 'HTML5视频播放工具--脚本'
+	},
+	'en': {
+		'console': '%cScript[%s] Feedback：%s\n%s',
+		'cacheStoringError': 'Trying to cache direct media types (such as MP4 format) has no effect!',
+		'cacheStoringConfirm': 'Do you want all segments of the video to be cached? The detection method used is as follows: when the page is refreshed, the watched video clips will be cached so that no additional network traffic is generated. If you want all segments of the videos to be cached, select OK; or select Cancel to buffer a portion of the video based on the default buffer size (which is the default browser behavior).',
+		'cantOpenPIP': 'Unable to access picture-in-picture mode! Error：\n',
+		'cantExitPIP': 'Unable to exit picture-in-picture mode! Error：\n',
+		'rememberRateMenuOption': 'Remember video playback speed',
+		'speedRate': 'Speed rate ',
+		'ready': ' ready！ Waiting for user commands.',
+		'mainPageOnly': 'Process the main page only',
+		'download': 'Download: ',
+		'videoLag': 'Video lag',
+		'fullScreen': 'Full screen',
+		'helpMenuOption': 'Hotkeys list:',
+		'helpBody': `Double-click: activate full screen.
+Middle mouse button: fast forward 5 seconds
+
+P key： Take a screenshot
+I key： Activate picture-in-picture mode
+M key： Enable/disable caching of video
+
+Arrow keys ← and →： Fast forward or rewind by 5 seconds
+Shift + Arrow keys ← and →： Fast forward or rewind 20 seconds
+Arrow keys ↑ and ↓： Raise or lower the volume
+
+ESC： Exit full screen (or exit video enlarged to window size)
+Spacebar： Stop/Play
+Enter： Enable/disable full screen video
+Shift + Enter: Set/unset video enlarged to window size
+
+N key： Play the next video (if any)
+C key： Speed up video playback by 0.1
+X key: Slow down video playback by 0.1
+Z key: Reset video playback speed to 1.0
+D key: Previous frame
+F key: Next frame (except on YouTube)
+E key: Next frame (YouTube only)`,
+		'donateMenuOption': 'Donate！',
+		'donateMessage': 'Power for love! Click to open WeChat image \n specify H5 script and leave email',
+		'donateTitle': 'HTML5 Video Player Tool - Script',
+	},
+	'it': {
+		'console': '%cScript[%s] Feedback：%s\n%s',
+		'cacheStoringError': 'Cercare di memorizzazione nella cache tipi di media diretti (come ad esempio il formato MP4) non ha alcuna efficacia!',
+		'cacheStoringConfirm': 'Vuoi che tutti i segmenti del video siano memorizzati nella cache? Il metodo di rilevamento utilizzato è il seguente: all\'aggiornamento della pagina, i video clip guardati saranno memorizzati nella cache in modo da non generare ulteriore traffico di rete. Se vuoi che tutti i segmenti dei video siano memorizzati nella cache, seleziona OK; seleziona invece Annulla per bufferizzare una parte del video in base alla dimensione predefinita del buffer (come da comportamento predefinito del browser).',
+		'cantOpenPIP': 'Impossibile accedere alla modalità picture-in-picture! Errore：\n',
+		'cantExitPIP': 'Impossibile uscire dalla modalità picture-in-picture! Errore：\n',
+		'rememberRateMenuOption': 'Memorizza la velocità di riproduzione dei video',
+		'speedRate': 'Velocità di riproduzione ',
+		'ready': "Pronto！ In attesa dei comandi dell'utente.",
+		'mainPageOnly': 'Elaborazione della sola pagina principale',
+		'download': 'Scarica: ',
+		'videoLag': 'Ritardo del video',
+		'fullScreen': 'Schermo intero',
+		'helpMenuOption': 'Elenco dei tasti di scelta rapida',
+		'helpBody': `Doppio clic: attiva lo schermo intero
+Pulsante centrale del mouse: avanzamento rapido di 5 secondi
+
+Tasto P: Esegui uno screenshot
+Tasto I： Attiva modalità picture-in-picture
+Tasto M： Attiva/disattiva memorizzazione del video nella cache
+
+Tasti freccia ← e →： Avanza o riavvolgi di 5 secondi
+Shift + Tasti freccia ← e →: Avanza o riavvolgi di 20 secondi
+Tasti freccia ↑ e ↓： Alza o abbassa il volume
+ESC： Esci da schermo intero
+Barra spaziatrice: Ferma/Riproduci
+Invio： Attiva/disattiva ingrandimento del video a schermo intero
+Shift + Invio: Attiva/disattiva ingrandimento del video a dimensione della finestra
+
+Tasto N： Riproduzione del video successivo (se presente)
+Tasto C: Velocizza riproduzione video di 0,1
+Tasto X: Rallenta riproduzione video di 0,1
+Tasto Z: Reimposta velocità riproduzione video a 1,0
+Tasto D: Vai al frame precedente
+Tasto F: Vai al frame successivo (escluso YouTube)
+Tasto E: Vai al frame successivo (solo su YouTube)`,
+		'donateMenuOption': 'Fai una donazione！',
+		'donateMessage': 'Fai una donazione！ Clicca per aprire l\'immagine di WeChat, \n menziona "H5 script" e lascia la tua email.',
+		'donateTitle': 'Strumento di riproduzione video HTML5 - Script',
+	}
+};
+const MSG = i18n[curLang] || i18n.en;
+
 const w = unsafeWindow || window;
 const { host, pathname: path } = location;
 const d = document, find = [].find;
@@ -83,7 +201,7 @@ const q = (css, p = d) => p.querySelector(css);
 const r1 = (regp, s) => regp.test(s) && RegExp.$1;
 const log = console.log.bind(
 	console,
-	'%c脚本[%s] 反馈：%s\n%s',
+	MSG.console,
 	'color:#c3c;font-size:1.2em',
 	GM_info.script.name,
 	GM_info.script.homepage
@@ -230,7 +348,7 @@ const adjustVolume = n => {
 	if (inRange(n, 0, 1)) v.volume = +n.toFixed(2);
 };
 const tip = (msg) => {
-	if (!$msg?.get(0)?.offsetHeight) $msg = $('<div style="background:#EEE;color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
+	if (!$msg?.get(0)?.offsetHeight) $msg = $('<div style="max-width:455px;min-width:333px;background:#EEE;color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
     if (!msg?.length) return;
 	const len = msg.length * 15;
 	$msg.stop(true, true).text(msg)
@@ -369,10 +487,10 @@ const cacheMV = {
 	exec() {
 		if (cfg.isLive || !v) return;
 		if (v.src.startsWith('http')) {
-			alert('直接媒体类型（如MP4格式）缓存无效果！');
+			alert(MSG.cacheStoringError);
 			return;
 		}
-		this.mode = confirm('视频切片数据能否缓存？检测方法：刷新页面，已观看视频片段不产生网络流量则可缓存。如果能缓存视频切片，选择确认直接缓存全部视频时段；点取消则按默认缓冲区大小进行缓冲。');
+		this.mode = confirm(MSG.cacheStoringConfirm);
 		this.chached = true; //正在缓存
 		v.pause();
 		this.rawPlay = HTMLMediaElement.prototype.play;
@@ -428,11 +546,11 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 .set(73, _ => { //按键I：画中画模式
 	if (!d.pictureInPictureElement) {
 		v.requestPictureInPicture().catch(err => {
-			alert('无法进入画中画模式!错误：\n'+ err)
+			alert(MSG.cantOpenPIP + err)
 		});
 	} else {
 		d.exitPictureInPicture().catch(err => {
-			alert('无法退出画中画模式!错误：\n'+ err)
+			alert(MSG.cantExitPIP + err)
 		});
 	}
 })
@@ -612,7 +730,7 @@ const app = {
 		by = d.body;
 		log('bind event\n', v);
 		bus.$emit('foundMV');
-		const bRate = gmFuncOfCheckMenu('记忆播放速度','remberRate');
+		const bRate = gmFuncOfCheckMenu(MSG.rememberRateMenuOption,'remberRate');
 		window.addEventListener('urlchange', async (info) => { //TM event: info.url
 			await sleep(1990);
 			this.checkMV();
@@ -633,9 +751,9 @@ const app = {
 		$(v).one('canplaythrough', ev => {
 			if (!cfg.isLive && bRate) {
 				v.playbackRate = +localStorage.mvPlayRate || 1;
-				tip('播放速度: '+ v.playbackRate);
+				tip(MSG.speedRate + v.playbackRate);
 				v.addEventListener('ratechange', ev => {
-					tip('播放速度: '+ v.playbackRate);
+					tip(MSG.speedRate + v.playbackRate);
 					if (v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
 			}
@@ -651,7 +769,7 @@ const app = {
 			this.vCount = 0;
 			this.onGrowVList();
 		}
-		tip(GM_info.script.name +'准备就绪！待命中');
+		tip((GM_info.script.name_i18n?.[curLang] || GM_info.script.name) + MSG.ready);
 	},
 	init() {
 		const rawAel = EventTarget.prototype.addEventListener;
@@ -718,7 +836,7 @@ let router = {
 		}
 	},
 	qq() {
-		if (self != top &&(host == 'v.qq.com' || host == 'video.qq.com') ) throw '只处理主页面';
+		if (self != top &&(host == 'v.qq.com' || host == 'video.qq.com') ) throw MSG.mainPageOnly;
 		actList.delete(32);
 		cfg.shellCSS = '#player';
 		cfg.nextCSS = '.txp_btn_next_u';
@@ -801,7 +919,7 @@ let router = {
 			const s = Object.keys(c).map(k =>
 				`<a href="${c[k].main_url}" download="${title}_${c[k].definition}.mp4" target="_blank">${c[k].definition}</a>`
 			).join('');
-			$('h1.title').text('下载：').after(s);
+			$('h1.title').text(MSG.download).after(s);
 		});
 	},
 	miguvideo() {
@@ -853,7 +971,7 @@ let router = {
 		actList.set(78, _ => { location.href = location.href.replace(/\d+$/, s => ++s) });
 	},
 	dandanzan() {
-		GM_registerMenuCommand('视频卡顿', () => {
+		GM_registerMenuCommand(MSG.videoLag, () => {
 			'use strict';
 			v.pause();
 			const pos = v.currentTime;
@@ -943,25 +1061,15 @@ cfg.isLive = cfg.isLive || host.startsWith('live.');
 Reflect.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });
-GM_registerMenuCommand('脚本功能快捷键表' , alert.bind(w,
-`双击：切换（网页）全屏         鼠标中键：快进5秒
-
-P：视频截图        i：切换画中画        M：(停止)缓存视频
-← →方向键：快退、快进5秒;   方向键 + shift: 20秒
-↑ ↓方向键：音量调节   ESC：退出（网页）全屏
-空格键：暂停/播放      N：播放下一集
-回车键：切换全屏;      回车键 + shift: 切换网页全屏
-C(抖音V)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
-D：上一帧     F：下一帧(youtube.com用E键)`
-));
+GM_registerMenuCommand(MSG.helpMenuOption, alert.bind(w, MSG.helpBody));
 const openVX = () =>
 	GM_openInTab('https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg', !1);
-GM_registerMenuCommand('为爱发电！', openVX);
-GM_getValue('notificationVX', true) && GM_notification?.({
-  text: '为爱发电！点击打开微信图片\n注明H5脚本，并留下email',
+GM_registerMenuCommand(MSG.donateMenuOption, openVX);
++GM_getValue('notificationVX', true) && GM_notification?.({
+  text: MSG.donateMessage,
   onclick: openVX,
   timeout: 9900,
-  title: 'HTML5视频播放工具--脚本'
+  title: MSG.donateTitle,
 });
 GM_setValue('notificationVX', !1);
 if (!router[u] || !router[u]()) app.init();
