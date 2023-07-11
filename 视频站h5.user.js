@@ -3,7 +3,7 @@
 // @name       HTML5视频播放工具
 // @name:en	   HTML5 Video Playing Tools
 // @name:it    Strumenti di riproduzione video HTML5
-// @description 启用HTML5播放；视频截图；切换画中画；缓存视频；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：twitch、斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
+// @description 视频截图；切换画中画；缓存视频；万能网页全屏；添加快捷键：快进、快退、暂停/播放、音量、下一集、切换(网页)全屏、上下帧、播放速度。支持视频站点：油管、TED、优.土、QQ、B站、西瓜视频、爱奇艺、A站、PPTV、芒果TV、咪咕视频、新浪、微博、网易[娱乐、云课堂、新闻]、搜狐、风行、百度云视频等；直播：twitch、斗鱼、YY、虎牙、龙珠、战旗。可增加自定义站点
 // @description:en Enable hotkeys for HTML5 playback: video screenshot; enable/disable picture-in-picture; copy cached video; send any video to full screen or browser window size; fast forward, rewind, pause/play, volume, skip to next video, skip to previous or next frame, set playback speed. Video sites supported: YouTube, TED, Youku, QQ.com, bilibili, ixigua, iQiyi, support mainstream video sites in mainland China; Live broadcasts: Twitch, Douyu.com, YY.com, Huya.com. Custom sites can be added
 // @description:it Abilita tasti di scelta rapida per riproduzione HTML5: screenshot del video; abilita/disabilita picture-in-picture; copia il video nella cache; manda qualsiasi video a schermo intero o a dimensione finestra del browser; avanzamento veloce, riavvolgimento, pausa/riproduzione, imposta velocità di riproduzione. Siti video supportati: YouTube, TED, Supporto dei siti video mainstream nella Cina continentale. È possibile aggiungere siti personalizzati
 // @homepage https://bbs.kafan.cn/thread-2093014-1-1.html
@@ -349,11 +349,11 @@ const adjustVolume = n => {
 	if (inRange(n, 0, 1)) v.volume = +n.toFixed(2);
 };
 const tip = (msg) => {
-	if (!$msg?.get(0)?.offsetHeight) $msg = $('<div style="max-width:455px;min-width:333px;background:#EEE;color:#111;height:22px;top:-30px;left:45vw;border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
+	if (!$msg?.get(0)?.offsetHeight) $msg = $('<div style="max-width:455px;min-width:333px;background:#EEE;color:#111;height:22px;top:-30px;left:50%;transform:translate(-50%, 0); border-radius:8px;border:1px solid orange;text-align:center;font-size:15px;position:fixed;z-index:2147483647"></div>').appendTo(by);
     if (!msg?.length) return;
 	const len = msg.length * 15;
 	$msg.stop(true, true).text(msg)
-		.css({width:`${len}px`,left:`calc(50vw - ${len/2}px)`})
+		.css({width:`${len}px`})
 		.animate({top:'190px'})
 		.animate({top:'+=9px'},1900)
 		.animate({top:'-30px'});
