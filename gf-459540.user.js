@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/5.0.6/artplayer.min.js
-// @version     3.1
+// @version     3.2
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -49,16 +49,16 @@
 		{ "name": "光速云", "searchUrl": "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
 		{ "name": "神马云", "searchUrl": "https://api.1080zyku.com/inc/apijson.php/" },
 		{ "name": "188云", "searchUrl": "https://www.188zy.org/api.php/provide/vod/" },
-		// { "name": "飞速云", "searchUrl": "https://www.feisuzyapi.com/api.php/provide/vod/" },//经常作妖或者没有资源
+		{ "name": "飞速云", "searchUrl": "https://www.feisuzyapi.com/api.php/provide/vod/" },//经常作妖或者没有资源
 		{ "name": "红牛云", "searchUrl": "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
 		// {"name":"天空云","searchUrl":"https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},//有防火墙，垃圾
 		// { "name": "8090云", "searchUrl": "https://api.yparse.com/api/json/m3u8/" },垃圾 可能有墙
 		{ "name": "百度云", "searchUrl": "https://api.apibdzy.com/api.php/provide/vod/" },
-		// { "name": "酷点云", "searchUrl": "https://kudian10.com/api.php/provide/vod/" },
-		// { "name": "淘片云", "searchUrl": "https://taopianapi.com/home/cjapi/as/mc10/vod/json/" },
+		{ "name": "酷点云", "searchUrl": "https://kudian10.com/api.php/provide/vod/" },
+		{ "name": "淘片云", "searchUrl": "https://taopianapi.com/home/cjapi/as/mc10/vod/json/" },
 		// { "name": "ck云", "searchUrl": "https://ckzy.me/api.php/provide/vod/" },
 		// { "name": "快播云", "searchUrl": "https://caiji.kczyapi.com/api.php/provide/vod/" },
-		// { "name": "海外看", "searchUrl": "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
+		{ "name": "海外看", "searchUrl": "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
 		// { "name": "68资源", "searchUrl": "https://caiji.68zyapi.com/api.php/provide/vod/" },
 
 		// https://caiji.kczyapi.com/api.php/provide/vod/
