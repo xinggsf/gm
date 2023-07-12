@@ -115,7 +115,7 @@ D：上一帧     F：下一帧(youtube.com用E键)`,
 		'cantExitPIP': 'Unable to exit picture-in-picture mode! Error：\n',
 		'rememberRateMenuOption': 'Remember video playback speed',
 		'speedRate': 'Speed rate ',
-		'ready': ' ready！ Waiting for user commands.',
+		'ready': ' ready！ Waiting for you commands.',
 		'mainPageOnly': 'Process the main page only',
 		'download': 'Download: ',
 		'videoLag': 'Video lag',
@@ -140,7 +140,7 @@ Shift + Enter: Set/unset video enlarged to window size
 N key： Play the next video (if any)
 C key： Speed up video playback by 0.1
 X key: Slow down video playback by 0.1
-Z key: Reset video playback speed to 1.0
+Z key, Set video playback speed: 1.0 ←→ X
 D key: Previous frame
 F key: Next frame (except on YouTube)
 E key: Next frame (YouTube only)`,
@@ -180,7 +180,7 @@ Shift + Invio: Attiva/disattiva ingrandimento del video a dimensione della fines
 Tasto N： Riproduzione del video successivo (se presente)
 Tasto C: Velocizza riproduzione video di 0,1
 Tasto X: Rallenta riproduzione video di 0,1
-Tasto Z: Reimposta velocità riproduzione video a 1,0
+Tasto Z, Impostare la velocità di riproduzione video: 1,0 ←→ X
 Tasto D: Vai al frame precedente
 Tasto F: Vai al frame successivo (escluso YouTube)
 Tasto E: Vai al frame successivo (solo su YouTube)`,
