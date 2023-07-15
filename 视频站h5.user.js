@@ -45,7 +45,7 @@
 // @match    http://news.mtime.com/*
 // @match    http://video.mtime.com/*
 // @GM_info
-// @match    https://www.youtube.com/watch*
+// @match    https://www.youtube.com/*
 // @match    https://www.ted.com/talks/*
 // @match    https://www.twitch.tv/*
 
@@ -1066,7 +1066,7 @@ GM_registerMenuCommand(MSG.helpMenuOption, alert.bind(w, MSG.helpBody));
 const openVX = () =>
 	GM_openInTab('https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg', !1);
 GM_registerMenuCommand(MSG.donateMenuOption, openVX);
-+GM_getValue('notificationVX', true) && GM_notification?.({
+GM_getValue('notificationVX', true) && GM_notification?.({
   text: MSG.donateMessage,
   onclick: openVX,
   timeout: 9900,
