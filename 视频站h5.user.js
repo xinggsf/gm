@@ -102,10 +102,7 @@ P：视频截图    i：切换画中画   M：(停止)缓存视频(hls.js)
 空格键：暂停/播放      N：播放下一集
 回车键：切换全屏;      回车键 + shift: 切换网页全屏
 C(抖音V)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
-D：上一帧     F：下一帧(youtube.com用E键)`,
-		'donateMenuOption': '(微信)为爱发电！',
-		'donateMessage': '为爱发电！点击打开微信图片\n注明H5脚本，并留下email',
-		'donateTitle': 'HTML5视频播放工具--脚本'
+D：上一帧     F：下一帧(youtube.com用E键)`
 	},
 	'en': {
 		'console': '%cScript[%s] Feedback：%s\n%s',
@@ -143,10 +140,7 @@ X key: Slow down video playback by 0.1
 Z key, Set video playback speed: 1.0 ←→ X
 D key: Previous frame
 F key: Next frame (except on YouTube)
-E key: Next frame (YouTube only)`,
-		'donateMenuOption': 'Donate！',
-		'donateMessage': 'Power for love! Click to open WeChat image \n specify H5 script and leave email',
-		'donateTitle': 'HTML5 Video Player Tool - Script',
+E key: Next frame (YouTube only)`
 	},
 	'it': {
 		'console': '%cScript[%s] Feedback：%s\n%s',
@@ -183,10 +177,7 @@ Tasto X: Rallenta riproduzione video di 0,1
 Tasto Z, Impostare la velocità di riproduzione video: 1,0 ←→ X
 Tasto D: Vai al frame precedente
 Tasto F: Vai al frame successivo (escluso YouTube)
-Tasto E: Vai al frame successivo (solo su YouTube)`,
-		'donateMenuOption': 'Fai una donazione！',
-		'donateMessage': 'Fai una donazione！ Clicca per aprire l\'immagine di WeChat, \n menziona "H5 script" e lascia la tua email.',
-		'donateTitle': 'Strumento di riproduzione video HTML5 - Script',
+Tasto E: Vai al frame successivo (solo su YouTube)`
 	}
 };
 const MSG = i18n[curLang] || i18n.en;
@@ -993,7 +984,6 @@ let router = {
 	}
 };
 router.nunuyy5 = router.dandanzan10 = router.dandanzan;
-if (host.endsWith('dandanzan.cf')) delete router.dandanzan;
 
 if (!router[u]) { //直播站点
 	router = {
@@ -1063,15 +1053,5 @@ Reflect.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });
 GM_registerMenuCommand(MSG.helpMenuOption, alert.bind(w, MSG.helpBody));
-const openVX = () =>
-	GM_openInTab('https://fj.kafan.cn/attachment/forum/202307/04/155644vsjxry7cyvzqyl9v.png.thumb.jpg', !1);
-GM_registerMenuCommand(MSG.donateMenuOption, openVX);
-GM_getValue('notificationVX', true) && GM_notification?.({
-  text: MSG.donateMessage,
-  onclick: openVX,
-  timeout: 9900,
-  title: MSG.donateTitle,
-});
-GM_setValue('notificationVX', !1);
 if (!router[u] || !router[u]()) app.init();
 if (!router[u] && !cfg.isNumURL) cfg.isNumURL = /[_\W]\d+(\/|\.[a-z]{3,8})?$/.test(path);
