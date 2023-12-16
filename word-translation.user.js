@@ -7,8 +7,9 @@
 // @author       xinggsf  田雨菲
 // @include      http*
 // @include      file://*
-// @exclude      https://www.nunuyy*.html
-// @exclude      https://www.dandanzan*.html
+// @exclude      https://nnyy.in/*
+// @exclude      https://www.dandanzan.net/*
+// @exclude      https://www.dandanzan.com/*
 // @run-at       document-body
 // @grant        GM_addStyle
 // @grant        GM_xmlhttpRequest
