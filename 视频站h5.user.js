@@ -632,7 +632,7 @@ const app = {
 		if (!v.matches('.art-video') || !e.matches('.art-video-player')) return !1;
 		cfg.btnFP = q('.art-control-fullscreenWeb', e);
 		cfg.btnFS = q('.art-control-fullscreen', e);
-		e.closest('body > *').classList.add('gm-dp-zTop');
+		e.closest('body > *')?.classList.add('gm-dp-zTop');
 		return e;
 	},
 	getDPlayer() {
