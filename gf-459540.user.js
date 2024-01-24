@@ -196,6 +196,7 @@
 			</div>`
 			));
 			$(".liu-closePlayer",e).onclick = function() {
+				art.destroy();
 				this.parentNode.remove();
 				document.body.style.overflow = 'auto';
 			};
