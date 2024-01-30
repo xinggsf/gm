@@ -27,7 +27,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.8
+// @version    1.9.9
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -856,8 +856,7 @@ let router = {
 	bilibili() {
 		cfg.isLive = host.startsWith('live.');
 		if (cfg.isLive) return;
-		const isSquirtle = path.startsWith('/bangumi');
-		if (!isSquirtle) actList.delete(32);
+		actList.delete(32);
 
 		bus.$on('addShadowRoot', r => {
 			if (r.host.nodeName === 'BWP-VIDEO') {
@@ -868,9 +867,9 @@ let router = {
 			}
 		});
 		cfg.shellCSS = 'div[aria-label="哔哩哔哩播放器"]';
-		cfg.nextCSS = isSquirtle ? '.squirtle-video-next' : '.bpx-player-ctrl-next';
-		cfg.webfullCSS = isSquirtle ? '.squirtle-video-pagefullscreen' : '.bpx-player-ctrl-web';
-		cfg.fullCSS = isSquirtle ? '.squirtle-video-fullscreen' : '.bpx-player-ctrl-full';
+		cfg.nextCSS = '.bpx-player-ctrl-next';
+		cfg.webfullCSS = '.bpx-player-ctrl-web';
+		cfg.fullCSS = '.bpx-player-ctrl-full';
 		/*
 		const seek = function(step) {
 			const p = this.player;
