@@ -71,15 +71,15 @@ function getSet(name, defaultValue) {
 	const thisSet = GM_getValue(name, {});
 	return thisSet[site] || defaultValue;
 }
-// 解析引擎。 去除原bad字符，以适应git
+// 解析引擎
 const APIS = [
 	{name:"盒子", url:"https://jx.jsonplayer.com/player/?url=", title:"全网解析"},
 	{name:"爱豆-奇艺QQ", url:"https://jx.aidouer.net/?url="},
 	{name:"OK云", url:"https://api.okjx.cc:3389/jx.php?url="},
-	// 88看 必须修改请求头referer为 https://www.mgtvyy.cc/
+	// 88看 必须修改请求头referer为 https://www.mgtvys.com/
 	{name:"88看", url:"https://vip.sp-flv.com:8443/?url=", title:"全网解析"},
-	// 金福 必须修改请求头referer为 https://www.88hd.com/
-	// {name: "金福", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
+	// 金福 必须修改请求头referer为 https://www.88mv.org/
+	{name: "金福", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	// {name:"高速接口", url:"https://jsap.attakids.com/?url="},
 	{name:"虾米", url:"https://jx.xmflv.com/?url="},
 	{name:"咸鱼", url:"https://jx.xyflv.com/?url="},
