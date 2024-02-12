@@ -8,7 +8,6 @@
 // @noframes
 // @match    https://www.iqiyi.com/*
 // @match    https://v.youku.com/v_show/id_*
-// @match    http://www.le.com/ptv/vplay/*
 // @match    https://www.le.com/ptv/vplay/*
 // @match    https://v.qq.com/*
 // @match    https://m.mgtv.com/b/*
@@ -18,6 +17,7 @@
 // @match    https://www.acfun.cn/bangumi/*
 // @match    https://www.bilibili.com/*
 // @match    https://vip.1905.com/play/*
+// @match    https://www.1905.com/vod/play/*
 // @match    http://v.pptv.com/show/*
 // @match    https://v.pptv.com/show/*
 // @match    https://m.fun.tv/vplay/*
