@@ -72,11 +72,11 @@
 	//处理搜索到的结果:从返回结果中找到对应片子
 	function handleResponse(r) {
 		if (!r?.list?.length) {
-			log("未搜索到结果");
+			log("未搜索到结果\n", r);
 			return 0
 		}
 		log("正在对比剧集年份");
-		const video = r.list.find(k => k.vod_name === videoName && k.vod_year == videoYear && k.vod_play_url);
+		const video = r.list.find(k => k.type_name != '电影解说' && k.vod_year == videoYear && k.vod_play_url);
 		if (!video) {
 			log("没有找到匹配剧集的影片，怎么回事哟！");
 			return 0
@@ -87,9 +87,9 @@
 			log("没有m3u8资源，无法播放");
 			return 0
 		}
-		return a[0].split("#").map(str => {
-			let index = str.indexOf("$");
-			return { name: str.slice(0, index), "url": str.slice(index + 1) }
+		return a[0].split("#").map(s => {
+			let index = s.indexOf("$");
+			return { name: s.slice(0,index), url: s.slice(index + 1)}
 		});
 	}
 
