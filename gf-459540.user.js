@@ -11,7 +11,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/5.0.6/artplayer.min.js
-// @version     3.2
+// @version     3.3
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -55,7 +55,8 @@
 		// { "name": "8090云", "searchUrl": "https://api.yparse.com/api/json/m3u8/" },垃圾 可能有墙
 		{ "name": "百度云", "searchUrl": "https://api.apibdzy.com/api.php/provide/vod/" },
 		{ "name": "酷点云", "searchUrl": "https://kudian10.com/api.php/provide/vod/" },
-		{ "name": "淘片云", "searchUrl": "https://taopianapi.com/home/cjapi/as/mc10/vod/json/" },
+		// https://taopianapi.com/home/cjapi/as/mc10/vod/json/
+		{ "name": "淘片云", "searchUrl": "https://taopianapi.com/cjapi/mc/vod/json/m3u8.html" },
 		// { "name": "ck云", "searchUrl": "https://ckzy.me/api.php/provide/vod/" },
 		// { "name": "快播云", "searchUrl": "https://caiji.kczyapi.com/api.php/provide/vod/" },
 		{ "name": "海外看", "searchUrl": "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
