@@ -122,7 +122,7 @@ D：上一帧     F：下一帧(youtube.com用E键)`
 Middle mouse button: fast forward 5 seconds
 
 P key： Take a screenshot
-I key： Activate picture-in-picture mode
+I key： Enter/Exit picture-in-picture mode
 M key： Enable/disable caching of video(hls.js)
 
 Arrow keys ← and →： Fast forward or rewind by 5 seconds
@@ -741,12 +741,12 @@ const app = {
 			}, false);
 		}
 		$(v).one('canplaythrough', ev => {
-			if (!cfg.isLive && bRate) {
-				v.playbackRate = +localStorage.mvPlayRate || 1;
+			if (!cfg.isLive) {
+				if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
 				tip(MSG.speedRate + v.playbackRate);
 				v.addEventListener('ratechange', ev => {
 					tip(MSG.speedRate + v.playbackRate);
-					if (v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
+					if (bRate && v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
 			}
 			this.checkMV();
