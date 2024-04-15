@@ -962,7 +962,7 @@ let router = {
 	agemys() {
 		actList.set(78, _ => { location.href = location.href.replace(/\d+$/, s => ++s) });
 	},
-	dandanzan() {
+	nnyy() {
 		GM_registerMenuCommand(MSG.videoLag, () => {
 			'use strict';
 			v.pause();
@@ -983,7 +983,6 @@ let router = {
 		cfg.nextCSS = `a[href="${path}"]+a`;
 	}
 };
-router.nunuyy5 = router.dandanzan10 = router.dandanzan;
 
 if (!router[u]) { //直播站点
 	router = {
