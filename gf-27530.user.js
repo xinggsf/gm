@@ -2,7 +2,7 @@
 // ==UserScript==
 // @name     解析VIP视频集合
 // @namespace  https://greasyfork.org/zh-CN/users/104201
-// @version    6.0.9
+// @version    6.1.0
 // @description  破解VIP或会员视频，原作者：黄盐
 // @author     xinggsf
 // @noframes
@@ -81,14 +81,16 @@ const APIS = [
 	// 金福 必须修改请求头referer为 https://www.88mv.org/
 	{name: "金福", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	// {name:"高速接口", url:"https://jsap.attakids.com/?url="},
-	{name:"虾米", url:"https://jx.xmflv.com/?url="},
-	{name:"咸鱼", url:"https://jx.xyflv.com/?url="},
+	{name:"极速", url:"https://jx.2s0.cn/player/?url="},
+	{name:"咸鱼", url:"https://jx.xyflv.cc/?url="},
+	{name:"虾米", url:"https://jx.xmflv.cc/?url="},
+	{name:"虾米2", url:"https://jx.xmflv.com/?url="},
 	{name:"诺讯", url:"https://www.nxflv.com/?url="},
-	{name:"BL解析", url:"https://vip.bljiex.cc/?v="},
+	{name:"BL解析", url:"https://svip.bljiex.cc/?v="},
 	{name:"醉仙", url:"https://jx.zui.cm/?url="},
-	// {name:"夜幕", url:"https://www.yemu.xyz/?url="},
+	{name:"夜幕", url:"https://www.yemu.xyz/?url="},
 	// {name:"乐多", url:"https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
-	{name:"m3u8云", url:"https://jx.m3u8.tv/jiexi/?url="},
+	// {name:"m3u8云", url:"https://jx.m3u8.tv/jiexi/?url="},
 	{name:"猪蹄", url:"https://jx.iztyy.com/svip/?url="},
 	{name:"盘古", url:"https://www.pangujiexi.cc/jiexi.php?url="},
 	{name:"黑云", url:"https://jiexi.380k.com/?url="},
