@@ -503,9 +503,16 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 		// localStorage.mvPlayRate = v.playbackRate;
 		v.playbackRate = 1;
 	}
+	tip(MSG.speedRate + v.playbackRate);
 })
-.set(88, adjustRate.bind(null, -0.1)) //按键X
-.set(67, adjustRate.bind(null, 0.1)) //按键C
+.set(88, _ => { //按键X
+	adjustRate(-0.1);
+	tip(MSG.speedRate + v.playbackRate);
+})
+.set(67, _ => { //按键C
+	adjustRate(0.1);
+	tip(MSG.speedRate + v.playbackRate);
+})
 .set(40, adjustVolume.bind(null, -0.1)) //↓　降音量
 .set(38, adjustVolume.bind(null, 0.1)) //↑　加音量
 .set(37, _ => {v.currentTime -= 5}) //按键←
@@ -743,9 +750,7 @@ const app = {
 		$(v).one('canplaythrough', ev => {
 			if (!cfg.isLive) {
 				if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
-				tip(MSG.speedRate + v.playbackRate);
 				v.addEventListener('ratechange', ev => {
-					tip(MSG.speedRate + v.playbackRate);
 					if (bRate && v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
 			}
@@ -761,7 +766,7 @@ const app = {
 			this.vCount = 0;
 			this.onGrowVList();
 		}
-		tip((GM_info.script.name_i18n?.[curLang] || GM_info.script.name) + MSG.ready);
+		// tip((GM_info.script.name_i18n?.[curLang] || GM_info.script.name) + MSG.ready);
 	},
 	init() {
 		const rawAel = EventTarget.prototype.addEventListener;
