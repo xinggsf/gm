@@ -503,16 +503,9 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 		// localStorage.mvPlayRate = v.playbackRate;
 		v.playbackRate = 1;
 	}
-	tip(MSG.speedRate + v.playbackRate);
 })
-.set(88, _ => { //按键X
-	adjustRate(-0.1);
-	tip(MSG.speedRate + v.playbackRate);
-})
-.set(67, _ => { //按键C
-	adjustRate(0.1);
-	tip(MSG.speedRate + v.playbackRate);
-})
+.set(88, adjustRate.bind(null, -0.1)) //按键X
+.set(67, adjustRate.bind(null, 0.1)) //按键C
 .set(40, adjustVolume.bind(null, -0.1)) //↓　降音量
 .set(38, adjustVolume.bind(null, 0.1)) //↑　加音量
 .set(37, _ => {v.currentTime -= 5}) //按键←
@@ -665,6 +658,7 @@ const app = {
 		if (e.ctrlKey || e.metaKey || e.altKey || t.contentEditable=='true' || // e.isComposing
 			/INPUT|TEXTAREA|SELECT/.test(t.nodeName)) return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
+		if (e.shiftKey && e.keyCode == 27) return;
 		if (cfg.isLive && [37,39,78,77,88,67,90].includes(e.keyCode)) return;
 		if (!this.checkMV()) return;
 		if (!e.shiftKey && cfg.mvShell && cfg.mvShell.contains(t) && [32,37,39].includes(e.keyCode)) return;
@@ -674,6 +668,7 @@ const app = {
 			e.stopPropagation();
 			e.preventDefault();
 			actList.get(key)(e);
+			if ([67,88,90].includes(e.keyCode)) tip(MSG.speedRate + v.playbackRate);
 		}
 	},
 	checkUI() {
