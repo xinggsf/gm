@@ -66,6 +66,7 @@
 // @include    *play/*
 // @grant      window.onurlchange
 // @grant      unsafeWindow
+// @grant      GM_download
 // @grant      GM_openInTab
 // @grant      GM_notification
 // @grant      GM_registerMenuCommand
@@ -554,14 +555,19 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 
 	canvas.toBlob((blob) => {
 		const dataURL = URL.createObjectURL(blob);
+		GM_download({
+			url: dataURL,
+			name: Date.now().toString(36) +'.png',
+			onloadend: _ => {URL.revokeObjectURL(dataURL);}
+		});
+		/*
 		const link = d.createElement('a');
 		link.href = dataURL;
 		link.download = Date.now().toString(36) +'.png';
 		link.style.display = 'none';
 		d.body.appendChild(link);
 		link.click();
-		link.remove();
-		URL.revokeObjectURL(dataURL);
+		link.remove(); */
 	});
 })
 .set(77, _ => {// M 缓存视频
@@ -902,7 +908,7 @@ let router = {
 	ixigua() {
 		cfg.fullCSS = 'div[aria-label="全屏"]';
 		cfg.nextCSS = '.xgplayer-control-item.control_playnext';
-		GM_addStyle('.gm-fp-body .xgplayer{padding-top:0!important} .gm-fp-wrapper #player_default{max-height: 100%!important} h1.title ~a { padding-left:12px; color:blue; }');
+		GM_addStyle('.gm-fp-body .xgplayer{padding-top:0!important} .gm-fp-wrapper #player_default{max-height: 100%!important} h1.title~a, .videoTitle h1~a{ padding-left:12px; color:blue; }');
 
 		bus.$on('foundMV',() => {
 			const data = w._SSR_HYDRATED_DATA.anyVideo.gidInformation.packerData;
@@ -910,7 +916,7 @@ let router = {
 			const title = document.title.split(' - ')[0];
 			const s = Object.keys(c).map(k =>
 				`<a href="${c[k].main_url}" download="${title}_${c[k].definition}.mp4" target="_blank">${c[k].definition}</a>`
-			).join('  -  ');
+			).join('　　　');
 			$('.videoTitle h1, h1.title').text(MSG.download).after(s);
 		});
 	},
@@ -959,7 +965,7 @@ let router = {
 		bus.$on('urlchange',delHiddenProp);
 		bus.$once('canplay',delHiddenProp);
 	},
-	agemys() {
+	agedm() {
 		actList.set(78, _ => { location.href = location.href.replace(/\d+$/, s => ++s) });
 	},
 	nnyy() {
