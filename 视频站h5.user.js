@@ -1036,7 +1036,7 @@ if (!router[u]) { //直播站点
 		twitch() {
 			cfg.isLive = !path.startsWith('/videos/');
 			cfg.fullCSS = 'button[data-a-target=player-fullscreen-button]';
-			cfg.webfullCSS = 'button[data-a-target=player-theatre-mode-button]';
+			cfg.webfullCSS = '.player-controls__right-control-group > div:nth-child(4) > button';
 			cfg.playCSS = 'button[data-a-target=player-play-pause-button]';
 		},
 		longzhu() {
