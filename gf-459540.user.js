@@ -11,17 +11,18 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/5.0.6/artplayer.min.js
-// @version     3.3
+// @version     3.4
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
 // ==/UserScript==
 
+// ver3.4 fix UI bug: 集数过多时撑大播放器；新增飘花、樱花2个资源搜索
 // ver3.3 过滤掉量子云的电影解说；新增暴风云、快帆云、索尼云、天空云4个资源搜索；更新淘片云API地址
 (function () {
+	const skBuffSize = 80; // 视频可调节缓存区大小，单位秒
 	const _debug = !1;
 	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
-	const skBuffSize = 80; // 视频缓存区大小，单位秒
 	let art = {}; //播放器
 	let seriesNum = 0;
 	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
@@ -54,6 +55,8 @@
 		{ name: "快帆云", searchUrl: "https://api.kuaifan.tv/api.php/provide/vod/"},
 		{ name: "索尼云", searchUrl: "https://suoniapi.com/api.php/provide/vod/"},
 		{ name: "淘片云", searchUrl: "https://taopianapi.com/cjapi/mc/vod/json/m3u8.html" },
+		{name:"飘花",url:"http://www.zzrhgg.com/api.php/provide/vod/from/kbm3u8/",json:"3",zd:"1",qp:"1"},
+		{name:"樱花",url:"https://m3u8.apiyhzy.com/api.php/provide/vod/"},
 		{ name: "天空云", searchUrl: "https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},//有防火墙，垃圾
 		{ name: "闪电云", searchUrl: "https://sdzyapi.com/api.php/provide/vod/"},//不太好，格式经常有错
 		// { name: "8090云", searchUrl: "https://api.yparse.com/api/json/m3u8/" },垃圾 可能有墙
@@ -63,6 +66,7 @@
 		// { name: "ck云", searchUrl: "https://ckzy.me/api.php/provide/vod/" },
 		// { name: "快播云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/" },
 		{ name: "海外看", searchUrl: "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
+
 		// { name: "68资源", searchUrl: "https://caiji.68zyapi.com/api.php/provide/vod/" },
 		// https://caiji.kczyapi.com/api.php/provide/vod/
 		// {name:"鱼乐云",searchUrl:"https://api.yulecj.com/api.php/provide/vod/"},//速度太慢
@@ -387,6 +391,7 @@ xy-button{
 	grid-gap:0;
 }
 .series-select-space{
+	overflow-y: auto;
 	display: grid;
 	grid-gap: 0;
 	grid-auto-rows: 1.8em;
