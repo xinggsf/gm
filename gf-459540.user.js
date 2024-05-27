@@ -3,6 +3,7 @@
 // @namespace   liuser.betterworld.love
 // @match       https://movie.douban.com/subject/*
 // @match       https://m.douban.com/movie/*
+// @exclude     https://movie.douban.com/subject/*/episode/*
 // @grant       GM_addStyle
 // @grant       GM_xmlhttpRequest
 // @connect     *
@@ -11,7 +12,7 @@
 // @require     https://cdn.staticfile.org/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.org/shaka-player/4.3.5/shaka-player.compiled.js
 // @require     https://cdn.staticfile.org/artplayer/5.0.6/artplayer.min.js
-// @version     3.4
+// @version     3.5
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -43,29 +44,28 @@
 
 	//搜索源
 	const searchSource = [
-		{ name: "非凡云", searchUrl: "http://cj.ffzyapi.com/api.php/provide/vod/" },
-		{ name: "量子云", searchUrl: "https://cj.lziapi.com/api.php/provide/vod/" },
+		{ name: "非凡云", searchUrl: "http://cj.ffzyapi.com/api.php/provide/vod/at/json/" },
+		{ name: "量子云", searchUrl: "https://cj.lzcaiji.com/api.php/provide/vod/from/lzm3u8/at/json/" },
 		{ name: "ikun云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
 		{ name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
 		{ name: "神马云", searchUrl: "https://api.1080zyku.com/inc/apijson.php/" },
-		{ name: "188云", searchUrl: "https://www.188zy.org/api.php/provide/vod/" },
-		{ name: "飞速云", searchUrl: "https://www.feisuzyapi.com/api.php/provide/vod/" },//经常作妖或者没有资源
-		{ name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
-		{ name: "暴风云", searchUrl: "https://bfzyapi.com/api.php/provide/vod/"},
+		{ name: "飞速云", searchUrl: "https://www.feisuzyapi.com/api.php/provide/vod/" },
+		{ name: "红牛云", searchUrl: "https://www.hongniuzy3.com/api.php/provide/vod/from/hnm3u8/" },
+		// { name: "暴风云", searchUrl: "https://bfzyapi.com/api.php/provide/vod/"},
 		{ name: "快帆云", searchUrl: "https://api.kuaifan.tv/api.php/provide/vod/"},
 		{ name: "索尼云", searchUrl: "https://suoniapi.com/api.php/provide/vod/"},
 		{ name: "淘片云", searchUrl: "https://taopianapi.com/cjapi/mc/vod/json/m3u8.html" },
-		{name:"飘花",url:"http://www.zzrhgg.com/api.php/provide/vod/from/kbm3u8/",json:"3",zd:"1",qp:"1"},
-		{name:"樱花",url:"https://m3u8.apiyhzy.com/api.php/provide/vod/"},
-		{ name: "天空云", searchUrl: "https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},//有防火墙，垃圾
-		{ name: "闪电云", searchUrl: "https://sdzyapi.com/api.php/provide/vod/"},//不太好，格式经常有错
+		// {name:"飘花",url:"http://www.zzrhgg.com/api.php/provide/vod/from/kbm3u8/",json:"3",zd:"1",qp:"1"},
+		// {name:"樱花",url:"https://m3u8.apiyhzy.com/api.php/provide/vod/"},
+		{ name: "天空云", searchUrl: "https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},
+		// { name: "闪电云", searchUrl: "https://sdzyapi.com/api.php/provide/vod/"},//不太好，格式经常有错
 		// { name: "8090云", searchUrl: "https://api.yparse.com/api/json/m3u8/" },垃圾 可能有墙
 		{ name: "百度云", searchUrl: "https://api.apibdzy.com/api.php/provide/vod/" },
-		{ name: "酷点云", searchUrl: "https://kudian10.com/api.php/provide/vod/" },
+		// { name: "酷点云", searchUrl: "https://kudian10.com/api.php/provide/vod/" },
 		{ name: "卧龙云", searchUrl: "https://collect.wolongzyw.com/api.php/provide/vod/" }, //非常恶心的广告
 		// { name: "ck云", searchUrl: "https://ckzy.me/api.php/provide/vod/" },
 		// { name: "快播云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/" },
-		{ name: "海外看", searchUrl: "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
+		// { name: "海外看", searchUrl: "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
 
 		// { name: "68资源", searchUrl: "https://caiji.68zyapi.com/api.php/provide/vod/" },
 		// https://caiji.kczyapi.com/api.php/provide/vod/
