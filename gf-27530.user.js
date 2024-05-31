@@ -6,7 +6,7 @@
 // @description  破解VIP或会员视频，原作者：黄盐
 // @author     xinggsf
 // @noframes
-// @match    https://www.iqiyi.com/*
+// @match    https://www.iqiyi.com/v_*
 // @match    https://v.youku.com/v_show/id_*
 // @match    https://www.le.com/ptv/vplay/*
 // @match    https://v.qq.com/*
@@ -17,8 +17,6 @@
 // @match    https://www.acfun.cn/bangumi/*
 // @match    https://www.bilibili.com/*
 // @match    https://vip.1905.com/play/*
-// @match    https://www.1905.com/vod/play/*
-// @match    http://v.pptv.com/show/*
 // @match    https://v.pptv.com/show/*
 // @match    https://m.fun.tv/vplay/*
 // @match    https://www.fun.tv/vplay/*
