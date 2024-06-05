@@ -34,7 +34,7 @@
 	const log = _debug ? console.log.bind(console) : noopFn;
 	const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) });
 	//获取豆瓣影片名称
-	const videoName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
+	const videoName = (isMobile ? $(".sub-title").innerText : document.title.slice(0, -5)).replace(' ','');
 	const videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
 
 	//将html转为element
