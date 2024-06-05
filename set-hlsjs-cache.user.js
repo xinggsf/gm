@@ -9,6 +9,7 @@
 // @match       https://www.btnull.nu/py/*
 // @version     1.2
 // @author      ray
+// @license     MIT
 // @run-at      document-start
 // @grant       unsafeWindow
 // ==/UserScript==
@@ -36,7 +37,7 @@ const buffSize = 80; // 缓存区大小，单位秒
 		}
 		return fn(args);
 	};
-}();
+})();
 
 function after() {
 	console.log('成功设置Hls缓存区！');
