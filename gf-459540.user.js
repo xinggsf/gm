@@ -12,18 +12,19 @@
 // @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
 // @require     https://cdn.staticfile.net/artplayer/5.1.1/artplayer.min.js
-// @version     3.7
+// @version     3.8
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
 // ==/UserScript==
 
+// ver3.8 新增木耳、极速、豪华云，对空格分隔的片名进行处理~并二次搜索资源
 // ver3.7 更新暴风云、量子、樱花、新浪、索尼、无尽、鱼乐云
 // ver3.6 新增U酷云，更新非凡云API
 // ver3.4 fix UI bug: 集数过多时撑大播放器；新增飘花、樱花2个资源搜索
 // ver3.3 过滤掉量子云的电影解说；新增暴风云、快帆云、索尼云、天空云4个资源搜索；更新淘片云API地址
 (function () {
-	const skBuffSize = 80; // 视频可调节缓存区大小，单位秒
+	const skBuffSize = 80; // 可调节的视频缓存区大小，单位秒：10 － 800
 	const _debug = !1;
 	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
 	let art = {}; //播放器
@@ -33,9 +34,9 @@
 	const noopFn = function() {};
 	const log = _debug ? console.log.bind(console) : noopFn;
 	const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) });
-	//获取豆瓣影片名称
-	const videoName = (isMobile ? $(".sub-title").innerText : document.title.slice(0, -5)).replace(' ','');
-	const videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
+
+	let vName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5); //豆瓣影片名
+	let videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
 
 	//将html转为element
 	function htmlToElement(html) {
@@ -48,12 +49,15 @@
 	const searchSource = [
 		{ name: "非凡云", searchUrl: "http://api.ffzyapi.com/api.php/provide/vod/" }, // www.ffzy.tv
 		{ name: "量子云", searchUrl: "http://23.224.101.30/api.php/provide/vod/" },
-		{ name: "ikun云",searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
+		{ name: "神马云", searchUrl: "https://api.1080zyku.com/inc/apijson.php/" },
+		{ name: "木耳云", searchUrl: "https://www.heimuer.tv/api.php/provide/vod/"},
+		{ name: "豪华云", searchUrl: "https://hhzyapi.com/api.php/provide/vod/"},
+		{ name: "极速云", searchUrl: "https://8.218.111.47/api.php/provide/vod/"},
+		{ name: "飞速云", searchUrl: "https://www.feisuzyapi.com/api.php/provide/vod/" },
+		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
 		{ name: "U酷云",  searchUrl: "https://api.ukuapi.com/api.php/provide/vod/" },
 		{ name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
-		{ name: "神马云", searchUrl: "https://api.1080zyku.com/inc/apijson.php/" },
-		{ name: "飞速云", searchUrl: "https://www.feisuzyapi.com/api.php/provide/vod/" },
-		{ name: "红牛云", searchUrl: "https://www.hongniuzy3.com/api.php/provide/vod/from/hnm3u8/" },
+		// { name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
 		{ name: "暴风云", searchUrl: "https://app.bfzyapi.com/api.php/provide/vod/"},
 		// { name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/from/kcm3u8/"},
 		{ name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod/"},
@@ -101,7 +105,7 @@
 	const search = (url) => new Promise((resolve, reject) => {
 		GM_xmlhttpRequest({
 			method: "GET",
-			url: encodeURI(`${url}?ac=detail&wd=${videoName}`),
+			url: encodeURI(`${url}?ac=detail&wd=${vName}`),
 			timeout: 3000,
 			responseType: 'json',
 			onload(r) {
@@ -116,25 +120,44 @@
 	class PlayBtn {
 		constructor() {
 			const e = htmlToElement(`<xy-button type="primary">一键播放</xy-button>`);
+			const eInfo = htmlToElement(`<xy-button type="primary">重设片名和年份</xy-button>`);
 			$(isMobile ? ".sub-original-title" : "h1").appendChild(e);
-			const render = async (item) => {
-				const playList = await search(item.searchUrl);
-				if (playList == 0) {
-					log(item.name +"获取或解析失败，可能有防火墙");
-					return;
+			e.after(eInfo);
+			eInfo.onclick = function() {
+				const s = prompt(
+					'纠正片名和年份，二者用 | 号隔开。可以只输入片名，如片名有上下集~试着删掉空格及其后的字',
+					`${vName}|${videoYear}`);
+				if (s) {
+					([vName, videoYear = videoYear] = s.split('|'));
 				}
-				if (e.loading) {
-					e.loading = false;
-					new UI(playList);
-				}
-				//渲染资源列表
-				const btn = new SourceButton({ name: item.name, playList }).element;
-				$(".sourceButtonList").appendChild(btn);
 			};
 			e.onclick = async function() {
+				// 二次搜索资源控制2变量
+				const secName = vName.includes(' ') ?  vName.replace(' ', vName.includes(' 第') ?'':'：') : null;
+				const sources = secName ? [] : null;
+				const render = async (item) => {
+					const playList = await search(item.searchUrl);
+					if (playList == 0) {
+						log(item.name +"获取或解析失败，可能有防火墙");
+						if (secName && !sources.includes(item)) sources.push(item);
+						return;
+					}
+					if (e.loading) {
+						e.loading = false;
+						new UI(playList);
+					}
+					//渲染资源列表
+					const btn = new SourceButton({ name: item.name, playList }).element;
+					$(".sourceButtonList").appendChild(btn);
+				};
 				e.loading = true;
 				tip("正在获取影视URL");
 				await Promise.allSettled(searchSource.map(render));
+				if (sources?.length) {
+					vName = secName;
+					await sleep(5000); // 防IP被封
+					await Promise.allSettled(sources.map(render));
+				}
 				if (!$('body > .liu-playContainer')) {
 					e.loading = !1;
 					tip("未能获取影视URL");
@@ -196,10 +219,9 @@
 				</div>
 				<div>
 					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
-					<span style="width:58vw; display:inline-block;"></span>
-					<a class="next-series" style="color:#4aa150">下一集</a>
+					<span style="display:inline-block;color:#aaa">　　　　　　　默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　　　　　　</span>
+					<a class="next-series" style="color:#4aa150;">下一集</a>
 				</div>
-				<p style="color:#aaa;margin-block:0;">默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。</p>
 			</div>`
 			));
 			$(".liu-closePlayer",e).onclick = function() {
@@ -385,7 +407,7 @@ xy-button{
 }
 .playSpace{
 	display: grid;
-	height:93vh;
+	height:95vh;
 	grid-template-rows: 1fr;
 	grid-template-columns: calc(100vw - 28em) 28em;
 	grid-gap:0;
