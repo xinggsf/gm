@@ -14,7 +14,7 @@
 // @grant       unsafeWindow
 // ==/UserScript==
 
-const buffSize = 80; // 缓存区大小，单位秒
+const buffSize = 80; // 可调节的视频缓存区大小，单位秒：10 － 800
 
 (function() {
 	const fn = MediaSource.isTypeSupported;
@@ -33,7 +33,7 @@ const buffSize = 80; // 缓存区大小，单位秒
 					return new target(...args);
 				}
 			});
-			after();
+			setTimeout(after,99);
 		}
 		return fn(args);
 	};
