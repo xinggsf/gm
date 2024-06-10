@@ -5,6 +5,9 @@
 // @match       https://m.douban.com/movie/*
 // @exclude     https://movie.douban.com/subject/*/episode/*
 // @grant       GM_addStyle
+// @grant       GM_registerMenuCommand
+// @grant       GM_setValue
+// @grant       GM_getValue
 // @grant       GM_xmlhttpRequest
 // @connect     *
 // @run-at      document-end
@@ -12,7 +15,7 @@
 // @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
 // @require     https://cdn.staticfile.net/artplayer/5.1.1/artplayer.min.js
-// @version     3.8
+// @version     3.9
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -21,10 +24,10 @@
 // ver3.8 新增木耳、极速、豪华云，对空格分隔的片名进行处理~并二次搜索资源
 // ver3.7 更新暴风云、量子、樱花、新浪、索尼、无尽、鱼乐云
 // ver3.6 新增U酷云，更新非凡云API
-// ver3.4 fix UI bug: 集数过多时撑大播放器；新增飘花、樱花2个资源搜索
+// ver3.4 fix UI bug: 集数过多时撑大播放列表；新增飘花、樱花2个资源搜索
 // ver3.3 过滤掉量子云的电影解说；新增暴风云、快帆云、索尼云、天空云4个资源搜索；更新淘片云API地址
 (function () {
-	const skBuffSize = 80; // 可调节的视频缓存区大小，单位秒：10 － 800
+	const skBuffSize = GM_getValue('buffSize', 80);
 	const _debug = !1;
 	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
 	let art = {}; //播放器
@@ -34,8 +37,8 @@
 	const noopFn = function() {};
 	const log = _debug ? console.log.bind(console) : noopFn;
 	const sleep = ms => new Promise(resolve => { setTimeout(resolve, ms) });
-
-	let vName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5); //豆瓣影片名
+	//豆瓣影片名及其年份
+	let vName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
 	let videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
 
 	//将html转为element
@@ -219,7 +222,7 @@
 				</div>
 				<div>
 					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
-					<span style="display:inline-block;color:#aaa">　　　　　　　默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　　　　　　</span>
+					<span style="display:inline-block;color:#aaa">　　　　　　　默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　　　　　　　　　　　</span>
 					<a class="next-series" style="color:#4aa150;">下一集</a>
 				</div>
 			</div>`
@@ -414,10 +417,13 @@ xy-button{
 }
 .series-select-space{
 	overflow-y: auto;
-	display: grid;
-	grid-gap: 0;
+	display: flex;
+	flex-flow: row wrap;
+	align-items: flex-start;
+	align-content: flex-start;
+	/* grid-gap: 0;
 	grid-auto-rows: 1.8em;
-	grid-template-columns: auto auto auto auto auto;
+	grid-template-columns: auto auto auto auto auto; */
 }
 @media screen and (max-width: 1025px) {
 	.playSpace{
@@ -427,4 +433,9 @@ xy-button{
 }`
 	);
 	new PlayBtn();
+
+	GM_registerMenuCommand('设定视频缓存区大小', () => {
+		const n = +prompt('请输入视频缓存区大小，区间：10 － 800整数秒',''+skBuffSize);
+		n > 9 && n < 801 && GM_setValue('buffSize', n|0);
+	});
 })();
