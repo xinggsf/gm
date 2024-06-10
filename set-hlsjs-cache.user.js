@@ -40,8 +40,8 @@ const buffSize = 80; // 可调节的视频缓存区大小，单位秒：10 － 8
 })();
 
 function after() {
-	console.log('成功设置Hls缓存区！');
 	// Object.assign(Hls.DefaultConfig, { });
+	console.log('成功设置Hls缓存区！');
 
 	if (location.hostname == 'nnyy.in') {
 		const tip = document.createElement('span');
