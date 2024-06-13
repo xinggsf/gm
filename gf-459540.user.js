@@ -64,6 +64,7 @@
 		{ name: "暴风云", searchUrl: "https://app.bfzyapi.com/api.php/provide/vod/"},
 		// { name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/from/kcm3u8/"},
 		{ name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod/"},
+		{ name: "魔都云", searchUrl: "https://caiji.moduapi.cc/api.php/provide/vod/"},// ?ac=list
 		// { name: "快帆云", searchUrl: "https://api.kuaifan.tv/api.php/provide/vod/"},
 		{ name: "索尼云", searchUrl: "https://suonizy.com/api.php/provide/vod/"},
 		{ name: "淘片云", searchUrl: "https://taopianapi.com/cjapi/mc/vod/json/m3u8.html" },
@@ -132,6 +133,7 @@
 					`${vName}|${videoYear}`);
 				if (s) {
 					([vName, videoYear = videoYear] = s.split('|'));
+					document.title = vName;
 				}
 			};
 			e.onclick = async function() {
@@ -217,12 +219,12 @@
 			`<div class="liu-playContainer">
 				<a class="liu-closePlayer">关闭界面</a>
 				<div class="sourceButtonList"></div>
-				<div class="playSpace" style="margin-top:1em;width:100%">
+				<div class="playSpace" style="width:100%">
 					<div class="artplayer-app"></div>
 				</div>
 				<div>
 					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
-					<span style="display:inline-block;color:#aaa">　　　　　　　默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　　　　　　　　　　　</span>
+					<span style="display:inline-block;color:#aaa">　　　　　不要相信视频中的广告！！！默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　　　　　　　　</span>
 					<a class="next-series" style="color:#4aa150;">下一集</a>
 				</div>
 			</div>`
@@ -410,7 +412,7 @@ xy-button{
 }
 .playSpace{
 	display: grid;
-	height:95vh;
+	height:96vh;
 	grid-template-rows: 1fr;
 	grid-template-columns: calc(100vw - 28em) 28em;
 	grid-gap:0;

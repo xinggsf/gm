@@ -2,6 +2,7 @@
 // @name        优化使用hls.js库的视频站
 // @description 设置缓存区大小
 // @namespace   set-hls.js-cache
+// @match       https://www.miguvideo.com/p/detail/*
 // @match       https://vip.1905.com/play/*
 // @match       https://www.1905.com/vod/play/*
 // @match       https://www.olevod.com/player/vod/*
