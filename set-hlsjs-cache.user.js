@@ -44,12 +44,12 @@ function after() {
 	// Object.assign(Hls.DefaultConfig, { });
 	console.log('成功设置Hls缓存区！');
 
+	const v = document.getElementsByTagName('video')[0];
+	v.muted = !1;
 	if (location.hostname == 'nnyy.in') {
 		const tip = document.createElement('span');
 		document.querySelector('#e-tip').after(tip);
-		const v = document.getElementsByTagName('video')[0];
 		v.addEventListener('loadedmetadata', () => {
-			v.muted = !1;
 			v.playbackRate = +localStorage.mvPlayRate || 1.4;
 			tip.innerText = `　　　分辨率：${v.videoWidth}x${v.videoHeight}P`;
 		});

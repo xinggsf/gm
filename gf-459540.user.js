@@ -15,22 +15,24 @@
 // @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
 // @require     https://cdn.staticfile.net/artplayer/5.1.1/artplayer.min.js
-// @version     3.9
+// @version     4.0
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
 // ==/UserScript==
 
-// ver3.8 新增木耳、极速、豪华云，对空格分隔的片名进行处理~并二次搜索资源
+// ver4.0 修正可能出现的重复添加播放按钮
+// ver3.9 修正播放列表的样式，以匹配长片名
+// ver3.8 新增木耳、极速、豪华云，对空格分隔的片名进行处理~并校正名字二次搜索资源
 // ver3.7 更新暴风云、量子、樱花、新浪、索尼、无尽、鱼乐云
 // ver3.6 新增U酷云，更新非凡云API
 // ver3.4 fix UI bug: 集数过多时撑大播放列表；新增飘花、樱花2个资源搜索
 // ver3.3 过滤掉量子云的电影解说；新增暴风云、快帆云、索尼云、天空云4个资源搜索；更新淘片云API地址
 (function () {
 	const skBuffSize = GM_getValue('buffSize', 80);
-	const _debug = !1;
+	const _debug = 0;
 	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
-	let art = {}; //播放器
+	let art; //播放器
 	let seriesNum = 0;
 	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
 	const tip = (message) => XyMessage.info(message);
@@ -52,7 +54,7 @@
 	const searchSource = [
 		{ name: "非凡云", searchUrl: "http://api.ffzyapi.com/api.php/provide/vod/" }, // www.ffzy.tv
 		{ name: "量子云", searchUrl: "http://23.224.101.30/api.php/provide/vod/" },
-		{ name: "神马云", searchUrl: "https://api.1080zyku.com/inc/apijson.php/" },
+		{ name: "神马云", searchUrl: "https://api.1080zyku.com/inc/apijson.php" },
 		{ name: "木耳云", searchUrl: "https://www.heimuer.tv/api.php/provide/vod/"},
 		{ name: "豪华云", searchUrl: "https://hhzyapi.com/api.php/provide/vod/"},
 		{ name: "极速云", searchUrl: "https://8.218.111.47/api.php/provide/vod/"},
@@ -60,7 +62,7 @@
 		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
 		{ name: "U酷云",  searchUrl: "https://api.ukuapi.com/api.php/provide/vod/" },
 		{ name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
-		// { name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
+		// { name: "红牛云", searchUrl: "http://www.hongniuzy2.com/api.php/provide/vod/" },
 		{ name: "暴风云", searchUrl: "https://app.bfzyapi.com/api.php/provide/vod/"},
 		// { name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/from/kcm3u8/"},
 		{ name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod/"},
@@ -121,54 +123,52 @@
 	});
 
 	//播放按钮
-	class PlayBtn {
-		constructor() {
-			const e = htmlToElement(`<xy-button type="primary">一键播放</xy-button>`);
-			const eInfo = htmlToElement(`<xy-button type="primary">重设片名和年份</xy-button>`);
-			$(isMobile ? ".sub-original-title" : "h1").appendChild(e);
-			e.after(eInfo);
-			eInfo.onclick = function() {
-				const s = prompt(
-					'纠正片名和年份，二者用 | 号隔开。可以只输入片名，如片名有上下集~试着删掉空格及其后的字',
-					`${vName}|${videoYear}`);
-				if (s) {
-					([vName, videoYear = videoYear] = s.split('|'));
-					document.title = vName;
+	function playBtn() {
+		const e = htmlToElement(`<xy-button type="primary">一键播放</xy-button>`);
+		const eInfo = htmlToElement(`<xy-button type="primary">重设片名和年份</xy-button>`);
+		$(isMobile ? ".sub-original-title" : "h1").appendChild(e);
+		e.after(eInfo);
+		eInfo.onclick = function() {
+			const s = prompt(
+				'纠正片名和年份，二者用 | 号隔开。可以只输入片名，如片名有上下集~试着删掉空格及其后的字',
+				`${vName}|${videoYear}`);
+			if (s) {
+				([vName, videoYear = videoYear] = s.split('|'));
+				document.title = vName;
+			}
+		};
+		e.onclick = async function() {
+			// 二次搜索资源控制2变量
+			const secName = vName.includes(' ') ?  vName.replace(' ', vName.includes(' 第') ?'':'：') : null;
+			const sources = secName ? [] : null;
+			const render = async (item) => {
+				const playList = await search(item.searchUrl);
+				if (playList == 0) {
+					log(item.name +"获取或解析失败，可能有防火墙");
+					if (secName && !sources.includes(item)) sources.push(item);
+					return;
 				}
+				if (e.loading) {
+					e.loading = false;
+					new UI(playList);
+				}
+				//渲染资源列表
+				const btn = new SourceButton({ name: item.name, playList }).element;
+				$(".sourceButtonList").appendChild(btn);
 			};
-			e.onclick = async function() {
-				// 二次搜索资源控制2变量
-				const secName = vName.includes(' ') ?  vName.replace(' ', vName.includes(' 第') ?'':'：') : null;
-				const sources = secName ? [] : null;
-				const render = async (item) => {
-					const playList = await search(item.searchUrl);
-					if (playList == 0) {
-						log(item.name +"获取或解析失败，可能有防火墙");
-						if (secName && !sources.includes(item)) sources.push(item);
-						return;
-					}
-					if (e.loading) {
-						e.loading = false;
-						new UI(playList);
-					}
-					//渲染资源列表
-					const btn = new SourceButton({ name: item.name, playList }).element;
-					$(".sourceButtonList").appendChild(btn);
-				};
-				e.loading = true;
-				tip("正在获取影视URL");
-				await Promise.allSettled(searchSource.map(render));
-				if (sources?.length) {
-					vName = secName;
-					await sleep(5000); // 防IP被封
-					await Promise.allSettled(sources.map(render));
-				}
-				if (!$('body > .liu-playContainer')) {
-					e.loading = !1;
-					tip("未能获取影视URL");
-				}
-			};
-		}
+			e.loading = true;
+			tip("正在获取影视URL");
+			await Promise.allSettled(searchSource.map(render));
+			if (sources?.length) {
+				vName = secName;
+				await sleep(5000); // 防IP被封
+				await Promise.allSettled(sources.map(render));
+			}
+			if (!$('body > .liu-playContainer')) {
+				e.loading = !1;
+				tip("未能获取影视URL");
+			}
+		};
 	}
 
 	//影视源选择按钮
@@ -434,8 +434,8 @@ xy-button{
 	}
 }`
 	);
-	new PlayBtn();
 
+	playBtn();
 	GM_registerMenuCommand('设定视频缓存区大小', () => {
 		const n = +prompt('请输入视频缓存区大小，区间：10 － 800整数秒',''+skBuffSize);
 		n > 9 && n < 801 && GM_setValue('buffSize', n|0);
