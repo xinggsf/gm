@@ -15,13 +15,13 @@
 // @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
 // @require     https://cdn.staticfile.net/artplayer/5.1.1/artplayer.min.js
-// @version     4.0
+// @version     4.1
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
 // ==/UserScript==
 
-// ver4.0 修正可能出现的重复添加播放按钮
+// ver4.0 新增魔都云,修正可能出现的重复添加播放按钮
 // ver3.9 修正播放列表的样式，以匹配长片名
 // ver3.8 新增木耳、极速、豪华云，对空格分隔的片名进行处理~并校正名字二次搜索资源
 // ver3.7 更新暴风云、量子、樱花、新浪、索尼、无尽、鱼乐云
@@ -66,7 +66,7 @@
 		{ name: "暴风云", searchUrl: "https://app.bfzyapi.com/api.php/provide/vod/"},
 		// { name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/from/kcm3u8/"},
 		{ name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod/"},
-		{ name: "魔都云", searchUrl: "https://caiji.moduapi.cc/api.php/provide/vod/"},// ?ac=list
+		{ name: "魔都云", searchUrl: "https://caiji.moduapi.cc/api.php/provide/vod/"},//须用hls.js解码播放 ?ac=list
 		// { name: "快帆云", searchUrl: "https://api.kuaifan.tv/api.php/provide/vod/"},
 		{ name: "索尼云", searchUrl: "https://suonizy.com/api.php/provide/vod/"},
 		{ name: "淘片云", searchUrl: "https://taopianapi.com/cjapi/mc/vod/json/m3u8.html" },
@@ -176,7 +176,14 @@
 		constructor(item) {
 			this.element = htmlToElement(`<xy-button style="color:#a3a3a3" type="dashed">${item.name}</xy-button>`);
 			this.element.onclick = () => {
-				art.switchUrl(item.playList[seriesNum].url);
+				const list = item.playList[seriesNum];
+				if (!list) return;
+				const time = art.currentTime;
+				time && art.once("video:loadedmetadata", async () => {
+					await sleep(900);
+					if (art.duration > time) art.currentTime = time;
+				});
+				art.switchUrl(list.url);
 				$(".series-select-space").remove();
 				new SeriesContainer(item.playList);
 			};
@@ -237,9 +244,7 @@
 			document.body.style.overflow = 'hidden';
 			$(".next-series",e).onclick = function() {
 				$('.play + xy-button',e).click();
-				// art.switchUrl(playList[++seriesNum].url);
 			};
-			//第n集开始播放
 			log(playList[seriesNum].url);
 			initArt(playList[seriesNum].url);
 			new SeriesContainer(playList);
