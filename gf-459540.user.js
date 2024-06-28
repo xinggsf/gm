@@ -180,7 +180,7 @@
 				if (!list) return;
 				const time = art.currentTime;
 				time && art.once("video:loadedmetadata", async () => {
-					await sleep(900);
+					await sleep(100);
 					if (art.duration > time) art.currentTime = time;
 				});
 				art.switchUrl(list.url);
