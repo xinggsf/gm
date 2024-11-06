@@ -9,18 +9,20 @@
 // @grant       GM_setValue
 // @grant       GM_getValue
 // @grant       GM_xmlhttpRequest
+// @grant       GM_download
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
 // @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
 // @require     https://cdn.staticfile.net/artplayer/5.1.1/artplayer.min.js
-// @version     4.1
+// @version     4.2
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
 // ==/UserScript==
 
+// ver4.2 更新量子云API；新增功能：导出potplayer播放列表
 // ver4.0 新增魔都云,修正可能出现的重复添加播放按钮
 // ver3.9 修正播放列表的样式，以匹配长片名
 // ver3.8 新增木耳、极速、豪华云，对空格分隔的片名进行处理~并校正名字二次搜索资源
@@ -34,6 +36,7 @@
 	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
 	let art; //播放器
 	let seriesNum = 0;
+	let potList = null; // 暂存剧集地址列表，用于导出potplayer播放列表
 	const {query: $, queryAll: $$, isMobile} = Artplayer.utils;
 	const tip = (message) => XyMessage.info(message);
 	const noopFn = function() {};
@@ -153,8 +156,7 @@
 					new UI(playList);
 				}
 				//渲染资源列表
-				const btn = new SourceButton({ name: item.name, playList }).element;
-				$(".sourceButtonList").appendChild(btn);
+				$(".sourceButtonList").appendChild(sourceButton({ name: item.name, playList }));
 			};
 			e.loading = true;
 			tip("正在获取影视URL");
@@ -171,24 +173,24 @@
 		};
 	}
 
-	//影视源选择按钮
-	class SourceButton {
-		constructor(item) {
-			this.element = htmlToElement(`<xy-button style="color:#a3a3a3" type="dashed">${item.name}</xy-button>`);
-			this.element.onclick = () => {
-				const list = item.playList[seriesNum];
-				if (!list) return;
-				const time = art.currentTime;
-				time && art.once("video:loadedmetadata", async () => {
-					await sleep(100);
-					if (art.duration > time) art.currentTime = time;
-				});
-				art.switchUrl(list.url);
-				$(".series-select-space").remove();
-				new SeriesContainer(item.playList);
-			};
-		}
-		//sources 是[{name:"..资源",playList:[{name:"第一集",url:""}]}]
+	//影视源选择按钮 参数item 是 {name:"..云",playList:[{name:"第一集",url:""}]}
+	function sourceButton(item) {
+		potList = potList || item.playList;
+		const btn = htmlToElement(`<xy-button style="color:#a3a3a3" type="dashed">${item.name}</xy-button>`);
+		btn.onclick = () => {
+			potList = item.playList;
+			const list = item.playList[seriesNum];
+			if (!list) return;
+			const time = art.currentTime;
+			time && art.once("video:loadedmetadata", async () => {
+				await sleep(500);
+				if (art.duration > time) art.currentTime = time;
+			});
+			art.switchUrl(list.url);
+			$(".series-select-space").remove();
+			new SeriesContainer(item.playList);
+		};
+		return btn;
 	}
 
 	//剧集选择器
@@ -208,15 +210,15 @@
 		}
 	}
 
-	//剧集选择器的container
+	//剧集选择的容器
 	class SeriesContainer {
 		constructor(playList) {
 			const e = htmlToElement(`<div class="series-select-space"></div>`);
-			for (let [index, item] of playList.entries()) {
+			for (const [index, item] of playList.entries()) {
 				new SeriesButton(e, item.name, item.url, index);
 			}
 			$(".playSpace").appendChild(e);
-			$(".next-series").hidden = playList.length < 2;
+			$(".next-series").hidden = $(".pot-playList").hidden = playList.length < 2;
 		}
 	}
 
@@ -231,18 +233,38 @@
 				</div>
 				<div>
 					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
-					<span style="display:inline-block;color:#aaa">　　　　　不要相信视频中的广告！！！默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　　　　　　　　</span>
+					<span style="display:inline-block;color:#aaa">　　不要相信视频中的广告！！！默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　</span>
+					<a class="pot-playList" style="color:#4aa150;">PotPlayer播放列表</a>
+					<span>　　　</span>
 					<a class="next-series" style="color:#4aa150;">下一集</a>
 				</div>
 			</div>`
 			));
-			$(".liu-closePlayer",e).onclick = function() {
+			e.querySelector(".pot-playList").onclick = () => {
+				const a = potList.map((k,i) => `${i+1}*file*${k.url}\n${i+1}*title*${k.name}\n`);
+				const time = art.currentTime ? art.currentTime*1000 : 500;
+				a[seriesNum] += `${seriesNum+1}*start*${time}\n`;
+				// 插入DPL文件头
+				a[0] = `DAUMPLAYLIST
+					playname=${potList[seriesNum].url}
+					topindex=0
+					saveplaypos=1
+					${a[0]}`.replace(/\t|\r| /g,'');
+				const blob = new Blob(a, {'type': 'text/plain'});
+				const dataURL = URL.createObjectURL(blob);
+				GM_download({
+					url: dataURL,
+					name: vName +'.dpl',
+					onloadend: _ => {URL.revokeObjectURL(dataURL);}
+				});
+			};
+			e.querySelector(".liu-closePlayer").onclick = function() {
 				art.destroy();
 				this.parentNode.remove();
 				document.body.style.overflow = 'auto';
 			};
 			document.body.style.overflow = 'hidden';
-			$(".next-series",e).onclick = function() {
+			e.querySelector(".next-series").onclick = function() {
 				$('.play + xy-button',e).click();
 			};
 			log(playList[seriesNum].url);
@@ -442,7 +464,7 @@ xy-button{
 
 	playBtn();
 	GM_registerMenuCommand('设定视频缓存区大小', () => {
-		const n = +prompt('请输入视频缓存区大小，区间：10 － 800整数秒',''+skBuffSize);
-		n > 9 && n < 801 && GM_setValue('buffSize', n|0);
+		const n = +prompt('请输入视频缓存区大小，区间：15 － 800整数秒',''+skBuffSize);
+		if (n > 14 && n < 801) GM_setValue('buffSize', n|0);
 	});
 })();

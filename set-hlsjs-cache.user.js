@@ -7,7 +7,7 @@
 // @match       https://www.1905.com/vod/play/*
 // @match       https://www.olevod.com/player/vod/*
 // @match       https://nnyy.in/*/*.html
-// @match       https://www.btnull.nu/py/*
+// @match       https://www.iyf.tv/play/*
 // @version     1.2
 // @author      ray
 // @license     MIT
