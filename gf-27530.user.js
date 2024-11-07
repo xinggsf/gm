@@ -78,9 +78,9 @@ const APIS = [
 	{name:"88看", url:"https://vip.sp-flv.com:8443/?url=", title:"全网解析"},
 	// 金福 必须修改请求头referer为 https://www.88mv.org/
 	{name: "金福", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
-	{name:"非凡资源", url:"https://svip.ffzyplay.com/?url="},
-	{name:"量子资源", url:"https://lziplayer.com/?url="},
-	{name:"极速", url:"https://jx.2s0.cn/player/?url="},
+	// {name:"非凡资源", url:"https://svip.ffzyplay.com/?url="},
+	// {name:"量子资源", url:"https://lziplayer.com/?url="},
+	{name:"大米", url:"https://jx.dmflv.cc/?url="},
 	{name:"咸鱼", url:"https://jx.xyflv.cc/?url="},
 	{name:"虾米", url:"https://jx.xmflv.cc/?url="},
 	{name:"虾米2", url:"https://jx.xmflv.com/?url="},
@@ -88,13 +88,9 @@ const APIS = [
 	{name:"BL解析", url:"https://svip.bljiex.cc/?v="},
 	{name:"醉仙", url:"https://jx.zui.cm/?url="},
 	{name:"夜幕", url:"https://www.yemu.xyz/?url="},
-	// {name:"乐多", url:"https://api.leduotv.com/wp-api/ifr.php?isDp=1&vid="},
-	// {name:"m3u8云", url:"https://jx.m3u8.tv/jiexi/?url="},
 	{name:"猪蹄", url:"https://jx.iztyy.com/svip/?url="},
 	{name:"盘古", url:"https://www.pangujiexi.cc/jiexi.php?url="},
-	{name:"黑云", url:"https://jiexi.380k.com/?url="},
-	{name:"云解析", url:"https://yparse.jn1.cc/index.php?url="},
-	{name:"CK", url:"https://www.ckmov.com/?url="},
+	{name:"黑云", url:"https://jiexi.380k.com/?url="}
 ];
 
 const siteCfg = {
