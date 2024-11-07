@@ -15,7 +15,7 @@
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
 // @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
-// @require     https://cdn.staticfile.net/artplayer/5.1.1/artplayer.min.js
+// @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     4.2
 // @author      liuser, modify by ray
 // @description 想看就看
