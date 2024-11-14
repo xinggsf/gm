@@ -242,14 +242,14 @@
 			));
 			e.querySelector(".pot-playList").onclick = () => {
 				const a = potList.map((k,i) => `${i+1}*file*${k.url}\n${i+1}*title*${k.name}\n`);
-				const time = art.currentTime ? art.currentTime*1000 : 500;
+				const time = art.currentTime*1000 || 500;
 				a[seriesNum] += `${seriesNum+1}*start*${time}\n`;
 				// 插入DPL文件头
 				a[0] = `DAUMPLAYLIST
 					playname=${potList[seriesNum].url}
 					topindex=0
 					saveplaypos=1
-					${a[0]}`.replace(/\t|\r| /g,'');
+				`.replace(/\t|\r| /g,'') + a[0];
 				const blob = new Blob(a, {'type': 'text/plain'});
 				const dataURL = URL.createObjectURL(blob);
 				GM_download({
@@ -260,7 +260,7 @@
 			};
 			e.querySelector(".liu-closePlayer").onclick = function() {
 				art.destroy();
-				this.parentNode.remove();
+				e.remove();
 				document.body.style.overflow = 'auto';
 			};
 			document.body.style.overflow = 'hidden';
