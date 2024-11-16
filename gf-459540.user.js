@@ -1,3 +1,4 @@
+/* globals Artplayer, XyMessage, shaka */
 // ==UserScript==
 // @name        我只想好好观影
 // @namespace   liuser.betterworld.love
@@ -10,13 +11,14 @@
 // @grant       GM_getValue
 // @grant       GM_xmlhttpRequest
 // @grant       GM_download
+// @grant       GM_setClipboard
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
 // @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
 // @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     4.2
+// @version     4.3
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license MIT
@@ -61,13 +63,13 @@
 		{ name: "木耳云", searchUrl: "https://www.heimuer.tv/api.php/provide/vod/"},
 		// { name: "豪华云", searchUrl: "https://hhzyapi.com/api.php/provide/vod/"},
 		// { name: "极速云", searchUrl: "https://8.218.111.47/api.php/provide/vod/"},
-		{ name: "飞速云", searchUrl: "https://www.feisuzyapi.com/api.php/provide/vod/" },
+		// { name: "飞速云", searchUrl: "https://www.feisuzyapi.com/api.php/provide/vod/" },
 		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
-		{ name: "U酷云",  searchUrl: "https://api.ukuapi.com/api.php/provide/vod/" },
+		{ name: "U酷云", searchUrl: "https://api.ukuapi.com/api.php/provide/vod/" },
 		{ name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
-		// { name: "红牛云", searchUrl: "http://www.hongniuzy2.com/api.php/provide/vod/" },
+		{ name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
 		{ name: "暴风云", searchUrl: "https://app.bfzyapi.com/api.php/provide/vod/"},
-		{ name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/from/kcm3u8/"},
+		{ name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/"},
 		{ name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod/"},
 		{ name: "魔都云", searchUrl: "https://caiji.moduapi.cc/api.php/provide/vod/"},//须用hls.js解码播放 ?ac=list
 		// { name: "快帆云", searchUrl: "https://api.kuaifan.tv/api.php/provide/vod/"},
@@ -77,10 +79,13 @@
 		{ name: "天空云", searchUrl: "https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},
 		// { name: "闪电云", searchUrl: "https://sdzyapi.com/api.php/provide/vod/"},//不太好，格式经常有错
 		{ name: "百度云", searchUrl: "https://api.apibdzy.com/api.php/provide/vod/" },
+		{ name: "乐视云", searchUrl: "https://leshiapi.com/api.php/provide/vod/at/json/" },
+		{ name: "丫丫云", searchUrl: "https://cj.yayazy.net/api.php/provide/vod/" },
+		{ name: "金鹰云", searchUrl: "https://jyzyapi.com/provide/vod/from/jinyingm3u8/at/json" },
 		// { name: "酷点云", searchUrl: "https://kudian10.com/api.php/provide/vod/" },
 		{ name: "卧龙云", searchUrl: "https://collect.wolongzyw.com/api.php/provide/vod/" }, //非常恶心的广告
 		// { name: "ck云", searchUrl: "https://ckzy.me/api.php/provide/vod/" },
-		// { name: "海外看", searchUrl: "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
+		{ name: "海外看", searchUrl: "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
 		// { name: "68资源", searchUrl: "https://caiji.68zyapi.com/api.php/provide/vod/" },
 		// { name:"鱼乐云", searchUrl:"https://api.ylzy.me/api.php/provide/vod/" },
 		{ name:"无尽云", searchUrl:"https://api.wujinapi.me/api.php/provide/vod/" }
@@ -142,7 +147,7 @@
 		};
 		e.onclick = async function() {
 			// 二次搜索资源控制2变量
-			const secName = vName.includes(' ') ?  vName.replace(' ', vName.includes(' 第') ?'':'：') : null;
+			const secName = vName.includes(' ') ? vName.replace(' ', vName.includes(' 第') ?'':'：') : null;
 			const sources = secName ? [] : null;
 			const render = async (item) => {
 				const playList = await search(item.searchUrl);
@@ -243,14 +248,15 @@
 			e.querySelector(".pot-playList").onclick = () => {
 				const a = potList.map((k,i) => `${i+1}*file*${k.url}\n${i+1}*title*${k.name}\n`);
 				const time = art.currentTime*1000 || 500;
-				a[seriesNum] += `${seriesNum+1}*start*${time}\n`;
+				a[seriesNum] += `${seriesNum+1}*start*${~~time}\n`;
 				// 插入DPL文件头
 				a[0] = `DAUMPLAYLIST
 					playname=${potList[seriesNum].url}
 					topindex=0
 					saveplaypos=1
 				`.replace(/\t|\r| /g,'') + a[0];
-				const blob = new Blob(a, {'type': 'text/plain'});
+				GM_setClipboard(a.join(''));
+				const blob = new Blob(a, {'type': 'text/application'});
 				const dataURL = URL.createObjectURL(blob);
 				GM_download({
 					url: dataURL,
@@ -275,8 +281,8 @@
 
 	const artPlus = (option) => (art) => {
 		Object.assign(art.icons, {
-			forward: '<svg fill="#fff" viewBox="-8 -8 32 32"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg>',
-			rewind: '<svg fill="#fff" viewBox="-8 -8 32 32"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg>',
+			forward: '<svg fill="#fff" viewBox="-9 -9 40 40"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg>',
+			rewind: '<svg fill="#fff" viewBox="-9 -9 40 40"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg>',
 		});
 		const preventEvent = ev => {
 			if (!ev.target.closest('.art-control')) return;
@@ -360,8 +366,12 @@
 							}
 						});
 					}
-					this.shaka.load(url);
-					log(this, 'load:\n'+ url);
+					this.shaka.load(url).then(() => {
+						log(this, '\nload media:\n'+ url);
+					}).catch(err => {
+						art.notice.show = err;
+						log(err);
+					});
 				}
 			}
 		});

@@ -296,7 +296,7 @@ const doClick = e => {
 	if (e) { e.click ? e.click() : e.dispatchEvent(new MouseEvent('click')) };
 };
 const clickDualButton = btn => { // 2合1 按钮 Element.previousElementSibling
-	!btn.nextSibling || getStyle(btn, 'display') !== 'none' ? doClick(btn) : doClick(btn.nextSibling);
+	!btn.nextElementSibling || getStyle(btn, 'display') !== 'none' ? doClick(btn) : doClick(btn.nextElementSibling);
 };
 const polling = (cb, condition, stop = true) => {
 	const fn = typeof condition === 'string' ? q.bind(null, condition) : condition;
