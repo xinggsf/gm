@@ -79,6 +79,7 @@ const APIS = [
 	// 金福 必须修改请求头referer为 https://www.88mv.org/
 	{name: "金福", url: "https://vip.jsjinfu.com:8443/?url=", title: "全网解析"},
 	// {name:"非凡资源", url:"https://svip.ffzyplay.com/?url="},
+	// {name:"红牛", url:"https://www.hnjiexi.com/m3u8/?url="},
 	// {name:"量子资源", url:"https://lziplayer.com/?url="},
 	{name:"大米", url:"https://jx.dmflv.cc/?url="},
 	{name:"咸鱼", url:"https://jx.xyflv.cc/?url="},

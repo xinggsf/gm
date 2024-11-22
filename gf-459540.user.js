@@ -67,7 +67,7 @@
 		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
 		{ name: "U酷云", searchUrl: "https://api.ukuapi.com/api.php/provide/vod/" },
 		{ name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
-		{ name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/" },
+		// { name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/josn/" }, //https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/
 		{ name: "暴风云", searchUrl: "https://app.bfzyapi.com/api.php/provide/vod/"},
 		{ name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/"},
 		{ name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod/"},
@@ -78,9 +78,9 @@
 		{ name: "樱花云", searchUrl: "https://m3u8.apiyhzy.com/api.php/provide/vod/"},
 		{ name: "天空云", searchUrl: "https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},
 		// { name: "闪电云", searchUrl: "https://sdzyapi.com/api.php/provide/vod/"},//不太好，格式经常有错
-		{ name: "百度云", searchUrl: "https://api.apibdzy.com/api.php/provide/vod/" },
-		{ name: "乐视云", searchUrl: "https://leshiapi.com/api.php/provide/vod/at/json/" },
-		{ name: "丫丫云", searchUrl: "https://cj.yayazy.net/api.php/provide/vod/" },
+		// { name: "百度云", searchUrl: "https://api.apibdzy.com/api.php/provide/vod/" },
+		// { name: "乐视云", searchUrl: "https://leshiapi.com/api.php/provide/vod/at/json/" },
+		// { name: "丫丫云", searchUrl: "https://cj.yayazy.net/api.php/provide/vod/" },
 		{ name: "金鹰云", searchUrl: "https://jyzyapi.com/provide/vod/from/jinyingm3u8/at/json" },
 		// { name: "酷点云", searchUrl: "https://kudian10.com/api.php/provide/vod/" },
 		{ name: "卧龙云", searchUrl: "https://collect.wolongzyw.com/api.php/provide/vod/" }, //非常恶心的广告
@@ -256,7 +256,7 @@
 					saveplaypos=1
 				`.replace(/\t|\r| /g,'') + a[0];
 				GM_setClipboard(a.join(''));
-				const blob = new Blob(a, {'type': 'text/application'});
+				const blob = new Blob(a, {'type': 'text/plain'});
 				const dataURL = URL.createObjectURL(blob);
 				GM_download({
 					url: dataURL,
@@ -449,10 +449,10 @@ xy-button{
 }
 .playSpace{
 	display: grid;
-	height:96vh;
+	height: calc(100vh - 3em);
 	grid-template-rows: 1fr;
 	grid-template-columns: calc(100vw - 28em) 28em;
-	grid-gap:0;
+	grid-gap: 0;
 }
 .series-select-space{
 	overflow-y: auto;
