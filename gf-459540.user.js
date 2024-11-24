@@ -239,7 +239,7 @@
 				<div>
 					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
 					<span style="display:inline-block;color:#aaa">　　不要相信视频中的广告！！！默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　</span>
-					<a class="pot-playList" style="color:#4aa150;">PotPlayer播放列表</a>
+					<a class="pot-playList" title="复制并下载DPL文件" style="color:#4aa150;">PotPlayer播放列表</a>
 					<span>　　　</span>
 					<a class="next-series" style="color:#4aa150;">下一集</a>
 				</div>
@@ -369,17 +369,13 @@
 					this.shaka.load(url).then(() => {
 						log(this, '\nload media:\n'+ url);
 					}).catch(err => {
-						art.notice.show = err;
+						art.notice.show = '网络错误或不支持媒体格式:\n'+ err;
 						log(err);
 					});
 				}
 			}
 		});
 		art.once('destroy', () => art.shaka?.destroy());
-		art.on("video:loadedmetadata", async () => {
-			await sleep(2300);
-			art.playbackRate = +localStorage.mvPlayRate || 1;
-		});
 	}
 
 	GM_addStyle(
