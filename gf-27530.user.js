@@ -109,18 +109,16 @@ const siteCfg = {
 		VIPFlag: '#vip_information'
 	},
 	'wwwacfuncn': {
-		// '.single-p.active > .needpay-sign'
 		VIPFlag: _ => !!unsafeWindow.player.videoInfo
 	},
 	'vip1905com': {
 		VIPFlag: _ => 1
 	},
 	'vqqcom': {
-		// VIPFlag: '.list_item.current i.mark_v>img[alt^=VIP], .mod_vip_sidebar'
-		VIPFlag: _ => unsafeWindow.VIDEO_INFO?.drm
+		VIPFlag: _ => unsafeWindow.VIDEO_INFO?.drm !== '0'
 	},
 	'wwwiqiyicom': {
-		VIPFlag: '[data-player-hook=videoLoadingVip]:visible' // .iqp-stream-switch > a[data-event=recharge]:visible', .play-list-item.selected .icon-tr > img[src$="VIP.png"], .select-item.selected .icon-tr > img[src*="/vip_1000"]
+		VIPFlag: '[data-player-hook=videoLoadingVip]:visible'
 	},
 	'vyoukucom': {
 		// VIPFlag: _ => 'drmType' in videoPlayer.context.drm
