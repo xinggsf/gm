@@ -7,8 +7,10 @@
 // @match       https://www.1905.com/vod/play/*
 // @match       https://www.olevod.com/player/vod/*
 // @match       https://nnyy.in/*/*.html
+// @match       https://www.nunuyy5.com/vod/*
+// @match       https://dandanzan.net/*.html
 // @match       https://www.iyf.tv/play/*
-// @version     1.2
+// @version     1.3
 // @author      ray
 // @license     MIT
 // @run-at      document-start
@@ -44,14 +46,22 @@ function after() {
 	// Object.assign(Hls.DefaultConfig, { });
 	console.log('成功设置Hls缓存区！');
 
+	let tip = document.createElement('span');
+	if (location.hostname == 'nnyy.in') {		
+		document.querySelector('#e-tip').after(tip);
+	}
+	else if (location.hostname == 'dandanzan.net') {
+		tip = document.querySelector('#mytip');
+	}
+	else if (location.hostname.endsWith('nunuyy5.com')) {
+		document.querySelector('span.current-route').after(tip);
+	}
+	else return;
+
 	const v = document.getElementsByTagName('video')[0];
 	v.muted = !1;
-	if (location.hostname == 'nnyy.in') {
-		const tip = document.createElement('span');
-		document.querySelector('#e-tip').after(tip);
-		v.addEventListener('loadedmetadata', () => {
-			v.playbackRate = +localStorage.mvPlayRate || 1.4;
-			tip.innerText = `　　　分辨率：${v.videoWidth}x${v.videoHeight}P`;
-		});
-	}
+	v.addEventListener('loadedmetadata', () => {
+		v.playbackRate = +localStorage.mvPlayRate || 1.4;
+		tip.innerText = `　　　分辨率：${v.videoWidth}x${v.videoHeight}P`;
+	});
 }
