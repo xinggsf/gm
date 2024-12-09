@@ -1,4 +1,4 @@
-/* globals Artplayer, XyMessage, shaka */
+/* globals Artplayer, XyMessage, Hls, artplayerPluginHlsControl */
 // ==UserScript==
 // @name        我只想好好观影
 // @namespace   liuser.betterworld.love
@@ -15,15 +15,15 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.staticfile.net/mux.js/6.3.0/mux.min.js
-// @require     https://cdn.staticfile.net/shaka-player/4.7.6/shaka-player.compiled.min.js
+// @require     https://cdn.staticfile.net/hls.js/1.5.1/hls.min.js
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     4.3
+// @version     4.5
 // @author      liuser, modify by ray
 // @description 想看就看
-// @license MIT
+// @license     MIT
 // ==/UserScript==
 
+//  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
 // ver4.2 更新量子云API；新增功能：导出potplayer播放列表
 // ver4.0 新增魔都云,修正可能出现的重复添加播放按钮
 // ver3.9 修正播放列表的样式，以匹配长片名
@@ -33,7 +33,7 @@
 // ver3.4 fix UI bug: 集数过多时撑大播放列表；新增飘花、樱花2个资源搜索
 // ver3.3 过滤掉量子云的电影解说；新增暴风云、快帆云、索尼云、天空云4个资源搜索；更新淘片云API地址
 (function () {
-	const skBuffSize = GM_getValue('buffSize', 80);
+	const buffSize = GM_getValue('buffSize', 80);
 	const _debug = 0;
 	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
 	let art; //播放器
@@ -320,6 +320,7 @@
 				if (art.duration) art.currentTime -= 5;
 			}
 		});
+		
 		art.controls.add({
 			name: "resolution",
 			html: "分辨率",
@@ -339,7 +340,6 @@
 
 	//初始化播放器
 	function initArt(url) {
-		let playRate;
 		art = new Artplayer({
 			container: ".artplayer-app",
 			url, pip: true,
@@ -351,31 +351,26 @@
 			playbackRate: true,
 			plugins: [artPlus()],
 			customType: {
-				m3u8(v, url) {
-					if (isSafari && url.endsWith('.m3u8')) {
-						v.src = url;
-						return;
-					}
-					if (!this.shaka) {
-						this.shaka = new shaka.Player(v);
-						this.shaka.configure({
-							streaming: {
-								bufferingGoal: skBuffSize +9,
-								// rebufferingGoal: 15,
-								bufferBehind: skBuffSize,
-							}
+				m3u8(video, url) {
+					if (Hls.isSupported()) {
+						this.hls?.destroy();
+						this.hls = new Hls({
+							maxBufferSize: 36 << 20, // 36MB
+							maxBufferLength: buffSize,
+							maxMaxBufferLength: buffSize + 9,
+							backBufferLength: 9
 						});
+						this.hls.loadSource(url);
+						this.hls.attachMedia(video);
+						this.on('destroy', () => this.hls.destroy());
+					} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+						video.src = url;
+					} else {
+						this.notice.show = '不支持的m3u8格式！';
 					}
-					this.shaka.load(url).then(() => {
-						log(this, '\nload media:\n'+ url);
-					}).catch(err => {
-						art.notice.show = '网络错误或不支持媒体格式:\n'+ err;
-						log(err);
-					});
 				}
 			}
 		});
-		art.once('destroy', () => art.shaka?.destroy());
 	}
 
 	GM_addStyle(
@@ -470,7 +465,7 @@ xy-button{
 
 	playBtn();
 	GM_registerMenuCommand('设定视频缓存区大小', () => {
-		const n = +prompt('请输入视频缓存区大小，区间：15 － 800整数秒',''+skBuffSize);
+		const n = +prompt('请输入视频缓存区大小，区间：15 － 800整数秒',''+ buffSize);
 		if (n > 14 && n < 801) GM_setValue('buffSize', n|0);
 	});
 })();
