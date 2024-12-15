@@ -320,7 +320,7 @@
 				if (art.duration) art.currentTime -= 5;
 			}
 		});
-		
+
 		art.controls.add({
 			name: "resolution",
 			html: "分辨率",
@@ -338,6 +338,24 @@
 		return {name: 'artPlus'};
 	};
 
+	function loadM3u8(video, url) {
+		if (Hls.isSupported()) {
+			this.hls?.destroy();
+			this.hls = new Hls({
+				maxBufferSize: 36 << 20, // 36MB
+				maxBufferLength: buffSize,
+				maxMaxBufferLength: buffSize + 9,
+				backBufferLength: 9
+			});
+			this.hls.loadSource(url);
+			this.hls.attachMedia(video);
+			this.on('destroy', () => this.hls.destroy());
+		} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+			video.src = url;
+		} else {
+			this.notice.show = '不支持的m3u8格式！';
+		}
+	}
 	//初始化播放器
 	function initArt(url) {
 		art = new Artplayer({
@@ -350,26 +368,7 @@
 			airplay: true,
 			playbackRate: true,
 			plugins: [artPlus()],
-			customType: {
-				m3u8(video, url) {
-					if (Hls.isSupported()) {
-						this.hls?.destroy();
-						this.hls = new Hls({
-							maxBufferSize: 36 << 20, // 36MB
-							maxBufferLength: buffSize,
-							maxMaxBufferLength: buffSize + 9,
-							backBufferLength: 9
-						});
-						this.hls.loadSource(url);
-						this.hls.attachMedia(video);
-						this.on('destroy', () => this.hls.destroy());
-					} else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-						video.src = url;
-					} else {
-						this.notice.show = '不支持的m3u8格式！';
-					}
-				}
-			}
+			customType: {m3u8:loadM3u8}
 		});
 	}
 

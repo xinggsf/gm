@@ -10,6 +10,7 @@
 // @match       https://www.nunuyy5.com/vod/*
 // @match       https://dandanzan.net/*.html
 // @match       https://www.iyf.tv/play/*
+// @match       https://www.iyf.tv/watch?v=*
 // @version     1.3
 // @author      ray
 // @license     MIT

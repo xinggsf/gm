@@ -64,6 +64,7 @@
 // @grant      GM_addStyle
 // @include    */play*
 // @include    *play/*
+// @exclude    https://www.dj92cc.net/dance/play/id/*
 // @grant      window.onurlchange
 // @grant      unsafeWindow
 // @grant      GM_download
