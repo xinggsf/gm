@@ -17,25 +17,25 @@
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
 // @require     https://cdn.staticfile.net/hls.js/1.5.1/hls.min.js
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     4.5
+// @version     4.6
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license     MIT
 // ==/UserScript==
 
 //  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
-// ver4.2 更新量子云API；新增功能：导出potplayer播放列表
+// ver4.6 更新神马源
+// ver4.2 更新量子源；新增功能：导出potplayer播放列表
 // ver4.0 新增魔都云,修正可能出现的重复添加播放按钮
 // ver3.9 修正播放列表的样式，以匹配长片名
 // ver3.8 新增木耳、极速、豪华云，对空格分隔的片名进行处理~并校正名字二次搜索资源
-// ver3.7 更新暴风云、量子、樱花、新浪、索尼、无尽、鱼乐云
-// ver3.6 新增U酷云，更新非凡云API
+// ver3.7 更新暴风源、量子、樱花、新浪、索尼、无尽、鱼乐源
+// ver3.6 新增U酷源，更新非凡源
 // ver3.4 fix UI bug: 集数过多时撑大播放列表；新增飘花、樱花2个资源搜索
-// ver3.3 过滤掉量子云的电影解说；新增暴风云、快帆云、索尼云、天空云4个资源搜索；更新淘片云API地址
+// ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼源、天空源4个资源搜索；更新淘片源
 (function () {
 	const buffSize = GM_getValue('buffSize', 80);
 	const _debug = 0;
-	const isSafari = !self.chrome && navigator.userAgent.includes('Safari');
 	let art; //播放器
 	let seriesNum = 0;
 	let potList = null; // 暂存剧集地址列表，用于导出potplayer播放列表
@@ -59,7 +59,7 @@
 	const searchSource = [
 		{ name: "非凡云", searchUrl: "http://api.ffzyapi.com/api.php/provide/vod/" }, // www.ffzy.tv
 		{ name: "量子云", searchUrl: "https://cj.lziapi.com/api.php/provide/vod/" },
-		{ name: "神马云", searchUrl: "https://api.1080zyku.com/inc/apijson.php" },
+		{ name: "神马云", searchUrl: "https://api.yzzy-api.com/inc/apijson.php" },
 		{ name: "木耳云", searchUrl: "https://www.heimuer.tv/api.php/provide/vod/"},
 		// { name: "豪华云", searchUrl: "https://hhzyapi.com/api.php/provide/vod/"},
 		// { name: "极速云", searchUrl: "https://8.218.111.47/api.php/provide/vod/"},
