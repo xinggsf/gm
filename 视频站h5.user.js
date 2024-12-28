@@ -302,10 +302,9 @@ const clickDualButton = btn => { // 2合1 按钮 Element.previousElementSibling
 const polling = (cb, condition, stop = true) => {
 	const fn = typeof condition === 'string' ? q.bind(null, condition) : condition;
 	const t = setInterval(() => {
-		const r = fn();
-		if (r) {
+		if (fn()) {
 			stop && clearInterval(t);
-			cb(r);
+			cb();
 		}
 	}, 300);
 	return t;
@@ -822,6 +821,12 @@ let router = {
 		cfg.isClickOnVideo = true;
 		actList.delete(32);
 		actList.set(69, actList.get(70)).delete(70); //F键 >> E键
+		$(()=> {
+			clearInterval(app.timer);
+			const $p = $('#player');
+			v = $p.find('video')[0];
+			cfg.mvShell = $p[0];
+		});
 	},
 	douyin() {
 		cfg.isLive = host.startsWith('live.');
