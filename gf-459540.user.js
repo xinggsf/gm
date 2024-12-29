@@ -10,8 +10,6 @@
 // @grant       GM_setValue
 // @grant       GM_getValue
 // @grant       GM_xmlhttpRequest
-// @grant       GM_download
-// @grant       GM_setClipboard
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
@@ -23,8 +21,9 @@
 // @license     MIT
 // ==/UserScript==
 
-//https://kkgithub.com/xinggsf/extFilter/raw/refs/heads/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
-// ver4.6 更新神马源；在hls.js库中加入去广告功能
+//https://kkgithub.com/xinggsf/extFilter/raw/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
+// ver4.6 修正下载DPL文件的BUG；更新神马源；在hls.js库中加入去广告功能
+// ver4.5 更换播放库hls.js，以适应：魔都云、闪电云、无尽云、樱花云
 // ver4.2 更新量子源；新增功能：导出potplayer播放列表
 // ver4.0 新增魔都云,修正可能出现的重复添加播放按钮
 // ver3.9 修正播放列表的样式，以匹配长片名
@@ -245,7 +244,8 @@
 				</div>
 			</div>`
 			));
-			e.querySelector(".pot-playList").onclick = () => {
+			e.querySelector(".pot-playList").onclick = async function(ev){
+				ev.stopPropagation();
 				const a = potList.map((k,i) => `${i+1}*file*${k.url}\n${i+1}*title*${k.name}\n`);
 				const time = art.currentTime*1000 || 500;
 				a[seriesNum] += `${seriesNum+1}*start*${~~time}\n`;
@@ -255,14 +255,10 @@
 					topindex=0
 					saveplaypos=1
 				`.replace(/\t|\r| /g,'') + a[0];
-				GM_setClipboard(a.join(''));
-				const blob = new Blob(a, {'type': 'text/plain'});
-				const dataURL = URL.createObjectURL(blob);
-				GM_download({
-					url: dataURL,
-					name: vName +'.dpl',
-					onloadend: _ => {URL.revokeObjectURL(dataURL);}
-				});
+				this.download = vName +'.dpl';
+				this.href = URL.createObjectURL(new Blob(a));
+				await sleep(900);
+				URL.revokeObjectURL(this.href);
 			};
 			e.querySelector(".liu-closePlayer").onclick = function() {
 				art.destroy();
