@@ -15,7 +15,7 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.staticfile.net/hls.js/1.5.1/hls.min.js
+// @require     https://raw.githubusercontent.com/xinggsf/extFilter/master/lib/hls.min.js
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     4.6
 // @author      liuser, modify by ray
@@ -23,8 +23,8 @@
 // @license     MIT
 // ==/UserScript==
 
-//  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
-// ver4.6 更新神马源
+//https://kkgithub.com/xinggsf/extFilter/raw/refs/heads/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
+// ver4.6 更新神马源；在hls.js库中加入去广告功能
 // ver4.2 更新量子源；新增功能：导出potplayer播放列表
 // ver4.0 新增魔都云,修正可能出现的重复添加播放按钮
 // ver3.9 修正播放列表的样式，以匹配长片名
