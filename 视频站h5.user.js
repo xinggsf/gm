@@ -67,9 +67,6 @@
 // @exclude    https://www.dj92cc.net/dance/play/id/*
 // @grant      window.onurlchange
 // @grant      unsafeWindow
-// @grant      GM_download
-// @grant      GM_openInTab
-// @grant      GM_notification
 // @grant      GM_registerMenuCommand
 // @grant      GM_setValue
 // @grant      GM_getValue
@@ -553,21 +550,18 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 	canvas.height = v.videoHeight;
 	canvas.getContext('2d').drawImage(v, 0, 0, canvas.width, canvas.height);
 
-	canvas.toBlob((blob) => {
+	canvas.toBlob(async(blob) => {
 		const dataURL = URL.createObjectURL(blob);
-		GM_download({
-			url: dataURL,
-			name: Date.now().toString(36) +'.png',
-			onloadend: _ => {URL.revokeObjectURL(dataURL);}
-		});
-		/*
 		const link = d.createElement('a');
+		link.onclick = ev => {ev.stopPropagation()};
 		link.href = dataURL;
 		link.download = Date.now().toString(36) +'.png';
 		link.style.display = 'none';
 		d.body.appendChild(link);
 		link.click();
-		link.remove(); */
+		link.remove();
+		await sleep(500);
+		URL.revokeObjectURL(dataURL);		
 	});
 })
 .set(77, _ => {// M 缓存视频
