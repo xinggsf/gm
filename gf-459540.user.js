@@ -2,6 +2,7 @@
 // ==UserScript==
 // @name        我只想好好观影
 // @namespace   liuser.betterworld.love
+// @homepage    https://bbs.kafan.cn/thread-2253400-1-1.html
 // @match       https://movie.douban.com/subject/*
 // @match       https://m.douban.com/movie/*
 // @exclude     https://movie.douban.com/subject/*/episode/*
@@ -21,7 +22,7 @@
 // @license     MIT
 // ==/UserScript==
 
-//https://kkgithub.com/xinggsf/extFilter/raw/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
+//https://raw.kkgithub.com/xinggsf/extFilter/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
 // ver4.6 修正下载DPL文件的BUG；更新神马源；在hls.js库中加入去广告功能
 // ver4.5 更换播放库hls.js，以适应：魔都云、闪电云、无尽云、樱花云
 // ver4.2 更新量子源；新增功能：导出potplayer播放列表
@@ -119,7 +120,7 @@
 		GM_xmlhttpRequest({
 			method: "GET",
 			url: encodeURI(`${url}?ac=detail&wd=${vName}`),
-			timeout: 3000,
+			timeout: 9000,
 			responseType: 'json',
 			onload(r) {
 				resolve(handleResponse(r.response));
@@ -238,7 +239,7 @@
 				<div>
 					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
 					<span style="display:inline-block;color:#aaa">　　不要相信视频中的广告！！！默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　</span>
-					<a class="pot-playList" title="复制并下载DPL文件" style="color:#4aa150;">PotPlayer播放列表</a>
+					<a class="pot-playList" title="下载DPL文件" style="color:#4aa150;">PotPlayer播放列表</a>
 					<span>　　　</span>
 					<a class="next-series" style="color:#4aa150;">下一集</a>
 				</div>
@@ -267,7 +268,7 @@
 			};
 			document.body.style.overflow = 'hidden';
 			e.querySelector(".next-series").onclick = function() {
-				$('.play + xy-button',e).click();
+				e.querySelector('.play + xy-button')?.click();
 			};
 			log(playList[seriesNum].url);
 			initArt(playList[seriesNum].url);
