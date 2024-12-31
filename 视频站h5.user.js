@@ -719,7 +719,7 @@ const app = {
 		clearInterval(this.timer);
 		for (const [i,k] of this.rawProps) Reflect.defineProperty(HTMLVideoElement.prototype, i, k);
 		this.rawProps.clear();
-		this.rawProps = null;
+		this.rawProps = void 0;
 		$(cfg.adsCSS).remove();
 		by = d.body;
 		log('bind event\n', v);
@@ -815,12 +815,6 @@ let router = {
 		cfg.isClickOnVideo = true;
 		actList.delete(32);
 		actList.set(69, actList.get(70)).delete(70); //F键 >> E键
-		$(()=> {
-			clearInterval(app.timer);
-			const $p = $('#player');
-			v = $p.find('video')[0];
-			cfg.mvShell = $p[0];
-		});
 	},
 	douyin() {
 		cfg.isLive = host.startsWith('live.');
