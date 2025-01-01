@@ -27,7 +27,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
-// @version    1.9.9
+// @version    2.0.0
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -65,6 +65,7 @@
 // @include    */play*
 // @include    *play/*
 // @exclude    https://www.dj92cc.net/dance/play/id/*
+// @inject-into  content
 // @grant      window.onurlchange
 // @grant      unsafeWindow
 // @grant      GM_registerMenuCommand
@@ -903,16 +904,6 @@ let router = {
 		cfg.fullCSS = 'div[aria-label="全屏"]';
 		cfg.nextCSS = '.xgplayer-control-item.control_playnext';
 		GM_addStyle('.gm-fp-body .xgplayer{padding-top:0!important} .gm-fp-wrapper #player_default{max-height: 100%!important} h1.title~a, .videoTitle h1~a{ padding-left:12px; color:blue; }');
-
-		bus.$on('foundMV',() => {
-			const data = w._SSR_HYDRATED_DATA.anyVideo.gidInformation.packerData;
-			const c = (data.video || data).videoResource.normal.video_list;
-			const title = document.title.split(' - ')[0];
-			const s = Object.keys(c).map(k =>
-				`<a href="${c[k].main_url}" download="${title}_${c[k].definition}.mp4" target="_blank">${c[k].definition}</a>`
-			).join('　　　');
-			$('.videoTitle h1, h1.title').text(MSG.download).after(s);
-		});
 	},
 	miguvideo() {
 		cfg.nextCSS = '.next-btn';
