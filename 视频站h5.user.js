@@ -867,7 +867,7 @@ let router = {
 				app.bindEvent();
 			}
 		});
-		cfg.shellCSS = 'div[aria-label="哔哩哔哩播放器"]';
+		cfg.shellCSS = '#bilibili-player';
 		cfg.nextCSS = '.bpx-player-ctrl-next';
 		cfg.webfullCSS = '.bpx-player-ctrl-web';
 		cfg.fullCSS = '.bpx-player-ctrl-full';
