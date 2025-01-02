@@ -14,7 +14,7 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://raw.kkgithub.com/xinggsf/extFilter/master/lib/hls.min.js
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     4.6
 // @author      liuser, modify by ray
@@ -22,7 +22,7 @@
 // @license     MIT
 // ==/UserScript==
 
-/* githubusercontent  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
+/* https://raw.kkgithub.com/xinggsf/extFilter/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
 ver4.6 修正下载DPL文件的BUG；更新神马源；在hls.js库中加入去广告功能
 ver4.5 更换播放库hls.js，以适应：魔都云、闪电云、无尽云、樱花云
 ver4.2 更新量子源；新增功能：导出potplayer播放列表
