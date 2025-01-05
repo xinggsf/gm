@@ -99,9 +99,9 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 			return 0
 		}
 		log("正在对比剧集年份");
-		const video = r.list.find(k => k.type_name != '电影解说' && k.vod_year == videoYear && k.vod_play_url);
+		const video = r.list.find(k => k.type_name != '电影解说' && k.vod_year == videoYear && k.vod_play_url)||r.list[0];
 		if (!video) {
-			log("没有找到匹配剧集的影片，怎么回事哟！");
+			log("没有找到匹配剧集的影片！");
 			return 0
 		}
 
