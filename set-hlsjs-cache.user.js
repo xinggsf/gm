@@ -8,6 +8,7 @@
 // @match       https://www.olevod.com/player/vod/*
 // @match       https://nnyy.in/*/*.html
 // @match       https://www.nunuyy5.com/vod/*
+// @match       https://www.dandanzan.me/vod/*
 // @match       https://dandanzan.net/*.html
 // @match       https://www.iyf.tv/play/*
 // @match       https://www.iyf.tv/watch?v=*
@@ -54,7 +55,7 @@ function after() {
 	else if (location.hostname == 'dandanzan.net') {
 		tip = document.querySelector('#mytip');
 	}
-	else if (location.hostname.endsWith('nunuyy5.com')) {
+	else if (location.hostname.endsWith('nunuyy5.com')||location.hostname.endsWith('dandanzan.me')) {
 		document.querySelector('span.current-route').after(tip);
 	}
 	else return;

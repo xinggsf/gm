@@ -667,7 +667,7 @@ const app = {
 			e.stopPropagation();
 			e.preventDefault();
 			actList.get(key)(e);
-			if (!cfg.isLive && [67,88,90].includes(e.keyCode)) tip(MSG.speedRate + v.playbackRate);
+			if ([67,88,90].includes(e.keyCode)) tip(MSG.speedRate + v.playbackRate);
 		}
 	},
 	checkUI() {
@@ -720,6 +720,7 @@ const app = {
 		this.rawProps.clear();
 		this.rawProps = void 0;
 		by = d.body;
+		v = v || this.findMV();
 		log('bind event\n', v);
 		bus.$emit('foundMV');
 		const bRate = gmFuncOfCheckMenu(MSG.rememberRateMenuOption,'remberRate');
