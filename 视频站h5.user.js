@@ -27,6 +27,7 @@
 // @match    https://tv.sohu.com/*
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
+// @match    https://movie.douban.com/subject/*
 // @version    2.0.0
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
@@ -48,7 +49,7 @@
 // @match    https://www.youtube.com/*
 // @match    https://www.ted.com/talks/*
 // @match    https://www.twitch.tv/*
-
+// @inject-into content
 // @match    https://www.yy.com/*
 // @match    https://www.huya.com/*
 // @match    https://v.douyu.com/*
@@ -65,7 +66,6 @@
 // @include    */play*
 // @include    *play/*
 // @exclude    https://www.dj92cc.net/dance/play/id/*
-// @inject-into  content
 // @grant      window.onurlchange
 // @grant      unsafeWindow
 // @grant      GM_registerMenuCommand
@@ -348,7 +348,6 @@ const tip = (msg) => {
 		.animate({top:'+=9px'},1900)
 		.animate({top:'-30px'});
 };
-const ua_chrome = 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.3626.121 Safari/537.36';
 const u = getMainDomain(host);
 const cfg = {
 	isLive: !1,
@@ -660,7 +659,6 @@ const app = {
 			/INPUT|TEXTAREA|SELECT/.test(t.nodeName)) return;
 		if (e.shiftKey && ![13,37,39].includes(e.keyCode)) return;
 		if (e.shiftKey && e.keyCode == 27) return;
-		if (cfg.isLive && [37,39,78,77,88,67,90].includes(e.keyCode)) return;
 		if (!this.checkMV()) return;
 		if (!e.shiftKey && cfg.mvShell && cfg.mvShell.contains(t) && [32,37,39].includes(e.keyCode)) return;
 		const key = e.shiftKey ? e.keyCode + 1024 : e.keyCode;
@@ -669,7 +667,7 @@ const app = {
 			e.stopPropagation();
 			e.preventDefault();
 			actList.get(key)(e);
-			if ([67,88,90].includes(e.keyCode)) tip(MSG.speedRate + v.playbackRate);
+			if (!cfg.isLive && [67,88,90].includes(e.keyCode)) tip(MSG.speedRate + v.playbackRate);
 		}
 	},
 	checkUI() {
@@ -721,7 +719,6 @@ const app = {
 		for (const [i,k] of this.rawProps) Reflect.defineProperty(HTMLVideoElement.prototype, i, k);
 		this.rawProps.clear();
 		this.rawProps = void 0;
-		$(cfg.adsCSS).remove();
 		by = d.body;
 		log('bind event\n', v);
 		bus.$emit('foundMV');
@@ -743,13 +740,16 @@ const app = {
 				}
 			}, false);
 		}
-		$(v).one('canplaythrough', ev => {
-			if (!cfg.isLive) {
+		$(v).one('canplay', ev => {
+			cfg.isLive = cfg.isLive || v.duration == Infinity;
+			if (cfg.isLive) for(const k of [37,37+1024,39,39+1024,78,77,88,67,90]) actList.delete(k);
+			else {
 				if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
 				v.addEventListener('ratechange', ev => {
 					if (bRate && v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
 			}
+			 
 			this.checkMV();
 			bus.$emit('canplay');
 		});
@@ -767,7 +767,8 @@ const app = {
 	init() {
 		const rawAel = EventTarget.prototype.addEventListener;
 		EventTarget.prototype.addEventListener = function(...args) {
-			const block = (args[0] == 'dblclick' && !args[1].toString().includes('actList.get(1037)'))
+			const inMV = this instanceof HTMLMediaElement;
+			const block = inMV && (args[0] == 'dblclick' && !args[1].toString().includes('actList.get(1037)'))
 				|| (args[0] == 'ratechange' && 'baidu'== u && !args[1].toString().includes('localStorage.mvPlayRate'));
 			if (!block) return rawAel.apply(this, args);
 		};
@@ -797,7 +798,7 @@ const app = {
 	}
 };
 
-let router = {
+const router = {
 	ted() {
 		cfg.fullCSS = 'button[title=Fullscreen]';
 	},
@@ -969,76 +970,61 @@ let router = {
 	},
 	douban() {
 		cfg.nextCSS = 'a.next-series';
+	},	
+	douyu() {
+		cfg.isLive = !host.startsWith('v.');
+		if (cfg.isLive) {
+			cfg.cssMV = '.layout-Player video';
+			cfg.shellCSS = '#js-player-video';
+			cfg.webfullCSS = '.wfs-2a8e83';
+			cfg.fullCSS = '.fs-781153';
+			cfg.playCSS = 'div[class|=play]';
+			path != '/' && $(ev => {
+				q('.u-specialStateInput').checked = true;
+			});
+		} else bus.$on('addShadowRoot', async function(r) {
+			if (r.host.matches('#demandcontroller-bar')) {
+				await sleep(600);
+				cfg.shellCSS = 'div[fullscreen].video';
+				cfg.btnFP = q('.ControllerBar-PageFull', r);
+				cfg.btnFS = q('.ControllerBar-WindowFull', r);
+			}
+		});
 	},
-	hanmidy() {
-		cfg.nextCSS = `a[href="${path}"]+a`;
+	yy() {
+		cfg.isLive = !path.startsWith('/x/');
+		if (cfg.isLive) {
+			cfg.fullCSS = '.yc__fullscreen-btn';
+			cfg.webfullCSS = '.yc__cinema-mode-btn';
+			cfg.playCSS = '.yc__play-btn';
+		}
+	},
+	huya() {
+		if (firefoxVer && firefoxVer < 57) return true;
+		cfg.disableDBLClick = !0;
+		cfg.webfullCSS = '.player-fullpage-btn';
+		cfg.fullCSS = '.player-fullscreen-btn';
+		cfg.playCSS = '#player-btn';
+		polling(doClick, '.login-tips-close');
+		localStorage['sidebar/ads'] = '{}';
+		localStorage['sidebar/state'] = 0;
+		// localStorage.TT_ROOM_SHIELD_CFG_0_ = '{"10000":1,"20001":1,"20002":1,"20003":1,"30000":1}';
+	},
+	twitch() {
+		cfg.isLive = !path.startsWith('/videos/');
+		cfg.fullCSS = 'button[data-a-target=player-fullscreen-button]';
+		cfg.webfullCSS = '.player-controls__right-control-group > div:nth-child(4) > button';
+		cfg.playCSS = 'button[data-a-target=player-play-pause-button]';
+	},
+	longzhu() {
+		cfg.fullCSS = 'a.ya-screen-btn';
+	},
+	zhanqi() {
+		localStorage.lastPlayer = 'h5';
+		cfg.fullCSS = '.video-fullscreen';
 	}
 };
 
-if (!router[u]) { //直播站点
-	router = {
-		douyu() {
-			cfg.adsCSS = 'a[href*="wan.douyu.com"]';
-			cfg.isLive = !host.startsWith('v.');
-			if (cfg.isLive) {
-				cfg.cssMV = '.layout-Player video';
-				cfg.shellCSS = '#js-player-video';
-				cfg.webfullCSS = '.wfs-2a8e83';
-				cfg.fullCSS = '.fs-781153';
-				cfg.playCSS = 'div[class|=play]';
-				path != '/' && $(ev => {
-					q('.u-specialStateInput').checked = true;
-				});
-			} else bus.$on('addShadowRoot', async function(r) {
-				if (r.host.matches('#demandcontroller-bar')) {
-					await sleep(600);
-					cfg.shellCSS = 'div[fullscreen].video';
-					cfg.btnFP = q('.ControllerBar-PageFull', r);
-					cfg.btnFS = q('.ControllerBar-WindowFull', r);
-				}
-			});
-		},
-		yy() {
-			cfg.isLive = !path.startsWith('/x/');
-			if (cfg.isLive) {
-				cfg.fullCSS = '.yc__fullscreen-btn';
-				cfg.webfullCSS = '.yc__cinema-mode-btn';
-				cfg.playCSS = '.yc__play-btn';
-			}
-		},
-		huya() {
-			if (firefoxVer && firefoxVer < 57) return true;
-			cfg.disableDBLClick = !0;
-			cfg.webfullCSS = '.player-fullpage-btn';
-			cfg.fullCSS = '.player-fullscreen-btn';
-			cfg.playCSS = '#player-btn';
-			cfg.adsCSS = '#player-subscribe-wap,#wrap-income';
-			polling(doClick, '.login-tips-close');
-			localStorage['sidebar/ads'] = '{}';
-			localStorage['sidebar/state'] = 0;
-			// localStorage.TT_ROOM_SHIELD_CFG_0_ = '{"10000":1,"20001":1,"20002":1,"20003":1,"30000":1}';
-		},
-		twitch() {
-			cfg.isLive = !path.startsWith('/videos/');
-			cfg.fullCSS = 'button[data-a-target=player-fullscreen-button]';
-			cfg.webfullCSS = '.player-controls__right-control-group > div:nth-child(4) > button';
-			cfg.playCSS = 'button[data-a-target=player-play-pause-button]';
-		},
-		longzhu() {
-			cfg.fullCSS = 'a.ya-screen-btn';
-		},
-		zhanqi() {
-			localStorage.lastPlayer = 'h5';
-			cfg.fullCSS = '.video-fullscreen';
-		}
-	};
-	if (router[u]) {
-		cfg.isLive = cfg.isLive || !host.startsWith('v.');
-		(!w.chrome || isEdge) && fakeUA(ua_chrome);
-	}
-}
-
-cfg.isLive = cfg.isLive || host.startsWith('live.');
 Reflect.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
 });
