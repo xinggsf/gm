@@ -71,8 +71,8 @@ function getSet(name, defaultValue) {
 }
 // 解析引擎
 const APIS = [
-	{name:"盒子", url:"https://jx.jsonplayer.com/player/?url=", title:"全网解析"},
-	{name:"爱豆-奇艺QQ", url:"https://jx.aidouer.net/?url="},
+	{name:"七七", url:"https://jx.77flv.cc/?url=", title:"全网解析"},
+	// {name:"爱豆-奇艺QQ", url:"https://jx.aidouer.net/?url="},
 	// {name:"OK云", url:"https://api.okjx.cc:3389/jx.php?url="},
 	// 88看 必须修改请求头referer为 https://www.mgtvys.com/
 	{name:"88看", url:"https://vip.sp-flv.com:8443/?url=", title:"全网解析"},
