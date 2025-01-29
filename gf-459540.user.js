@@ -14,9 +14,9 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=2
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     4.6
+// @version     4.7
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license     MIT
@@ -99,7 +99,8 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 			return 0
 		}
 		log("正在对比剧集年份");
-		const video = r.list.find(k => k.type_name != '电影解说' && k.vod_year == videoYear && k.vod_play_url)||r.list[0];
+		const video = r.list.find(k => k.type_name != '电影解说' && k.vod_year == videoYear && k.vod_play_url)
+			|| r.list[0];
 		if (!video) {
 			log("没有找到匹配剧集的影片！");
 			return 0
@@ -183,7 +184,8 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	function sourceButton(item) {
 		potList = potList || item.playList;
 		const btn = htmlToElement(`<xy-button style="color:#a3a3a3" type="dashed">${item.name}</xy-button>`);
-		btn.onclick = () => {
+		btn.onclick = function(){
+			this.blur();
 			potList = item.playList;
 			const list = item.playList[seriesNum];
 			if (!list) return;
@@ -206,6 +208,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 				`<xy-button type="flat">${name}</xy-button>`
 			));
 			e.onclick = function() {
+				this.blur();
 				if (this.matches('.play')) return;
 				seriesNum = index;
 				art.switchUrl(url);
