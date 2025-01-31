@@ -361,6 +361,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	function initArt(url) {
 		art = new Artplayer({
 			container: ".artplayer-app",
+			theme: 'green',
 			url, pip: true,
 			fullscreen: true,
 			fullscreenWeb: true,
