@@ -28,7 +28,7 @@
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
 // @match    https://movie.douban.com/subject/*
-// @version    2.0.0
+// @version    2.0.1
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -101,7 +101,7 @@ P：视频截图    i：切换画中画   M：(停止)缓存视频(hls.js)
 ↑ ↓方向键：音量调节   ESC：退出（网页）全屏
 空格键：暂停/播放      N：播放下一集
 回车键：切换全屏;      回车键 + shift: 切换网页全屏
-C(抖音V)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
+C(抖音、youtube用V键)：加速0.1倍  X(抖音S)：减速0.1倍  Z(抖音A)：切换加速状态
 D：上一帧     F：下一帧(youtube.com用E键)`
 	},
 	'en': {
@@ -135,7 +135,7 @@ Enter： Enable/disable full screen video
 Shift + Enter: Set/unset video enlarged to window size
 
 N key： Play the next video (if any)
-C key： Speed up video playback by 0.1
+C key(YouTube:V key)： Speed up video playback by 0.1
 X key: Slow down video playback by 0.1
 Z key, Set video playback speed: 1.0 ←→ X
 D key: Previous frame
@@ -172,7 +172,7 @@ Invio： Attiva/disattiva ingrandimento del video a schermo intero
 Shift + Invio: Attiva/disattiva ingrandimento del video a dimensione della finestra
 
 Tasto N： Riproduzione del video successivo (se presente)
-Tasto C: Velocizza riproduzione video di 0,1
+Tasto C(YouTube: Tasto V): Velocizza riproduzione video di 0,1
 Tasto X: Rallenta riproduzione video di 0,1
 Tasto Z, Impostare la velocità di riproduzione video: 1,0 ←→ X
 Tasto D: Vai al frame precedente
@@ -818,6 +818,7 @@ const router = {
 		cfg.isClickOnVideo = true;
 		actList.delete(32);
 		actList.set(69, actList.get(70)).delete(70); //F键 >> E键
+		actList.set(86, actList.get(67)).delete(67); //C键 >> V键
 	},
 	douyin() {
 		cfg.isLive = host.startsWith('live.');
