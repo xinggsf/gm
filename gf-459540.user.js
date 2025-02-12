@@ -14,7 +14,7 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=2
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=3
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     4.7
 // @author      liuser, modify by ray
