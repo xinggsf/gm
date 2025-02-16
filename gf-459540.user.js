@@ -443,7 +443,7 @@ xy-button{
 	display: grid;
 	height: calc(100vh - 3em);
 	grid-template-rows: 1fr;
-	grid-template-columns: calc(100vw - 28em) 28em;
+	grid-template-columns: calc(100vw - 25em) 25em;
 	grid-gap: 0;
 }
 .series-select-space{
