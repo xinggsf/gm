@@ -10,8 +10,8 @@
 // @match    https://*.qq.com/*
 // @exclude  https://user.qzone.qq.com/*
 // @match    https://www.weiyun.com/video_*
-// @match    https://v.youku.com/v_play/*
-// @match    https://v.youku.com/v_show/id_*
+// @match    https://v.youku.com/v*
+// @match    https://m.youku.com/*
 // @match    https://vku.youku.com/live/*
 // @match    https://video.tudou.com/v/*
 // @match    https://www.iqiyi.com/*
@@ -840,6 +840,7 @@ const router = {
 		cfg.fullCSS = '.txp_btn_fullscreen';
 		// w.__PLAYER__ || w.PLAYER
 		app.rawProps.set('playbackRate', 1);
+		for(let i = 37; i<=40; i++) actList.delete(i); //已有方向键
 	},
 	youku() {
 		actList.delete(37);

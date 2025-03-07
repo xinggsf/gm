@@ -7,7 +7,6 @@
 // @match       https://m.douban.com/movie/*
 // @exclude     https://movie.douban.com/subject/*/episode/*
 // @grant       GM_addStyle
-// @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_getValue
 // @grant       GM_xmlhttpRequest
@@ -16,7 +15,7 @@
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
 // @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=3
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     4.7
+// @version     4.8
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license     MIT
@@ -65,7 +64,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 		// { name: "豪华云", searchUrl: "https://hhzyapi.com/api.php/provide/vod/"},
 		// { name: "极速云", searchUrl: "https://8.218.111.47/api.php/provide/vod/"},
 		// { name: "飞速云", searchUrl: "https://www.feisuzyapi.com/api.php/provide/vod/" },
-		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" },
+		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" }, //www.ikunzy.com
 		{ name: "U酷云", searchUrl: "https://api.ukuapi.com/api.php/provide/vod/" },
 		{ name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
 		// { name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/josn/" }, //https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/
@@ -241,14 +240,21 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 					<div class="artplayer-app"></div>
 				</div>
 				<div>
-					<a href="http://memos.babelgo.cn/m/1" target="_blank" style="color:#4aa150">❤️支持开发者</a>
-					<span style="display:inline-block;color:#aaa">　　不要相信视频中的广告！！！默认播放第一个搜索到的资源，若无法播放请切换其他资源。 部分影片选集后会出现卡顿，点击播放按钮或拖动一下进度条即可恢复。　　</span>
-					<a class="pot-playList" title="下载DPL文件" style="color:#4aa150;">PotPlayer播放列表</a>
-					<span>　　　</span>
-					<a class="next-series" style="color:#4aa150;">下一集</a>
+					<span style="display:inline-block;color:#aaa">不要相信视频中的广告！！解决影视卡顿：快进几秒；或切换影视源，可点击之前选择的影视源</span>
+					<div style="float:right;color:#4aa150;">
+						<a target="_blank" title="提示不安全，请允许浏览器继续访问" href="https://taopianapi.com/cjapi/mc/vod/json/m3u8.html">解决淘片云不能访问　</a>
+						<a class="next-series">下一集　</a>
+						<a class="pot-playList" title="下载DPL文件">PotPlayer播放列表　</a>
+						<a class="cacheSize" title="设定视频缓存区大小">⚙　缓存区　</a>
+						<a target="_blank" title="微信打赏" href="https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/vx.png">请我喝杯☕</a>
+					</div>
 				</div>
 			</div>`
 			));
+			e.querySelector(".cacheSize").onclick = function() {
+				const n = +prompt('请输入视频缓存区大小，区间：15 － 800整数秒',''+ buffSize);
+				if (n > 14 && n < 801) GM_setValue('buffSize', n|0);
+			};
 			e.querySelector(".pot-playList").onclick = async function(ev){
 				ev.stopPropagation();
 				const a = potList.map((k,i) => `${i+1}*file*${k.url}\n${i+1}*title*${k.name}\n`);
@@ -465,8 +471,4 @@ xy-button{
 	);
 
 	playBtn();
-	GM_registerMenuCommand('设定视频缓存区大小', () => {
-		const n = +prompt('请输入视频缓存区大小，区间：15 － 800整数秒',''+ buffSize);
-		if (n > 14 && n < 801) GM_setValue('buffSize', n|0);
-	});
 })();
