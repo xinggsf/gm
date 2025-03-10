@@ -57,6 +57,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 
 	//搜索源
 	const searchSource = [
+		//hosts文件加中添加一行： 23.225.147.243 api.ffzyapi.com
 		{ name: "非凡云", searchUrl: "http://api.ffzyapi.com/api.php/provide/vod/" }, // ffzy5.tv
 		{ name: "量子云", searchUrl: "https://cj.lziapi.com/api.php/provide/vod/" },
 		{ name: "神马云", searchUrl: "https://api.yzzy-api.com/inc/apijson.php" },
@@ -245,7 +246,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 						<a target="_blank" title="提示不安全，请允许浏览器继续访问" href="https://taopianapi.com/cjapi/mc/vod/json/m3u8.html">解决淘片云不能访问　</a>
 						<a class="next-series">下一集　</a>
 						<a class="pot-playList" title="下载DPL文件">PotPlayer播放列表　</a>
-						<a class="cacheSize" title="设定视频缓存区大小">⚙　缓存区　</a>
+						<a class="cacheSize" title="设定视频缓存大小">⚙ 缓存　</a>
 						<a target="_blank" title="微信打赏" href="https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/vx.png">请我喝杯☕</a>
 					</div>
 				</div>
