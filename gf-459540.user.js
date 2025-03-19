@@ -57,7 +57,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 
 	//搜索源
 	const searchSource = [
-		//hosts文件加中添加一行： 23.225.147.243 api.ffzyapi.com
+		//以下域名大多数被污染！！必须修改hosts文件！ hosts文件加中添加一行： 23.225.147.243 api.ffzyapi.com
 		{ name: "非凡云", searchUrl: "http://api.ffzyapi.com/api.php/provide/vod/" }, // ffzy5.tv
 		{ name: "量子云", searchUrl: "https://cj.lziapi.com/api.php/provide/vod/" },
 		{ name: "神马云", searchUrl: "https://api.yzzy-api.com/inc/apijson.php" },

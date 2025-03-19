@@ -561,7 +561,7 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 		link.click();
 		link.remove();
 		await sleep(500);
-		URL.revokeObjectURL(dataURL);		
+		URL.revokeObjectURL(dataURL);
 	});
 })
 .set(77, _ => {// M 缓存视频
@@ -725,7 +725,7 @@ const app = {
 		bus.$emit('foundMV');
 		const bRate = gmFuncOfCheckMenu(MSG.rememberRateMenuOption,'remberRate');
 		window.addEventListener('urlchange', async (info) => { //TM event: info.url
-			await sleep(1990);
+			await sleep(990);
 			this.checkMV();
 			if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
 			bus.$emit('urlchange');
@@ -743,14 +743,14 @@ const app = {
 		}
 		$(v).one('canplay', ev => {
 			cfg.isLive = cfg.isLive || v.duration == Infinity;
-			if (cfg.isLive) for(const k of [37,37+1024,39,39+1024,78,77,88,67,90]) actList.delete(k);
+			if (cfg.isLive) for(const k of [37,1061,39,1063,67,77,78,88,90]) actList.delete(k);
 			else {
 				if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
 				v.addEventListener('ratechange', ev => {
 					if (bRate && v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
 				});
 			}
-			 
+
 			this.checkMV();
 			bus.$emit('canplay');
 		});
@@ -973,7 +973,7 @@ const router = {
 	},
 	douban() {
 		cfg.nextCSS = 'a.next-series';
-	},	
+	},
 	douyu() {
 		cfg.isLive = !host.startsWith('v.');
 		if (cfg.isLive) {

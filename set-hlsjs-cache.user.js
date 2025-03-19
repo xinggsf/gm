@@ -45,11 +45,12 @@ const buffSize = 80; // 视频缓存区大小：20 － 800秒
 })();
 
 function after() {
-	// Object.assign(Hls.DefaultConfig, { });
 	console.log('成功设置Hls缓存区！');
+	const v = document.getElementsByTagName('video')[0];
+	v.muted = !1;
 
 	let tip = document.createElement('span');
-	if (location.hostname == 'nnyy.in') {		
+	if (location.hostname == 'nnyy.in') {
 		document.querySelector('#e-tip').after(tip);
 	}
 	else if (location.hostname == 'dandanzan.net') {
@@ -60,8 +61,6 @@ function after() {
 	}
 	else return;
 
-	const v = document.getElementsByTagName('video')[0];
-	v.muted = !1;
 	v.addEventListener('loadedmetadata', () => {
 		v.playbackRate = +localStorage.mvPlayRate || 1.4;
 		tip.innerText = `　　　分辨率：${v.videoWidth}x${v.videoHeight}P`;

@@ -96,7 +96,7 @@ class App {
 	}
 
 	fixWebFull() {
-		let s = `.video_left, .jscroll-e {height:500px!important}
+		let s = `.video_left, .jscroll-e, #sc0 {height:500px!important}
 		.gm-fp-body .flash, #myFlash, div[data-player], .vo_nr { height:100% !important }
 		.gm-fp-body .flash, .gm-fp-body #myFlash { width:100% !important }`;
 		/* .gm-fp-body .video_btnBar, .gm-fp-body 
