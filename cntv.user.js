@@ -3,13 +3,14 @@
 // @name             CCAV启用html5
 // @namespace        xinggsf.CCAV
 // @description      CCAV视频启用html5
-// @version          0.1.6
-// @include          *://*.cntv.cn/*
-// @include          *://*.cctv.com/*
-// @exclude          *://tv.cctv.com/live/*
-// @include          http://www.yatu.tv*/play*
+// @version          0.1.7
+// @match            https://*.cntv.cn/*
+// @match            https://tv.cctv.cn/*/VIDE*
+// @match            https://*.cctv.com/*
+// @exclude          https://tv.cctv.com/live/*
+// @match            http://www.yatu.tv*/play*
 // @noframes
-// @require          https://cdn.jsdelivr.net/npm/clappr@0.3.12/dist/clappr.min.js
+// @require          https://cdn.jsdelivr.net/npm/clappr@latest/dist/clappr.min.js
 // @require          https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js
 // @grant            GM_xmlhttpRequest
 // @grant            GM_addStyle
@@ -41,10 +42,12 @@ class App {
 		try {
 			this.getVid();
 			const data = await this.fetchSrc();
-			if (!data.hls_url) return;
+			console.dir(data);
+			const u = data.hls_url; // data.manifest?.hls_h5e_url || 
+			if (!u) return;
 			if (this.is1P && !unsafeWindow.vodh5player) await sleep(300);
 			if (this.is1P && unsafeWindow.vodh5player) return;
-			this.createH5Player(data.hls_url);
+			this.createH5Player(u);
 		} catch(ex) {
 			console.error(ex);
 		}
