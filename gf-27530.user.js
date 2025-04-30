@@ -73,6 +73,8 @@ function getSet(name, defaultValue) {
 const APIS = [
 	{name:"七七", url:"https://jx.77flv.cc/?url=", title:"全网解析"},
 	{name:"金牛", url:"https://yparse.jn1.cc/index.php?url="},
+	{name:"金鹰", url:"https://jx.playerjy.com/?url="},
+	{name:"m3u8TV", url:"https://jx.m3u8.tv/jiexi/?url="},
 	{name:"XX云", url:"https://jx.2s0.cn/player/?url="},
 	// 88看 必须修改请求头referer为 https://www.mgtvys.com/
 	{name:"88看", url:"https://vip.sp-flv.com:8443/?url=", title:"全网解析"},
