@@ -51,7 +51,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	//将html转为element
 	function htmlToElement(html) {
 		const template = document.createElement('template');
-		template.innerHTML = html.trim();
+		template.innerHTML = html.trim().replaceAll('\t','');
 		return template.content.firstChild;
 	}
 
