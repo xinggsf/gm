@@ -13,7 +13,7 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=7
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=8
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     4.8
 // @author      liuser, modify by ray
@@ -253,14 +253,14 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 				ev.stopPropagation();
 				const a = potList.map((k,i) => `${i+1}*file*${k.url}\n${i+1}*title*${k.name}\n`);
 				const time = art.currentTime*1000 || 500;
-				a[seriesNum] += `${seriesNum+1}*start*${~~time}\n`;
+				a[seriesNum] += `${seriesNum+1}*start*${~~time}\n`;// 插入当前剧集播放进度。 pot列表索引从1开始，故+1
 				// 插入DPL文件头
 				a[0] = `DAUMPLAYLIST
 					playname=${potList[seriesNum].url}
 					topindex=0
 					saveplaypos=1
 				`.replace(/\t|\r| /g,'') + a[0];
-				this.download = vName +'.dpl';
+				this.download = vName + '.dpl';
 				this.href = URL.createObjectURL(new Blob(a));
 				await sleep(900);
 				URL.revokeObjectURL(this.href);
@@ -375,7 +375,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	}
 
 	GM_addStyle(
-`.liu-playContainer{
+`.liu-playContainer {
 	width:100%;
 	height:100%;
 	background-color:#222;
@@ -384,7 +384,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	z-index:11;
 }
 
-.liu-closePlayer{
+.liu-closePlayer {
 	float:right;
 	margin-inline:10px;
 	color:white;
@@ -404,49 +404,42 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	position: relative;
 	z-index: 1;
 	overflow: hidden;
+	
+	&:hover {
+		color: #41ac52;
+	}
+	&:after {
+		content: '';
+		background: white;
+		position: absolute;
+		z-index: -1;
+		left: -20%;
+		right: -20%;
+		top: 0;
+		bottom: 0;
+		transform: skewX(-45deg) scale(0, 1);
+		transition: all 0.5s;
+	}
+	&:hover:after {
+		transform: skewX(-45deg) scale(1, 1);
+		-webkit-transition: all 0.5s;
+		transition: all 0.5s;
+	}
 }
 
-.liu-btn:hover {
-	color: #41ac52;
-}
-
-.liu-btn:after {
-	content: '';
-	background: white;
-	position: absolute;
-	z-index: -1;
-	left: -20%;
-	right: -20%;
-	top: 0;
-	bottom: 0;
-	transform: skewX(-45deg) scale(0, 1);
-	transition: all 0.5s;
-}
-
-.liu-btn:hover:after {
-	transform: skewX(-45deg) scale(1, 1);
-	-webkit-transition: all 0.5s;
-	transition: all 0.5s;
-}
-xy-button{
+xy-button {
 	height:1.5em;
 	cursor:pointer;
 }
 
-.series-select-space xy-button.play{
-	color:purple;
-}
-.series-select-space xy-button{
-	color:#aaa;
-}
-.playSpace{
+.playSpace {
 	display: grid;
 	height: calc(100vh - 3em);
 	grid-template-rows: 1fr;
 	grid-template-columns: calc(100vw - 25em) 25em;
 	grid-gap: 0;
 }
-.series-select-space{
+.series-select-space {
 	overflow-y: auto;
 	display: flex;
 	flex-flow: row wrap;
@@ -455,6 +448,13 @@ xy-button{
 	/* grid-gap: 0;
 	grid-auto-rows: 1.8em;
 	grid-template-columns: auto auto auto auto auto; */
+
+	& xy-button.play {
+		color:purple;
+	}
+	& xy-button {
+		color:#aaa;
+	}
 }
 @media screen and (max-width: 1025px) {
 	.playSpace{
