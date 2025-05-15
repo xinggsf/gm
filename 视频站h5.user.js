@@ -94,7 +94,7 @@ const i18n = {
 		'videoLag': '视频卡顿',
 		'fullScreen': '全屏',
 		'helpMenuOption': '脚本功能快捷键表',
-		'helpBody': `双击：切换（网页）全屏         鼠标中键：快进5秒
+		'helpBody': `双击(控制栏)：切换（网页）全屏         鼠标中键：快进5秒
 
 P：视频截图    i：切换画中画   M：(停止)缓存视频(hls.js)
 ← →方向键：快退、快进5秒;   方向键 + shift: 20秒
@@ -264,7 +264,7 @@ const cookie = new Proxy(noopFn, {
 		return true;
 	}
 });
-const onceEvent = (ctx, eName) => new Promise(resolve => ctx.addEventListener(eName, resolve));
+const onceEvent = (ctx, eName) => new Promise(resolve => ctx.addEventListener(eName, resolve, {once: true}));
 const promisify = (fn) => (...args) => new Promise((resolve, reject) => {
     args.push(resolve);
 	fn.apply(this, args);
