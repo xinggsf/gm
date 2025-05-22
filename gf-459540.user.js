@@ -21,7 +21,8 @@
 // @license     MIT
 // ==/UserScript==
 
-/* https://raw.kkgithub.com/xinggsf/extFilter/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
+/* https://ghproxy.net/https://raw.github.com/xinggsf/extFilter/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
+
 ver4.6 修正下载DPL文件的BUG；更新神马源；在hls.js库中加入去广告功能
 ver4.5 更换播放库hls.js，以适应：魔都云、闪电云、无尽云、樱花云
 ver4.2 更新量子源；新增功能：导出potplayer播放列表
@@ -48,16 +49,17 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	let vName = isMobile ? $(".sub-title").innerText : document.title.slice(0, -5);
 	let videoYear = $(isMobile ? ".sub-original-title" : ".year").innerText.slice(1, -1);
 
-	//将html转为element
-	function htmlToElement(html) {
-		const template = document.createElement('template');
-		template.innerHTML = html.trim().replaceAll('\t','');
-		return template.content.firstChild;
+	function html2DOM(html, pNode) {
+		const e = document.createElement('template');
+		e.innerHTML = html.trim().replaceAll('\t','');
+		const r = e.content.firstChild;
+		pNode?.append(e.content);
+		return r;
 	}
 
 	//搜索源
 	const searchSource = [
-		//以下域名大多数被污染！！必须修改hosts文件！ hosts文件加中添加一行： 23.225.147.243 api.ffzyapi.com
+		//以下域名多数被污染！！必须修改hosts文件： 23.225.147.243 api.ffzyapi.com
 		{ name: "非凡云", searchUrl: "http://api.ffzyapi.com/api.php/provide/vod/" }, // ffzy5.tv
 		{ name: "量子云", searchUrl: "https://cj.lziapi.com/api.php/provide/vod/" },
 		{ name: "神马云", searchUrl: "https://api.yzzy-api.com/inc/apijson.php" },
@@ -127,11 +129,9 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 
 	//播放按钮
 	function playBtn() {
-		const e = htmlToElement(`<xy-button type="primary">一键播放</xy-button>`);
-		const eInfo = htmlToElement(`<xy-button type="primary">重设片名和年份</xy-button>`);
-		$(isMobile ? ".sub-original-title" : "h1").appendChild(e);
-		e.after(eInfo);
-		eInfo.onclick = function() {
+		const e = html2DOM(`<xy-button type="primary">一键播放</xy-button><xy-button type="primary">重设片名和年份</xy-button>`,
+			$(isMobile ? ".sub-original-title" : "h1"));
+		e.nextSibling.onclick = function() {
 			const s = prompt(
 				'纠正片名和年份，二者用 | 号隔开。可以只输入片名，如片名有上下集~试着删掉空格及其后的字',
 				`${vName}|${videoYear}`);
@@ -141,7 +141,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 			}
 		};
 		e.onclick = async function() {
-			// 二次搜索资源控制2变量
+			// 第二次搜索的2个控制变量
 			const secName = vName.includes(' ') ? vName.replace(' ', vName.includes(' 第') ?'':'：') : null;
 			const sources = secName ? [] : null;
 			const render = async (item) => {
@@ -151,14 +151,14 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 					if (secName && !sources.includes(item)) sources.push(item);
 					return;
 				}
-				if (e.loading) {
-					e.loading = false;
+				if (this.loading) {
+					this.loading = false;
 					new UI(playList);
 				}
-				//渲染资源列表
+				//渲染源列表
 				$(".sourceButtonList").appendChild(sourceButton({ name: item.name, playList }));
 			};
-			e.loading = true;
+			this.loading = true;
 			tip("正在获取影视URL");
 			await Promise.allSettled(searchSource.map(render));
 			if (sources?.length) {
@@ -167,7 +167,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 				await Promise.allSettled(sources.map(render));
 			}
 			if (!$('body > .liu-playContainer')) {
-				e.loading = !1;
+				this.loading = !1;
 				tip("未能获取影视URL");
 			}
 		};
@@ -176,7 +176,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	//影视源选择按钮 参数item 是 {name:"..云",playList:[{name:"第一集",url:""}]}
 	function sourceButton(item) {
 		potList = potList || item.playList;
-		const btn = htmlToElement(`<xy-button style="color:#a3a3a3" type="dashed">${item.name}</xy-button>`);
+		const btn = html2DOM(`<xy-button style="color:#a3a3a3" type="dashed">${item.name}</xy-button>`);
 		btn.onclick = function(){
 			this.blur();
 			potList = item.playList;
@@ -188,50 +188,43 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 				if (art.duration > time) art.currentTime = time;
 			});
 			art.switchUrl(list.url);
-			$(".series-select-space").remove();
-			new SeriesContainer(item.playList);
+			$(".series-select-space").innerHTML = '';
+			seriesContainer(item.playList);
 		};
 		return btn;
 	}
 
 	//剧集选择器
-	class SeriesButton {
-		constructor(pNode, name, url, index) {
-			const e = pNode.appendChild(htmlToElement(
-				`<xy-button type="flat">${name}</xy-button>`
-			));
-			e.onclick = function() {
-				this.blur();
-				if (this.matches('.play')) return;
-				seriesNum = index;
-				art.switchUrl(url);
-				$('.play', this.parentNode)?.classList.remove('play');
-				this.classList.add('play');
-			};
-			if (seriesNum == index) e.classList.add('play');
-		}
+	function seriesButton(name, url, index) {
+		const e = html2DOM(`<xy-button type="flat">${name}</xy-button>`);
+		e.onclick = function() {
+			this.blur();
+			if (this.matches('.play')) return;
+			seriesNum = index;
+			art.switchUrl(url);
+			$('.play', this.parentNode)?.classList.remove('play');
+			this.classList.add('play');
+		};
+		if (seriesNum == index) e.classList.add('play');
+		return e;
 	}
 
 	//剧集选择的容器
-	class SeriesContainer {
-		constructor(playList) {
-			const e = htmlToElement(`<div class="series-select-space"></div>`);
-			for (const [index, item] of playList.entries()) {
-				new SeriesButton(e, item.name, item.url, index);
-			}
-			$(".playSpace").appendChild(e);
-			$(".next-series").hidden = $(".pot-playList").hidden = playList.length < 2;
-		}
+	function seriesContainer(playList) {
+		const c = playList.map((k,i) => seriesButton(k.name, k.url, i));
+		$(".series-select-space").append(...c);
+		$(".next-series").hidden = $(".pot-playList").hidden = playList.length < 2;
 	}
 
 	class UI {
 		constructor(playList) {
-			const e = document.body.appendChild(htmlToElement(
+			const e = html2DOM(
 			`<div class="liu-playContainer">
 				<a class="liu-closePlayer">关闭界面</a>
 				<div class="sourceButtonList"></div>
 				<div class="playSpace" style="width:100%">
 					<div class="artplayer-app"></div>
+					<div class="series-select-space"></div>
 				</div>
 				<div>
 					<span style="display:inline-block;color:#aaa">不要相信视频中的广告！！解决影视卡顿：快进几秒；或切换影视源，可点击之前选择的影视源</span>
@@ -243,8 +236,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 						<a target="_blank" title="微信打赏" href="https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/vx.png">请我喝杯☕</a>
 					</div>
 				</div>
-			</div>`
-			));
+			</div>`, document.body);
 			e.querySelector(".cacheSize").onclick = function() {
 				const n = +prompt('请输入视频缓存区大小，区间：15 － 800整数秒',''+ buffSize);
 				if (n > 14 && n < 801) GM_setValue('buffSize', n|0);
@@ -276,7 +268,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 			};
 			log(playList[seriesNum].url);
 			initArt(playList[seriesNum].url);
-			new SeriesContainer(playList);
+			seriesContainer(playList);
 		}
 	}
 
@@ -404,7 +396,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	position: relative;
 	z-index: 1;
 	overflow: hidden;
-	
+
 	&:hover {
 		color: #41ac52;
 	}

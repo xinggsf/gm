@@ -28,7 +28,7 @@
 // @match    https://film.sohu.com/album/*
 // @match    https://www.mgtv.com/*
 // @match    https://movie.douban.com/subject/*
-// @version    2.0.1
+// @version    2.0.2
 // @match    https://pan.baidu.com/*
 // @match    https://yun.baidu.com/*
 // @match    https://*.163.com/*
@@ -83,7 +83,7 @@ const i18n = {
 	'zh': {
 		'console': '%c脚本[%s] 反馈：%s\n%s',
 		'cacheStoringError': '直接媒体类型（如MP4格式）缓存无效果！',
-		'cacheStoringConfirm': '视频切片数据能否缓存？检测方法：刷新页面，已观看视频片段不产生网络流量则可缓存。如果能缓存视频切片，选择确认直接缓存全部视频时段；点取消则按默认缓冲区大小进行缓冲。',
+		'cacheStoringConfirm': '视频切片数据能否缓存？检测方法：刷新页面，已观看视频片段不产生网络流量则可缓存。如果能缓存视频切片，选择确认直接缓存全部视频时段；点取消则按默认缓冲区大小进行缓冲。缓冲时再按M键则取消缓冲！',
 		'cantOpenPIP': '无法进入画中画模式!错误:\n',
 		'cantExitPIP': '无法退出画中画模式!错误：\n',
 		'rememberRateMenuOption': '记忆播放速度',
@@ -96,7 +96,8 @@ const i18n = {
 		'helpMenuOption': '脚本功能快捷键表',
 		'helpBody': `双击(控制栏)：切换（网页）全屏         鼠标中键：快进5秒
 
-P：视频截图    i：切换画中画   M：(停止)缓存视频(hls.js)
+P：视频截图    i：切换画中画   M：(停止)缓存视频
+chrome类浏览器加启动参数设置媒体缓存为860MB： --media-cache-size=880008000
 ← →方向键：快退、快进5秒;   方向键 + shift: 20秒
 ↑ ↓方向键：音量调节   ESC：退出（网页）全屏
 空格键：暂停/播放      N：播放下一集
@@ -107,7 +108,7 @@ D：上一帧     F：下一帧(youtube.com用E键)`
 	'en': {
 		'console': '%cScript[%s] Feedback：%s\n%s',
 		'cacheStoringError': 'Trying to cache direct media types (such as MP4 format) has no effect!',
-		'cacheStoringConfirm': 'Do you want all segments of the video to be cached? The detection method used is as follows: when the page is refreshed, the watched video clips will be cached so that no additional network traffic is generated. If you want all segments of the videos to be cached, select OK; or select Cancel to buffer a portion of the video based on the default buffer size (which is the default browser behavior).',
+		'cacheStoringConfirm': 'Do you want all segments of the video to be cached? The detection method used is as follows: when the page is refreshed, the watched video clips will be cached so that no additional network traffic is generated. If you want all segments of the videos to be cached, select OK; or select Cancel to buffer a portion of the video based on the default buffer size (which is the default browser behavior). When buffering, press M key again to cancel buffering.',
 		'cantOpenPIP': 'Unable to access picture-in-picture mode! Error：\n',
 		'cantExitPIP': 'Unable to exit picture-in-picture mode! Error：\n',
 		'rememberRateMenuOption': 'Remember video playback speed',
@@ -123,7 +124,8 @@ Middle mouse button: fast forward 5 seconds
 
 P key： Take a screenshot
 I key： Enter/Exit picture-in-picture mode
-M key： Enable/disable caching of video(hls.js)
+M key： Enable/disable caching of video
+Chrome browsers add startup parameters to set the media cache to 860MB： --media-cache-size=880008000
 
 Arrow keys ← and →： Fast forward or rewind by 5 seconds
 Shift + Arrow keys ← and →： Fast forward or rewind 20 seconds
@@ -145,7 +147,7 @@ E key: Next frame (YouTube only)`
 	'it': {
 		'console': '%cScript[%s] Feedback：%s\n%s',
 		'cacheStoringError': 'Cercare di memorizzazione nella cache tipi di media diretti (come ad esempio il formato MP4) non ha alcuna efficacia!',
-		'cacheStoringConfirm': 'Vuoi che tutti i segmenti del video siano memorizzati nella cache? Il metodo di rilevamento utilizzato è il seguente: all\'aggiornamento della pagina, i video clip guardati saranno memorizzati nella cache in modo da non generare ulteriore traffico di rete. Se vuoi che tutti i segmenti dei video siano memorizzati nella cache, seleziona OK; seleziona invece Annulla per bufferizzare una parte del video in base alla dimensione predefinita del buffer (come da comportamento predefinito del browser).',
+		'cacheStoringConfirm': 'Vuoi che tutti i segmenti del video siano memorizzati nella cache? Il metodo di rilevamento utilizzato è il seguente: all\'aggiornamento della pagina, i video clip guardati saranno memorizzati nella cache in modo da non generare ulteriore traffico di rete. Se vuoi che tutti i segmenti dei video siano memorizzati nella cache, seleziona OK; seleziona invece Annulla per bufferizzare una parte del video in base alla dimensione predefinita del buffer (come da comportamento predefinito del browser).Durante il buffering, premere nuovamente il tasto M per annullare il buffering.',
 		'cantOpenPIP': 'Impossibile accedere alla modalità picture-in-picture! Errore：\n',
 		'cantExitPIP': 'Impossibile uscire dalla modalità picture-in-picture! Errore：\n',
 		'rememberRateMenuOption': 'Memorizza la velocità di riproduzione dei video',
@@ -161,7 +163,8 @@ Pulsante centrale del mouse: avanzamento rapido di 5 secondi
 
 Tasto P: Esegui uno screenshot
 Tasto I： Attiva modalità picture-in-picture
-Tasto M： Attiva/disattiva memorizzazione del video nella cache(hls.js)
+Tasto M： Attiva/disattiva memorizzazione del video nella cache
+I browser Chrome aggiungono parametri di avvio per impostare la cache multimediale a 860MB： --media-cache-size=880008000
 
 Tasti freccia ← e →： Avanza o riavvolgi di 5 secondi
 Shift + Tasti freccia ← e →: Avanza o riavvolgi di 20 secondi
@@ -466,22 +469,23 @@ const cacheMV = {
 	finish() {
 		v.removeEventListener('canplaythrough', this.onChache);
 		v.currentTime = this.playPos;
-		this.chached = !1;
-		setTimeout(_ => v.pause(), 99);
+		this.cached = !1;
+		setTimeout(_ => v.pause(), 33);
 		HTMLMediaElement.prototype.play = this.rawPlay;
 	},
-	onChache() {
+	async onChache() {
+		await sleep(2200);
 		if (this.check()) this.finish();
-		else v.currentTime = this.iEnd;
+		else {
+			v.currentTime = this.iEnd;
+			v.pause();
+		}
 	},
 	exec() {
 		if (cfg.isLive || !v) return;
-		if (v.src.startsWith('http')) {
-			alert(MSG.cacheStoringError);
-			return;
-		}
 		this.mode = confirm(MSG.cacheStoringConfirm);
-		this.chached = true; //正在缓存
+		//开始缓存
+		this.cached = true;
 		v.pause();
 		this.rawPlay = HTMLMediaElement.prototype.play;
 		HTMLMediaElement.prototype.play = () => new Promise(noopFn);
@@ -565,7 +569,7 @@ actList.set(90, _ => { //按键Z: 切换加速状态
 	});
 })
 .set(77, _ => {// M 缓存视频
-	cacheMV.chached ? cacheMV.finish() : cacheMV.exec();
+	cacheMV.cached ? cacheMV.finish() : cacheMV.exec();
 })
 .set(78, _ => {// N 下一集
 	if (self != top) top.postMessage({id: 'gm-h5-play-next'}, '*');
@@ -953,9 +957,6 @@ const router = {
 		};
 		bus.$on('urlchange',delHiddenProp);
 		bus.$once('canplay',delHiddenProp);
-	},
-	agedm() {
-		actList.set(78, _ => { location.href = location.href.replace(/\d+$/, s => ++s) });
 	},
 	nnyy() {
 		GM_registerMenuCommand(MSG.videoLag, () => {

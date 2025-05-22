@@ -44,10 +44,17 @@ const buffSize = 80; // 视频缓存区大小：20 － 800秒
 	};
 })();
 
+function getStyle(el, s) {
+	if (el.style[s]) return el.style[s];
+	s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
+	return getComputedStyle(el)?.getPropertyValue(s);
+}
+
 function after() {
 	console.log('成功设置Hls缓存区！');
 	const v = document.getElementsByTagName('video')[0];
 	v.muted = !1;
+	getStyle(v, 'maxHeight') && v.style.setProperty("max-height", "100%", "important");
 
 	let tip = document.createElement('span');
 	if (location.hostname == 'nnyy.in') {
