@@ -13,9 +13,9 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=8
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=9
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     4.8
+// @version     4.9
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license     MIT
@@ -211,8 +211,9 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 
 	//剧集选择的容器
 	function seriesContainer(playList) {
-		const c = playList.map((k,i) => seriesButton(k.name, k.url, i));
-		$(".series-select-space").append(...c);
+		const df = document.createDocumentFragment();
+		playList.forEach((k,i) => df.append(seriesButton(k.name, k.url, i)));
+		$(".series-select-space").append(df);
 		$(".next-series").hidden = $(".pot-playList").hidden = playList.length < 2;
 	}
 
