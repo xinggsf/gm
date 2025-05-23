@@ -83,7 +83,7 @@ const i18n = {
 	'zh': {
 		'console': '%c脚本[%s] 反馈：%s\n%s',
 		'cacheStoringError': '直接媒体类型（如MP4格式）缓存无效果！',
-		'cacheStoringConfirm': '视频切片数据能否缓存？检测方法：刷新页面，已观看视频片段不产生网络流量则可缓存。如果能缓存视频切片，选择确认直接缓存全部视频时段；点取消则按默认缓冲区大小进行缓冲。缓冲时再按M键则取消缓冲！',
+		'cacheStoringConfirm': '缓冲模式二选一，确认则全部缓冲，取消则按默认缓冲区大小进行缓冲。视频缓存的有效性检测，再看已观看视频片段不产生网络流量则可缓存。缓冲时再按M键则取消缓冲！',
 		'cantOpenPIP': '无法进入画中画模式!错误:\n',
 		'cantExitPIP': '无法退出画中画模式!错误：\n',
 		'rememberRateMenuOption': '记忆播放速度',
@@ -95,9 +95,9 @@ const i18n = {
 		'fullScreen': '全屏',
 		'helpMenuOption': '脚本功能快捷键表',
 		'helpBody': `双击(控制栏)：切换（网页）全屏         鼠标中键：快进5秒
-
 P：视频截图    i：切换画中画   M：(停止)缓存视频
-chrome类浏览器加启动参数设置媒体缓存为860MB： --media-cache-size=880008000
+chrome类浏览器加启动参数设置媒体缓存为840MB： --media-cache-size=880008000
+
 ← →方向键：快退、快进5秒;   方向键 + shift: 20秒
 ↑ ↓方向键：音量调节   ESC：退出（网页）全屏
 空格键：暂停/播放      N：播放下一集
@@ -125,7 +125,7 @@ Middle mouse button: fast forward 5 seconds
 P key： Take a screenshot
 I key： Enter/Exit picture-in-picture mode
 M key： Enable/disable caching of video
-Chrome browsers add startup parameters to set the media cache to 860MB： --media-cache-size=880008000
+Chrome browsers add startup parameters to set the media cache to 840MB： --media-cache-size=880008000
 
 Arrow keys ← and →： Fast forward or rewind by 5 seconds
 Shift + Arrow keys ← and →： Fast forward or rewind 20 seconds
@@ -164,7 +164,7 @@ Pulsante centrale del mouse: avanzamento rapido di 5 secondi
 Tasto P: Esegui uno screenshot
 Tasto I： Attiva modalità picture-in-picture
 Tasto M： Attiva/disattiva memorizzazione del video nella cache
-I browser Chrome aggiungono parametri di avvio per impostare la cache multimediale a 860MB： --media-cache-size=880008000
+I browser Chrome aggiungono parametri di avvio per impostare la cache multimediale a 840MB： --media-cache-size=880008000
 
 Tasti freccia ← e →： Avanza o riavvolgi di 5 secondi
 Shift + Tasti freccia ← e →: Avanza o riavvolgi di 20 secondi
