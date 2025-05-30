@@ -180,14 +180,14 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 		btn.onclick = function(){
 			this.blur();
 			potList = item.playList;
-			const list = item.playList[seriesNum];
-			if (!list) return;
+			const pInfo = item.playList[seriesNum];
+			if (!pInfo) return;
 			const time = art.currentTime;
 			time && art.once("video:loadedmetadata", async () => {
 				await sleep(500);
 				if (art.duration > time) art.currentTime = time;
 			});
-			art.switchUrl(list.url);
+			art.switchUrl(pInfo.url);
 			$(".series-select-space").innerHTML = '';
 			seriesContainer(item.playList);
 		};
@@ -258,7 +258,7 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 				await sleep(900);
 				URL.revokeObjectURL(this.href);
 			};
-			e.querySelector(".liu-closePlayer").onclick = function() {
+			e.children[0].onclick = function() {
 				art.destroy();
 				e.remove();
 				document.body.style.overflow = 'auto';
