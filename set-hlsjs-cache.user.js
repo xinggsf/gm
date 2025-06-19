@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        优化使用hls.js库的视频站
 // @description 设置缓存区大小
-// @namespace   set-hls.js-cache
+// @namespace   set-hls.js-buffer
 // @match       https://www.miguvideo.com/p/detail/*
 // @match       https://vip.1905.com/play/*
 // @match       https://www.1905.com/vod/play/*
@@ -12,7 +12,7 @@
 // @match       https://dandanzan.net/*.html
 // @match       https://www.iyf.tv/play/*
 // @match       https://www.iyf.tv/watch?v=*
-// @version     1.3
+// @version     1.4
 // @author      ray
 // @license     MIT
 // @run-at      document-start
@@ -21,49 +21,42 @@
 
 const buffSize = 80; // 视频缓存区大小：20 － 800秒
 
-(function() {
-	const fn = MediaSource.isTypeSupported;
-	unsafeWindow.MediaSource.isTypeSupported = function(...args) {
-		if (unsafeWindow.Hls) {
-			unsafeWindow.MediaSource.isTypeSupported = fn;
-			unsafeWindow.Hls = new Proxy(Hls, {
-				construct(target, args, newTarget) {
-					const opts = {
-						maxBufferSize: 36 << 20, // 36MB
-						maxBufferLength: buffSize,
-						maxMaxBufferLength: buffSize + 9,
-						backBufferLength: 9
-					};
-					args[0] = Object.assign(args[0] || {}, opts);
-					return new target(...args);
-				}
-			});
-			setTimeout(after,99);
-		}
-		return fn(args);
-	};
-})();
-
-function getStyle(el, s) {
-	if (el.style[s]) return el.style[s];
-	s = s.replace(/([A-Z])/g,'-$1').toLowerCase();
-	return getComputedStyle(el)?.getPropertyValue(s);
-}
+const rawFn = MediaSource.isTypeSupported;
+unsafeWindow.MediaSource.isTypeSupported = function(...a) {
+	if (unsafeWindow.Hls) {
+		unsafeWindow.MediaSource.isTypeSupported = rawFn;
+		unsafeWindow.Hls = new Proxy(Hls, {
+			construct(target, args, newTarget) {
+				const opts = {
+					maxBufferSize: 36 << 20, // 36MB
+					maxBufferLength: buffSize,
+					maxMaxBufferLength: buffSize + 9,
+					backBufferLength: 9
+				};
+				args[0] = Object.assign(args[0] || {}, opts);
+				return new target(...args);
+			}
+		});
+		setTimeout(after,99);
+	}
+	return rawFn(...a);
+};
 
 function after() {
-	console.log('成功设置Hls缓存区！');
+	console.log('成功设置Hls缓冲！');
 	const v = document.getElementsByTagName('video')[0];
 	v.muted = !1;
-	getStyle(v, 'maxHeight') && v.style.setProperty("max-height", "100%", "important");
+	v.style.setProperty("max-height", "100%", "important");
 
 	let tip = document.createElement('span');
-	if (location.hostname == 'nnyy.in') {
+	let {hostname: h} = location;
+	if (h == 'nnyy.in') {
 		document.querySelector('#e-tip').after(tip);
 	}
-	else if (location.hostname == 'dandanzan.net') {
+	else if (h == 'dandanzan.net') {
 		tip = document.querySelector('#mytip');
 	}
-	else if (location.hostname.endsWith('nunuyy5.com')||location.hostname.endsWith('dandanzan.me')) {
+	else if (h.endsWith('nunuyy5.com') || h.endsWith('dandanzan.me')) {
 		document.querySelector('span.current-route').after(tip);
 	}
 	else return;
