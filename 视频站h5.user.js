@@ -1023,11 +1023,16 @@ const router = {
 	longzhu() {
 		cfg.fullCSS = 'a.ya-screen-btn';
 	},
+	deno() {
+		cfg.webfullCSS = '.i-mdi-fit-to-screen';
+		cfg.fullCSS = '.i-ri-fullscreen-fill';
+	},
 	zhanqi() {
 		localStorage.lastPlayer = 'h5';
 		cfg.fullCSS = '.video-fullscreen';
 	}
 };
+if (host.startsWith('lemonlive')) router[u] ||= router.deno;
 
 Reflect.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
