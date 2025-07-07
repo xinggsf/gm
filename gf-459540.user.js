@@ -13,7 +13,7 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=11
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=12
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     4.9
 // @author      liuser, modify by ray
@@ -183,11 +183,10 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 			const pInfo = item.playList[seriesNum];
 			if (!pInfo) return;
 			const time = art.currentTime;
-			time && art.once("video:loadedmetadata", async () => {
-				await sleep(500);
-				if (art.duration > time) art.currentTime = time;
+			time && art.once("video:durationchange", () => {
+				art.video.currentTime = time;
 			});
-			art.switchUrl(pInfo.url);
+			art.url = pInfo.url;
 			$(".series-select-space").innerHTML = '';
 			seriesContainer(item.playList);
 		};
