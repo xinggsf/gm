@@ -59,6 +59,7 @@
 
 // @match    https://www.longzhu.com/*
 // @match    https://www.zhanqi.tv/*
+// @match    https://lemonlive*/*
 // @run-at     document-start
 // @require    https://cdn.jsdelivr.net/npm/vue@2.7.16/dist/vue.min.js
 // @require    https://cdn.jsdelivr.net/npm/jquery@3.6.4/dist/jquery.min.js
@@ -1032,7 +1033,7 @@ const router = {
 		cfg.fullCSS = '.video-fullscreen';
 	}
 };
-if (host.startsWith('lemonlive')) router[u] ||= router.deno;
+if (host.startsWith('lemonlive') && !router[u]) router[u] = router.deno;
 
 Reflect.defineProperty(navigator, 'plugins', {
 	get() { return { length: 0 } }
