@@ -474,8 +474,8 @@ const cacheMV = {
 		setTimeout(_ => v.pause(), 33);
 		HTMLMediaElement.prototype.play = this.rawPlay;
 	},
-	async onChache() {
-		await sleep(2200);
+	onChache() {
+		if (!this.cached) return;
 		if (this.check()) this.finish();
 		else {
 			v.currentTime = this.iEnd;
