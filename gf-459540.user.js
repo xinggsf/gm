@@ -13,7 +13,7 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=12
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=13
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     4.9
 // @author      liuser, modify by ray
@@ -363,6 +363,9 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 			playbackRate: true,
 			plugins: [artPlus()],
 			customType: {m3u8:loadM3u8}
+		});
+		art.once("ready", () => {
+			art.video.playbackRate = +localStorage.mvPlayRate || 1;
 		});
 	}
 
