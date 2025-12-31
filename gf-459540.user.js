@@ -15,7 +15,7 @@
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
 // @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=13
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     4.9
+// @version     5.0
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license     MIT
@@ -23,6 +23,7 @@
 
 /* https://ghproxy.net/https://raw.github.com/xinggsf/extFilter/master/lib/hls.min.js  https://artplayer.org/uncompiled/artplayer-plugin-hls-control/index.js
 
+v5.0 修正artplayer v5.3下不能显示前进后退按钮；更新、新增多个视频资源接口
 ver4.6 修正下载DPL文件的BUG；更新神马源；在hls.js库中加入去广告功能
 ver4.5 更换播放库hls.js，以适应：魔都云、闪电云、无尽云、樱花云
 ver4.2 更新量子源；新增功能：导出potplayer播放列表
@@ -64,24 +65,27 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 		{ name: "量子云", searchUrl: "https://cj.lziapi.com/api.php/provide/vod/" },
 		{ name: "神马云", searchUrl: "https://api.yzzy-api.com/inc/apijson.php" },
 		{ name: "暴风云", searchUrl: "https://app.bfzyapi.com/api.php/provide/vod/"},
-		{ name: "木耳云", searchUrl: "https://www.heimuer.tv/api.php/provide/vod/"},
+		// { name: "木耳云", searchUrl: "https://www.heimuer.tv/api.php/provide/vod/"},
+		{ name: "如意云", searchUrl: "https://cj.rycjapi.com/api.php/provide/vod/"},
 		{ name: "魔都云", searchUrl: "https://caiji.moduapi.cc/api.php/provide/vod/"},
-		// { name: "红牛云", searchUrl: "https://www.hongniuzy2.com/api.php/provide/vod/josn/" }, //https://www.hongniuzy2.com/api.php/provide/vod/from/hnm3u8/
-		// { name: "豪华云", searchUrl: "https://hhzyapi.com/api.php/provide/vod/"},
+		{ name: "红牛云", searchUrl: "https://www.hongniuzy3.com/api.php/provide/vod/"},
+		{ name: "茅台云", searchUrl: "https://caiji.maotaizy.cc/api.php/provide/vod/at/josn/"},
+		{ name: "豪华云", searchUrl: "https://hhzyapi.com/api.php/provide/vod/"},
 		// { name: "极速云", searchUrl: "https://8.218.111.47/api.php/provide/vod/"},
-		{ name: "淘片云", searchUrl: "https://taopianapi.com/cjapi/mc/vod/json/m3u8.html" },
-		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/" }, //www.ikunzy.com
-		{ name: "U酷云", searchUrl: "https://api.ukuapi.com/api.php/provide/vod/" },
-		// { name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/from/gsm3u8/" },
-		{ name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/"},
-		// { name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod/"},
+		{ name: "光速云", searchUrl: "https://api.guangsuapi.com/api.php/provide/vod/"},
+		{ name: "淘片云", searchUrl: "https://taopianapi.com/cjapi/mc/vod/json/m3u8.html"},
+		{ name: "艾昆云", searchUrl: "https://ikunzyapi.com/api.php/provide/vod/from/ikm3u8/at/json/"}, //www.ikunzy.com
+		{ name: "速播云", searchUrl: "https://subocj.com/api.php/provide/vod"},
+		{ name: "U酷云", searchUrl: "https://api.ukuapi.com/api.php/provide/vod/"},
+		// { name: "快车云", searchUrl: "https://caiji.kczyapi.com/api.php/provide/vod/"},
+		{ name: "新浪云", searchUrl: "https://api.xinlangapi.com/xinlangapi.php/provide/vod"},
 		// { name: "樱花云", searchUrl: "https://m3u8.apiyhzy.com/api.php/provide/vod/"},
 		// { name: "天空云", searchUrl: "https://m3u8.tiankongapi.com/api.php/provide/vod/from/tkm3u8/"},
 		// { name: "闪电云", searchUrl: "https://sdzyapi.com/api.php/provide/vod/"},//不太好，格式经常有错
 		// { name: "百度云", searchUrl: "https://api.apibdzy.com/api.php/provide/vod/" },
-		// { name: "金鹰云", searchUrl: "https://jyzyapi.com/provide/vod/from/jinyingm3u8/at/json" },
+		{ name: "金鹰云", searchUrl: "https://jyzyapi.com/provide/vod/from/jinyingm3u8/at/json"},
 		// { name: "酷点云", searchUrl: "https://kudian10.com/api.php/provide/vod/" },
-		{ name: "卧龙云", searchUrl: "https://collect.wolongzyw.com/api.php/provide/vod/" }, //非常恶心的广告
+		{ name: "卧龙云", searchUrl: "https://collect.wolongzyw.com/api.php/provide/vod/"}, //非常恶心的广告
 		// { name: "ck云", searchUrl: "https://ckzy.me/api.php/provide/vod/" },
 		// { name: "海外看", searchUrl: "http://api.haiwaikan.com/v1/vod/" }, // 说是屏蔽了所有中国的IP，所以如果你有外国的ip可能比较好
 		{ name:"无尽云", searchUrl:"https://api.wujinapi.me/api.php/provide/vod/" }
@@ -274,8 +278,8 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 
 	const artPlus = (option) => (art) => {
 		Object.assign(art.icons, {
-			forward: '<svg fill="#fff" viewBox="-9 -9 40 40"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg>',
-			rewind: '<svg fill="#fff" viewBox="-9 -9 40 40"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg>',
+			forward: '<svg fill="#fff" height="22" width="22"><path d="M7.875 7.171L0 1v16l7.875-6.171V17L18 9 7.875 1z"></path></svg>',
+			rewind: '<svg fill="#fff" height="22" width="22"><path d="M10.125 1L0 9l10.125 8v-6.171L18 17V1l-7.875 6.171z"></path></svg>',
 		});
 		const preventEvent = ev => {
 			if (!ev.target.closest('.art-control')) return;
