@@ -13,7 +13,7 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=19
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=20
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
 // @version     5.0
 // @author      liuser, modify by ray
@@ -403,27 +403,27 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	position: relative;
 	z-index: 1;
 	overflow: hidden;
+}
 
-	&:hover {
-		color: #41ac52;
-	}
-	&:after {
-		content: '';
-		background: white;
-		position: absolute;
-		z-index: -1;
-		left: -20%;
-		right: -20%;
-		top: 0;
-		bottom: 0;
-		transform: skewX(-45deg) scale(0, 1);
-		transition: all 0.5s;
-	}
-	&:hover:after {
-		transform: skewX(-45deg) scale(1, 1);
-		-webkit-transition: all 0.5s;
-		transition: all 0.5s;
-	}
+.liu-btn:hover {
+	color: #41ac52;
+}
+.liu-btn:after {
+	content: '';
+	background: white;
+	position: absolute;
+	z-index: -1;
+	left: -20%;
+	right: -20%;
+	top: 0;
+	bottom: 0;
+	transform: skewX(-45deg) scale(0, 1);
+	transition: all 0.5s;
+}
+.liu-btn:hover:after {
+	transform: skewX(-45deg) scale(1, 1);
+	-webkit-transition: all 0.5s;
+	transition: all 0.5s;
 }
 
 xy-button {
@@ -447,13 +447,12 @@ xy-button {
 	/* grid-gap: 0;
 	grid-auto-rows: 1.8em;
 	grid-template-columns: auto auto auto auto auto; */
-
-	& xy-button.play {
-		color:purple;
-	}
-	& xy-button {
-		color:#aaa;
-	}
+}
+.series-select-space xy-button.play {
+	color:purple;
+}
+.series-select-space xy-button {
+	color:#aaa;
 }
 @media screen and (max-width: 1025px) {
 	.playSpace{
