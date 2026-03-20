@@ -13,9 +13,9 @@
 // @connect     *
 // @run-at      document-end
 // @require     https://cdn.jsdelivr.net/npm/xy-ui@1.10.7/+esm
-// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=20
+// @require     https://cdn.jsdelivr.net/gh/xinggsf/extFilter@master/lib/hls.min.js?t=21
 // @require     https://cdn.jsdelivr.net/npm/artplayer/dist/artplayer.js
-// @version     5.0
+// @version     5.1
 // @author      liuser, modify by ray
 // @description 想看就看
 // @license     MIT
@@ -405,6 +405,11 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	overflow: hidden;
 }
 
+.liu-btn:hover:after {
+	transform: skewX(-45deg) scale(1, 1);
+	-webkit-transition: all 0.5s;
+	transition: all 0.5s;
+}
 .liu-btn:hover {
 	color: #41ac52;
 }
@@ -418,11 +423,6 @@ ver3.3 过滤掉量子云的电影解说；新增暴风源、快帆源、索尼�
 	top: 0;
 	bottom: 0;
 	transform: skewX(-45deg) scale(0, 1);
-	transition: all 0.5s;
-}
-.liu-btn:hover:after {
-	transform: skewX(-45deg) scale(1, 1);
-	-webkit-transition: all 0.5s;
 	transition: all 0.5s;
 }
 
