@@ -672,7 +672,7 @@ const app = {
 			e.stopPropagation();
 			e.preventDefault();
 			actList.get(key)(e);
-			if ([67,88,90].includes(e.keyCode)) tip(MSG.speedRate + v.playbackRate);
+			if ([65,67,83,86,88,90].includes(e.keyCode)) tip(MSG.speedRate + v.playbackRate);
 		}
 	},
 	checkUI() {
