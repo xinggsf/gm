@@ -338,6 +338,15 @@ const adjustRate = n => {
 	else if (n > 16) v.playbackRate = 16;
 	else v.playbackRate = +n.toFixed(2);
 };
+const rememberPlayRate = rate => {
+	if (!rate) return;
+	localStorage.mvPlayRate = rate;
+	if (rate != 1) localStorage.mvLastPlayRate = rate;
+};
+const getFastPlayRate = () => {
+	const rate = +localStorage.mvPlayRate;
+	return +localStorage.mvLastPlayRate || (rate != 1 && rate) || 1.3;
+};
 const adjustVolume = n => {
 	n += v.volume;
 	if (inRange(n, 0, 1)) v.volume = +n.toFixed(2);
@@ -501,9 +510,9 @@ cacheMV.onChache = cacheMV.onChache.bind(cacheMV);
 const actList = new Map();
 actList.set(90, _ => { //按键Z: 切换加速状态
 	if (v.playbackRate == 1 || v.playbackRate == 0) {
-		v.playbackRate = +localStorage.mvPlayRate || 1.3;
+		v.playbackRate = getFastPlayRate();
 	} else {
-		// localStorage.mvPlayRate = v.playbackRate;
+		localStorage.mvLastPlayRate = v.playbackRate;
 		v.playbackRate = 1;
 	}
 })
@@ -619,7 +628,7 @@ const app = {
 				if (!cfg.isLive && GM_getValue('remberRate', true)) {
 					v.playbackRate = +localStorage.mvPlayRate || 1;
 					v.addEventListener('ratechange', ev => {
-						if (v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
+						rememberPlayRate(v.playbackRate);
 					});
 				}
 				this.setShell();
@@ -752,7 +761,7 @@ const app = {
 			else {
 				if (bRate) v.playbackRate = +localStorage.mvPlayRate || 1;
 				v.addEventListener('ratechange', ev => {
-					if (bRate && v.playbackRate && v.playbackRate != 1) localStorage.mvPlayRate = v.playbackRate;
+					if (bRate) rememberPlayRate(v.playbackRate);
 				});
 			}
 
